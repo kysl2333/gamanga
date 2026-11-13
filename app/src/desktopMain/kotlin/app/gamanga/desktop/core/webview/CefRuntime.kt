@@ -216,6 +216,24 @@ object CefRuntime {
      * 正确做法是**改 cwd**：启动脚本先 `cd` 到纯英文目录（里面有 `jcef-bundle` 的目录联结），
      * jcefmaven 默认 installDir 就是 cwd，自然走英文路径。
      */
+    /**
+     * 程序根目录。
+     *
+     * **不能用 `user.dir` 当程序目录**（2026-11-13 打包冒烟抓到的真 bug）：
+     * jpackage 的 exe 双击启动时，`user.dir` 是启动器继承来的当前目录，**不是 exe 所在目录**。
+     * 实测完整版解压到 `D:\我的软件\Gamanga` 后双击，搬迁逻辑找不到 `jcef-bundle`，
+     * 包里的 372MB 内核白带，程序回退去联网重下。
+     *
+     * jpackage 启动器会设置 `jpackage.app-path` 系统属性（exe 的绝对路径），用它反推才可靠。
+     * 开发态（bat 启动）没有这个属性，退回 `user.dir`（bat 里已 cd 到 app 目录）。
+     */
+    private fun appHomeDir(): java.io.File {
+        System.getProperty("jpackage.app-path")?.takeIf { it.isNotBlank() }?.let { path ->
+            java.io.File(path).parentFile?.let { return it }
+        }
+        return java.io.File(System.getProperty("user.dir"))
+    }
+
     fun cefRootDir(): java.io.File {
         // ① 显式指定优先级最高（开发期 bat / 高级用户手动指定）
         System.getProperty("gamanga.cef.dir")?.takeIf { it.isNotBlank() }?.let {
@@ -223,7 +241,7 @@ object CefRuntime {
         }
 
         // ② 程序自己的目录（完整版把内核随包放的默认位置）
-        val bundled = java.io.File(System.getProperty("user.dir"), "jcef-bundle")
+        val bundled = java.io.File(appHomeDir(), "jcef-bundle")
         if (bundled.isDirectory && !containsNonAscii(bundled.absolutePath)) return bundled
 
         // ③ 回退到纯 ASCII 的用户目录 / 公共目录（2026-11-13 新增）
@@ -287,7 +305,7 @@ object CefRuntime {
     }
 
     private fun doMigrateBundledRuntime(): Boolean {
-        val bundled = java.io.File(System.getProperty("user.dir"), "jcef-bundle")
+        val bundled = java.io.File(appHomeDir(), "jcef-bundle")
         if (!hasNativeLib(bundled)) return false
         if (!containsNonAscii(bundled.absolutePath)) return false
         if (runCatching { java.nio.file.Files.isSymbolicLink(bundled.toPath()) }.getOrDefault(false)) {

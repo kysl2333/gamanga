@@ -1,0 +1,60 @@
+-- R-04 下载：章节图片「真落盘」+ 任务状态。
+--
+-- 与 PageCache（进程内 LRU）的分工：下载把图片**字节**写到磁盘，阅读器优先读
+-- 本地文件，不再调 adapter.pages()——Komiic 每次取图烧一份每日配额、G社 每次
+-- 要拉隐藏浏览器跑站点解密器，落盘后这两笔开销一次性付清。
+-- 未下载章节的 pages() 元数据（url+票据）**故意不落库**：票据 10 分钟有效，
+-- 过期元数据没有价值，重启后重新取一次是正确行为。
+--
+-- 外键 manga(id)：下载跟随书架——移出书架即级联删行（磁盘文件由
+-- DownloadManager 按「库内没有的 manga」主动收尾）。没入书架就试读的漫画
+-- 走详情页「下载」会自动先加入书架，否则 FK 插不进去。
+CREATE TABLE downloadChapter (
+  id TEXT NOT NULL PRIMARY KEY,            -- "<mangaId>#<sourceChapterId>"，与 chapter 表同构
+  mangaId TEXT NOT NULL,
+  chapterId TEXT NOT NULL,                 -- 源站章节 id
+  name TEXT NOT NULL,
+  pageCount INTEGER NOT NULL DEFAULT 0,    -- 总页数（取到图片列表后回填）
+  downloadedPages INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL,                    -- QUEUED / DOWNLOADING / COMPLETED / FAILED
+  error TEXT,
+  totalBytes INTEGER NOT NULL DEFAULT 0,
+  updatedAt INTEGER NOT NULL DEFAULT 0,
+  createdAt INTEGER NOT NULL DEFAULT 0,    -- 入队时间（永不变）：下载列表按它稳定排序
+  FOREIGN KEY (mangaId) REFERENCES manga(id) ON DELETE CASCADE
+);
+CREATE INDEX downloadChapter_mangaId ON downloadChapter(mangaId);
+
+-- 下载管理页：按漫画分组要书名，join manga 拿 title（不冗余存标题）。
+-- 排序按 createdAt（入队序）——updatedAt 每页进度都变，按它排任务会来回跳
+-- （用户实测「正在下载的两个任务在列表中来回跳动」）。
+selectDownloadsWithTitle:
+SELECT d.*, m.title AS mangaTitle
+FROM downloadChapter d
+JOIN manga m ON m.id = d.mangaId
+ORDER BY m.title, d.createdAt;
+
+selectAllDownloads:
+SELECT * FROM downloadChapter ORDER BY createdAt;
+
+selectDownloadById:
+SELECT * FROM downloadChapter WHERE id = ?;
+
+selectUnfinishedDownloads:
+SELECT * FROM downloadChapter WHERE status IN ('QUEUED', 'DOWNLOADING') ORDER BY createdAt;
+
+upsertDownload:
+INSERT OR REPLACE INTO downloadChapter
+  (id, mangaId, chapterId, name, pageCount, downloadedPages, status, error, totalBytes, updatedAt, createdAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteDownload:
+DELETE FROM downloadChapter WHERE id = ?;
+
+deleteDownloadsByManga:
+DELETE FROM downloadChapter WHERE mangaId = ?;
+
+-- 「清除所有数据」用（2026-10-27 第五轮）：下载**记录**清掉，
+-- 磁盘上已下载的图片文件不在这里删（由 DownloadManager 的孤儿清理按需回收）。
+clearAllDownloads:
+DELETE FROM downloadChapter;

@@ -1,0 +1,344 @@
+-- M1: 本地数据层 schema
+-- manga 收藏 / chapter 章节 / readingProgress 阅读进度 / appPrefs 键值（窗口尺寸等）
+-- 依据 docs/plan/phase1.md M1 与 model/Models.kt
+
+CREATE TABLE manga (
+  id TEXT NOT NULL PRIMARY KEY,
+  title TEXT NOT NULL,
+  source TEXT NOT NULL,          -- SourceType.name
+  sourceMangaId TEXT NOT NULL,
+  coverUrl TEXT,                 -- 远端封面（M3 起填充）
+  coverColorHex TEXT,            -- 无封面时的本地占位色，如 FF_B5D4F4
+  author TEXT,
+  addedAt INTEGER NOT NULL DEFAULT 0,
+  -- R-123：1 = 在书架里；0 = 「幽灵行」，只为历史/进度存书名与封面（书架外试读也会写）。
+  -- **所有书架语义的查询必须过滤 inLibrary = 1**，否则试读过的书会凭空出现在书架上。
+  -- 加列已同步 GamangaDatabaseFactory.STEPS 的 v7。
+  inLibrary INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE chapter (
+  id TEXT NOT NULL PRIMARY KEY,
+  mangaId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  chapterIndex INTEGER NOT NULL,
+  isRead INTEGER NOT NULL DEFAULT 0,   -- common 源码集不支持 AS Boolean（会生成无法解析的 import Boolean）；0/1 由 Repository 转换
+  lastOpenedAt INTEGER NOT NULL DEFAULT 0, -- 「点过」的时间戳（0 = 没点过）。F-39：详情页灰显判据，与 isRead 无关
+  pageCount INTEGER NOT NULL DEFAULT 0, -- 每章页数（#30）：Komiic 源接口直给；G社接口没有，阅读时按 pages.size 回填。加列必须同步 GamangaDatabaseFactory.STEPS 补迁移，否则老库缺列崩库
+  FOREIGN KEY (mangaId) REFERENCES manga(id) ON DELETE CASCADE
+);
+CREATE INDEX chapter_mangaId ON chapter(mangaId);
+
+CREATE TABLE readingProgress (
+  mangaId TEXT NOT NULL PRIMARY KEY,
+  chapterId TEXT NOT NULL,
+  page INTEGER NOT NULL,
+  totalPages INTEGER NOT NULL,
+  updatedAt INTEGER NOT NULL DEFAULT 0,
+  FOREIGN KEY (mangaId) REFERENCES manga(id) ON DELETE CASCADE
+);
+
+-- F-38 观看时长：按天累计秒数（不做精确审计，只统计「在阅读器里停留」的时间）。
+-- 规则：每页最多计 60 秒，翻页/切话重置（用户 2026-10-25 口径）。
+CREATE TABLE readingTime (
+  day TEXT NOT NULL PRIMARY KEY,      -- yyyy-MM-dd（本地时区）
+  seconds INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE appPrefs (
+  key TEXT NOT NULL PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+-- 书架条目（含未读章节数）。**必须过滤 inLibrary**：R-123 之后书架上不再是「manga 表的全部」。
+selectMangaMetadata:
+SELECT id, title, source, sourceMangaId, coverUrl, author FROM manga;
+
+selectLibraryWithUnread:
+SELECT m.*, (
+  SELECT COUNT(*) FROM chapter c WHERE c.mangaId = m.id AND c.isRead = 0
+) AS unreadCount
+FROM manga m
+WHERE m.inLibrary = 1
+ORDER BY m.addedAt DESC;
+
+-- 书架条目 + 阅读进度（2026-10-26 新书架页用）。
+-- 卡片第二行要显示「第 N 话　68%」，所以把进度和章节序号一次带出来——
+-- 让 UI 逐本再查一次进度会变成 N+1 次查询，一屏十几本时明显卡顿。
+-- LEFT JOIN：没读过的书没有 readingProgress 行，仍然要出现在书架上。
+selectShelfWithProgress:
+SELECT m.id AS id, m.title AS title, m.source AS source, m.sourceMangaId AS sourceMangaId,
+       m.coverUrl AS coverUrl, m.coverColorHex AS coverColorHex, m.author AS author,
+       m.addedAt AS addedAt,
+       (SELECT COUNT(*) FROM chapter c WHERE c.mangaId = m.id AND c.isRead = 0) AS unreadCount,
+       p.page AS progressPage,
+       p.totalPages AS progressTotalPages,
+       p.updatedAt AS progressUpdatedAt,
+       pc.name AS progressChapterName,
+       pc.chapterIndex AS progressChapterIndex
+FROM manga m
+LEFT JOIN readingProgress p ON p.mangaId = m.id
+LEFT JOIN chapter pc ON pc.id = p.chapterId
+WHERE m.inLibrary = 1
+ORDER BY m.addedAt DESC;
+
+-- 整本标记已读（书架右键菜单「标记已读」，2026-10-26）。
+-- 只动 isRead，**不动 lastOpenedAt**：读过必然点过，清了会让章节重新变黑（与 F-39 口径一致）。
+markAllChaptersRead:
+UPDATE chapter SET isRead = 1 WHERE mangaId = ?;
+
+-- 整本标记未读（右键菜单在「整本已读」时切换成这一项，2026-10-26 用户要求）。
+-- 与单章口径一致：**连 lastOpenedAt 一起清**，否则章节仍是灰的，用户会以为没生效（F-39）。
+markAllChaptersUnread:
+UPDATE chapter SET isRead = 0, lastOpenedAt = 0 WHERE mangaId = ?;
+
+-- 书架内/外切换（新书架页的「移出书架」= 置 0，2026-10-26）。
+-- 为什么不用硬删：新书架页的删除**可撤销**（原型要求 6 秒撤销条）。
+-- 硬删会把 chapter 和 readingProgress 一起删掉，撤销就再也恢复不了进度；
+-- 置 0 只是「不在书架上」，章节与进度全留着，撤销 = 置回 1，零丢失。
+-- 硬删仍然保留给旧书架页（removeFromLibrary），两套语义并存，等旧页退役再统一。
+setLibraryFlag:
+UPDATE manga SET inLibrary = ? WHERE id = ?;
+
+-- 未读章节总数：只算书架内的书（幽灵行的章节不算，否则「未读 N」会被试读的书撑大）
+selectTotalUnread:
+SELECT COUNT(*) AS total FROM chapter c
+JOIN manga m ON m.id = c.mangaId
+WHERE c.isRead = 0 AND m.inLibrary = 1;
+
+-- 入架 / 重新入架（2026-10-27 第五轮 R-131 + 第六批方言修正）。
+--
+-- 坑：`INSERT OR REPLACE` 在 SQLite 里是「先 DELETE 旧行再 INSERT 新行」。本库在
+-- `GamangaDatabaseFactory` 里开了 `PRAGMA foreign_keys = ON`，而 chapter / readingProgress /
+-- downloadChapter 三张表都是 `ON DELETE CASCADE` —— 于是「移出书架 → 又加回来」会把
+-- 阅读进度、已读标记、下载记录**全部级联删掉**。用户实测：「移出书架能保留记录，但加入书架就被清掉」。
+--
+-- 正解是 UPSERT（`ON CONFLICT(id) DO UPDATE`，原地 UPDATE 不产生 DELETE），但项目用的
+-- SQLDelight 方言是 `sqlite_3_18`，UPSERT 要 3.24+ —— 生成阶段直接报「',' expected, got 'ON'」。
+-- 所以拆成两条**语义等价**的语句，由调用方在同一个事务里连着调（见 `LibraryRepository.upsertManga`）：
+--   ① `insertManga`：`INSERT OR IGNORE`，行不存在才新建；
+--   ② `updateMangaMeta`：原地 UPDATE 刷新元信息并把 inLibrary 置回 1。
+insertManga:
+INSERT OR IGNORE INTO manga (id, title, source, sourceMangaId, coverUrl, coverColorHex, author, addedAt, inLibrary)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1);
+
+-- 重新入架时刷新元信息（`insertManga` 的第二步）。
+-- coverUrl / author / coverColorHex 用 COALESCE(NULLIF(...)) 兜底：源站偶尔返回空值，
+-- 不能把已有的好数据冲掉（尤其封面——空串会直接把书架封面变白块）。
+-- 参数必须写成 `:name`：`SET coverUrl = COALESCE(NULLIF(?, ''), coverUrl)` 这种形式
+-- SQLDelight 猜不出参数名，会生成 `value / value_ / value__` 三个无名参数。
+updateMangaMeta:
+UPDATE manga SET
+  title = :title,
+  source = :source,
+  sourceMangaId = :sourceMangaId,
+  coverUrl = COALESCE(NULLIF(:coverUrl, ''), coverUrl),
+  coverColorHex = COALESCE(:coverColorHex, coverColorHex),
+  author = COALESCE(NULLIF(:author, ''), author),
+  addedAt = :addedAt,
+  inLibrary = 1
+WHERE id = :id;
+
+-- R-123：只为历史/进度写一行「幽灵 manga」（inLibrary = 0）。
+-- INSERT OR IGNORE：已经在书架里的书**绝不能**被降级成幽灵行；
+-- 反过来，幽灵行后来被用户收进书架时走 insertManga + updateMangaMeta 会升成 inLibrary = 1。
+insertGhostManga:
+INSERT OR IGNORE INTO manga (id, title, source, sourceMangaId, coverUrl, coverColorHex, author, addedAt, inLibrary)
+VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0);
+
+deleteManga:
+DELETE FROM manga WHERE id = ?;
+
+-- 显式级联删：表上虽然写了 ON DELETE CASCADE，但 SQLite 的 foreign_keys 是**连接级**
+-- 开关，实测在当前 JDBC 连接上没生效（移出书架后留下 57 个孤儿章节 + 1 条进度）。
+-- 与其赌 PRAGMA，不如在同一个事务里按顺序删干净。
+deleteChaptersByManga:
+DELETE FROM chapter WHERE mangaId = ?;
+
+deleteProgressByManga:
+DELETE FROM readingProgress WHERE mangaId = ?;
+
+-- 只补空封面，不覆盖已有值（详情页每次打开都会走到这里）
+backfillCover:
+UPDATE manga SET coverUrl = ? WHERE id = ? AND (coverUrl IS NULL OR coverUrl = '');
+
+selectChaptersByManga:
+SELECT * FROM chapter WHERE mangaId = ? ORDER BY chapterIndex ASC;
+
+-- 注意：lastOpenedAt 必须一起写，否则「同步章节」用 INSERT OR REPLACE 会把
+-- 「点过」状态冲成 0（用户刚点过的章节又变回正常色）。调用方从旧行取值传进来。
+insertChapter:
+INSERT OR REPLACE INTO chapter (id, mangaId, name, chapterIndex, isRead, pageCount, lastOpenedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- 同步章节时**只刷新元信息**，不动 isRead / lastOpenedAt（2026-10-29 R-159）。
+--
+-- 坑：`insertChapter`（INSERT OR REPLACE）是整行替换，调用方必须先把旧行的
+-- isRead / lastOpenedAt 读出来再传回去；而「读快照 → 写回」中间只要插进来一次
+-- 「右键标记已读」，写回就会把刚标好的已读**冲掉**——这正是用户看到的
+-- 「一开始标记已读不生效，过一会儿再标记又好了」（详情页打开时的后台刷新与点击撞车）。
+-- 现在拆成两条：`insertGhostChapter`（只补不存在的行）+ 这条（只更新名字/序号/页数），
+-- 状态列压根不出现在 UPDATE 里，竞态从根上消失。
+updateChapterMeta:
+UPDATE chapter SET
+  name = :name,
+  chapterIndex = :chapterIndex,
+  -- 源站这次没给页数（0）时保留旧值，否则进度百分比会突然变 0%
+  pageCount = CASE WHEN :pageCount > 0 THEN :pageCount ELSE pageCount END
+WHERE id = :id;
+
+-- 单章是否存在（标记已读前判断要不要补一行，见 LibraryRepository.setChapterRead）
+selectChapterById:
+SELECT * FROM chapter WHERE id = ?;
+
+-- 某本已落库的章节数（F-271 书架章节刷新：判断「比看过的那一版多了几话」）
+selectChapterCountByManga:
+SELECT COUNT(*) FROM chapter WHERE mangaId = ?;
+
+-- F-39「点过」：点开章节就记时间，与已读无关
+markChapterOpened:
+UPDATE chapter SET lastOpenedAt = ? WHERE id = ?;
+
+-- R-123：书架外试读时补一行幽灵章节（让历史页能显示章节名、F-39 的「点过」也能生效）。
+-- 用 OR IGNORE 而不是 insertChapter 的 OR REPLACE：已经在书架里的章节
+-- 绝不能被这里重置 isRead / lastOpenedAt。
+insertGhostChapter:
+INSERT OR IGNORE INTO chapter (id, mangaId, name, chapterIndex, isRead, pageCount, lastOpenedAt)
+VALUES (?, ?, ?, ?, 0, 0, 0);
+
+-- F-39「标记未读」：已读和点过一起清，章节恢复原色
+markChapterUnread:
+UPDATE chapter SET isRead = 0, lastOpenedAt = 0 WHERE id = ?;
+
+-- 阅读器取到整章图片后回填页数（#30）。行不存在（没入书架就试读）时静默跳过，
+-- 所以用 UPDATE 而不是 INSERT——chapter 有 mangaId 外键，试读场景插不进去。
+updateChapterPageCount:
+UPDATE chapter SET pageCount = ? WHERE id = ?;
+
+markChapterRead:
+UPDATE chapter SET isRead = ? WHERE id = ?;
+
+selectRecentProgress:
+SELECT p.mangaId AS mangaId, p.chapterId AS chapterId, p.page AS page, p.totalPages AS totalPages,
+       p.updatedAt AS updatedAt, m.title AS mangaTitle, c.name AS chapterName
+FROM readingProgress p
+JOIN manga m ON m.id = p.mangaId
+JOIN chapter c ON c.id = p.chapterId
+WHERE m.inLibrary = 1
+ORDER BY p.updatedAt DESC
+LIMIT 1;
+
+-- 历史页（排期第 4 项）：按最近阅读时间倒序的全量进度 + 书名/封面/源信息。
+-- chapter 用 LEFT JOIN：书架外试读时 chapter 行可能不存在，但进度仍要能显示。
+-- R-123 起书架外的书也有 manga 行（inLibrary = 0），所以 INNER JOIN 不再丢记录。
+selectHistory:
+SELECT p.mangaId AS mangaId, p.chapterId AS chapterId, p.page AS page, p.totalPages AS totalPages,
+       p.updatedAt AS updatedAt, m.title AS mangaTitle, m.coverUrl AS coverUrl,
+       m.source AS source, m.sourceMangaId AS sourceMangaId, c.name AS chapterName
+FROM readingProgress p
+JOIN manga m ON m.id = p.mangaId
+LEFT JOIN chapter c ON c.id = p.chapterId
+ORDER BY p.updatedAt DESC
+LIMIT 200;
+
+upsertProgress:
+INSERT OR REPLACE INTO readingProgress (mangaId, chapterId, page, totalPages, updatedAt)
+VALUES (?, ?, ?, ?, ?);
+
+selectProgressByManga:
+SELECT * FROM readingProgress WHERE mangaId = ?;
+
+selectPref:
+SELECT value FROM appPrefs WHERE key = ?;
+
+upsertPref:
+INSERT OR REPLACE INTO appPrefs (key, value) VALUES (?, ?);
+
+-- 「清除所有数据」用（2026-10-27 第五轮）：按 key 精确删，不做 DELETE FROM appPrefs ——
+-- 窗口尺寸 / 代理 / 下载位置 / 阅读设置 / 备份账号这些是**配置**不是**内容**，
+-- 一起清掉等于让用户重装一遍。见 LibraryRepository.clearAllUserData()。
+deletePref:
+DELETE FROM appPrefs WHERE key = ?;
+
+-- ---- 「清除所有数据」（恢复初始安装状态）----
+-- 只清内容表，**不动表结构**，所以不需要迁移梯子。
+-- 顺序与 removeMany 一致：progress → chapter → manga（PRAGMA foreign_keys 实测不生效）。
+clearAllProgress:
+DELETE FROM readingProgress;
+
+clearAllChapters:
+DELETE FROM chapter;
+
+clearAllManga:
+DELETE FROM manga;
+
+-- 2026-10-27 第五轮：**保留下载缓存**之后新增的三条（见 LibraryRepository.clearAllUserData）
+--
+-- 所有 manga id（含幽灵行）：调用方算出「哪些有下载记录要留」再逐条删其余的。
+-- 不能用 clearAllManga —— 那会把有下载的书一起删，downloadChapter 跟着级联消失，
+-- 下载页当场变空、已下载的章节再也读不了。
+selectAllMangaIds:
+SELECT id FROM manga;
+
+-- 保留下来的书退回「幽灵行」：书架清空（初始状态），但下载页仍能按 id join 到书名。
+clearLibraryFlags:
+UPDATE manga SET inLibrary = 0;
+
+-- 配置类 prefs 也一起清（恢复初始安装状态），**只留下载根目录**：
+-- 删了它，磁盘上已下载的图片就找不回来了 —— 那不是「清数据」，是「弄丢文件」。
+clearContentPrefs:
+DELETE FROM appPrefs WHERE key <> 'download.root';
+
+-- F-03 备份：整库快照查询（导出/恢复用，不动 schema）
+-- **只导出书架内的书**（R-123）：幽灵行只服务本机历史，导出后恢复会变成「凭空多出
+-- 一堆没入架的书」，而恢复路径走 insertManga（inLibrary 恒为 1）。历史本就不是备份目标。
+selectAllManga:
+SELECT * FROM manga WHERE inLibrary = 1;
+
+-- 单本是否存在（2026-10-29 R-159：标记已读补行前判断外键目标在不在）
+selectMangaById:
+SELECT * FROM manga WHERE id = ?;
+
+selectAllProgress:
+SELECT * FROM readingProgress;
+
+selectAllPrefs:
+SELECT * FROM appPrefs;
+
+-- ---- F-38 统计 ----
+
+-- 先确保当天行存在，再累加（不用 UPSERT 语法：SQLDelight 的解析器对它支持不稳）
+ensureReadingDay:
+INSERT OR IGNORE INTO readingTime (day, seconds) VALUES (?, 0);
+
+addReadingSecondsOfDay:
+UPDATE readingTime SET seconds = seconds + ? WHERE day = ?;
+
+selectReadingSecondsOfDay:
+SELECT seconds FROM readingTime WHERE day = ?;
+
+selectTotalReadingSeconds:
+SELECT COALESCE(SUM(seconds), 0) AS total FROM readingTime;
+
+-- 统计清理（F-38 的 UI 入口）：只清观看时长台账。
+-- 书架(manga)/章节(chapter)/阅读进度(readingProgress) 是另外的表，这里碰不到，
+-- 所以「清统计」不会让用户丢收藏或读到的位置；只删行、不改表结构，无需迁移。
+deleteReadingDays:
+DELETE FROM readingTime;
+
+-- 书架本数：只算 inLibrary = 1（幽灵行不是收藏）
+selectLibraryCount:
+SELECT COUNT(*) FROM manga WHERE inLibrary = 1;
+
+-- 已读章节数：同样只算书架内的书（统计页说的是「书架读完多少」，不是「试读过多少」）
+selectReadChapterCount:
+SELECT COUNT(*) FROM chapter c
+JOIN manga m ON m.id = c.mangaId
+WHERE c.isRead = 1 AND m.inLibrary = 1;
+
+selectDownloadedChapterCount:
+SELECT COUNT(*) FROM downloadChapter WHERE status = 'COMPLETED';
+
+-- 按漫画计数：同一本下载了 3 话也只算 1 本（用户 2026-10-25 口径）
+selectDownloadedMangaCount:
+SELECT COUNT(DISTINCT mangaId) FROM downloadChapter WHERE status = 'COMPLETED';

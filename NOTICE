@@ -1,0 +1,60 @@
+Gaaa漫画 (Gamanga)
+Copyright 2026 The Gamanga Authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+--------------------------------------------------------------------------
+NOTICE — 第三方组件
+--------------------------------------------------------------------------
+
+本程序在运行时链接、打包或以其它方式使用下列第三方组件。各组件的著作权归其各自
+权利人所有，本程序不主张对它们的任何权利。完整许可条文见各组件的官方仓库。
+
+## 界面与语言
+
+  Compose Multiplatform            Apache License 2.0    https://github.com/JetBrains/compose-multiplatform
+  Kotlin / kotlinx.coroutines      Apache License 2.0    https://github.com/JetBrains/kotlin
+  kotlinx-serialization            Apache License 2.0    https://github.com/Kotlin/kotlinx.serialization
+  kotlinx-datetime                 Apache License 2.0    https://github.com/Kotlin/kotlinx-datetime
+  AndroidX Lifecycle / SavedState  Apache License 2.0    https://developer.android.com/jetpack
+  Skiko (Skia 绑定)                Apache License 2.0    https://github.com/JetBrains/skiko
+  Skia                             BSD 3-Clause          https://skia.org
+
+## 数据与网络
+
+  SQLDelight                       Apache License 2.0    https://github.com/sqldelight/sqldelight
+  sqlite-jdbc                      Apache License 2.0    https://github.com/xerial/sqlite-jdbc
+  SQLite                           Public Domain         https://www.sqlite.org
+  Gson                             Apache License 2.0    https://github.com/google/gson
+  Apache Commons (Codec/IO/Compress/Lang)
+                                   Apache License 2.0    https://commons.apache.org
+
+## 内嵌浏览器
+
+  JCEF / jcefmaven                BSD 3-Clause          https://github.com/jcefmaven/jcefmaven
+  Chromium Embedded Framework      BSD 3-Clause          https://bitbucket.org/chromiumembedded/cef
+  Chromium                         BSD 3-Clause + 第三方   https://www.chromium.org
+  JOGL / GlueGen                   BSD 3-Clause          https://jogamp.org
+
+  Chromium 及其依赖的完整许可清单随内核一起分发，见 jcef-bundle/LICENSE.txt
+  以及运行时的 runtime/legal/ 目录。
+
+## 系统调用
+
+  JNA / JNA Platform               Apache License 2.0 或 LGPL 2.1（双许可，本项目按 Apache 2.0 使用）
+                                                         https://github.com/java-native-access/jna
+
+## 字体
+
+  Inter                            SIL Open Font License 1.1
+                                                         https://github.com/rsms/inter
+
+## 元数据
+
+  推荐页的漫画条目元数据来自 Bangumi（bgm.tv）公开 API，版权归 Bangumi 及各作品权利人所有。
+  本程序仅做展示，不缓存、不再分发这些数据。
+
+--------------------------------------------------------------------------
+
+本程序不包含任何第三方漫画内容。用户通过自行配置的站点获取的内容，其版权归
+各权利人所有，与本程序无关。

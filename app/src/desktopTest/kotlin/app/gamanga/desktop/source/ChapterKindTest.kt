@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * 章节「话 / 卷」分离（用户 2026-11-11：黑色五葉草话卷混排）。
+ * 章节「话 / 卷」分离。
  *
  * 真实现场数据来自本机库：Komiic 圣诞 `komiic:1882` 共 432 条，
  * 其中 216 条是话（18~52 页）、216 条是卷（184~200 页），

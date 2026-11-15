@@ -23,7 +23,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * R-04 下载管理器回归测试（内存 SQLite + 临时目录 + 假取图/假下载）。
+ * 下载管理器回归测试（内存 SQLite + 临时目录 + 假取图/假下载）。
  *
  * 覆盖：落盘完整性、进度单调、失败与重试、删除（含在飞取消的竞态）、
  * 重启续传、入队幂等、孤儿清理、路径净化、体积格式化。

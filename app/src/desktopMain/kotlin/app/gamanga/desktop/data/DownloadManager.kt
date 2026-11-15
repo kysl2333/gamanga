@@ -103,7 +103,7 @@ data class DownloadTask(
 data class CacheUsage(val mangaId: String, val mangaTitle: String, val bytes: Long)
 
 /**
- * 下载管理器（R-04）。
+ * 下载管理器。
  *
  * **落盘布局**：`<rootDir>/<sanitize(mangaId)>/<sanitize(chapterId)>/<页序>.<ext>`，
  * 页序四位零填充（`0000.jpg`）——按文件名排序即阅读顺序，扩展名不影响解码
@@ -119,7 +119,7 @@ data class CacheUsage(val mangaId: String, val mangaTitle: String, val bytes: Lo
  * 把它们退回队列重跑（章节目录会先清空再下，不混入上一次的残页）。
  *
  * **取消语义**：所有 suspend 调用必须让 CancellationException 穿透——
- * 吞掉它会重演 R-45「僵尸协程把 error 写回已不属于它的任务」。
+ * 吞掉它会重演 「僵尸协程把 error 写回已不属于它的任务」。
  */
 class DownloadManager(
     private val db: GamangaDatabase,
@@ -146,7 +146,7 @@ class DownloadManager(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     /**
-     * 库访问锁（T-04，2026-10-26）。
+     * 库访问锁。
      *
      * 章节内是 [maxParallelPages] 个协程并发下载，每下完一页都会 `update()` 一次；
      * 而 `JdbcSqliteDriver` **复用同一个 JDBC 连接**。多线程同时往一个 SQLite
@@ -201,7 +201,7 @@ class DownloadManager(
     init {
         reloadFromDb()
         ensureMarker()
-        // 孤儿清理的判据是「**库里还有没有这一行 manga**」，不是「它在不在书架上」（R-136）。
+        // 孤儿清理的判据是「**库里还有没有这一行 manga**」，不是「它在不在书架上」。
         //
         // 上一版订阅的是 `libraryItems`（只含 `inLibrary = 1`）→ 用户把漫画「移出书架」
         // （软移出，只翻标志位，行还在）之后，这本书立刻被判成孤儿：
@@ -676,7 +676,7 @@ class DownloadManager(
                             val n = done.incrementAndGet()
                             // 每页都落库：进程随时可能被杀，重启后续传从 downloadedPages 接着算。
                             //
-                            // **并发写入必须保证单调（R-124，2026-10-26 实测抓到的真 bug）**：
+                            // **并发写入必须保证单调（实测抓到的真 bug）**：
                             // `update()` 是「整行覆盖」，而这里是 maxParallelPages 个协程并发调用——
                             // n=3 先落库、n=2 后落库，进度条就会**往回退**。
                             // 实测证据：任务停在 downloadedPages=2 而 totalBytes=30（3 页 × 10 字节），
@@ -727,7 +727,7 @@ class DownloadManager(
             )
         } catch (e: CancellationException) {
             // 取消（删除任务 / 应用退出）不是失败：原样抛出，不写任何状态。
-            // 吞掉它会重演 R-45 僵尸协程——把 error 盖回已经不属于它的任务。
+            // 吞掉它会重演 僵尸协程——把 error 盖回已经不属于它的任务。
             throw e
         } catch (e: Throwable) {
             // 删除竞态：delete() 删行后协程才抛（如目录已删导致写文件失败），
@@ -797,7 +797,7 @@ class DownloadManager(
      * 收尾「库里已经没有这本书」的下载缓存。
      *
      * [liveMangaIds] 传的是**库里所有 manga 行**（[LibraryRepository.allMangaIds]），
-     * **不是**书架条目 —— 移出书架是软移出（只翻 `inLibrary`），下载缓存必须留着（R-136）。
+     * **不是**书架条目 —— 移出书架是软移出（只翻 `inLibrary`），下载缓存必须留着。
      */
     private fun cleanupOrphans(liveMangaIds: Set<String>) {
         // 归属标记检查（第八轮 #7）：没有标记的目录不是我们的缓存目录
@@ -850,7 +850,7 @@ class DownloadManager(
         // 章节内是 maxParallelPages 个协程并发下载，每下完一页都会走到这里；
         // 而 JdbcSqliteDriver **复用同一个 JDBC 连接**。多线程同时往一个 SQLite
         // 连接写，轻则 SQLITE_BUSY，重则互相等待——表现是「进度卡住不动」，
-        // 测试里就是偶发干等超时（T-04 追到的现象）。写只有几十微秒，串行化很划算。
+        // 测试里就是偶发干等超时（追到的现象）。写只有几十微秒，串行化很划算。
         synchronized(dbLock) {
             queries.upsertDownload(
                 id = task.id,

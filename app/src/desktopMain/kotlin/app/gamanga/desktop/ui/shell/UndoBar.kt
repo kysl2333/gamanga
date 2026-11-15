@@ -55,7 +55,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * 可回撤操作提示条（F-140，2026-10-27 用户要求）。
+ * 可回撤操作提示条（用户要求）。
  *
  * ## 用户口径
  *
@@ -98,7 +98,7 @@ private val UndoBarWidth = 240.dp
 /**
  * 回撤条离窗口底部的距离。
  *
- * 2026-10-29（R-160）起改为读 [DockMetrics.floatingBottom]（dock 的**实测**顶边 + 20dp），
+ * 2026-10-29起改为读 [DockMetrics.floatingBottom]（dock 的**实测**顶边 + 20dp），
  * 不再手算 `88 + 12`：常量与 dock 真实尺寸有一点偏差，条子就会压在 dock 上或飘到半空。
  * 调用点仍然只负责 `Modifier.align(Alignment.BottomCenter)`，**不要再给 bottom padding**。
  */

@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
  *
  * 只测纯函数部分 [CefRuntime.containsNonAscii] —— [CefRuntime.cefRootDir] 依赖
  * `user.dir` / `LOCALAPPDATA` / `ProgramData` 三个环境量，在测试进程里改不干净，
- * 它靠发行包实机验证（`docs/plan/github-release.md` D2）。
+ * 它靠发行包实机验证。
  *
  * 这条判断的代价很高：判错了（把中文路径当成 ASCII 放过去）CEF 会**原生崩溃**，
  * 只有 `hs_err_pid*.log`，没有任何 Java 堆栈 —— 2026-10-24 已经踩过一次。

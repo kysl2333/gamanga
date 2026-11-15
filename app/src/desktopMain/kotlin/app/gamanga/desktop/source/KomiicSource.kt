@@ -30,7 +30,7 @@ class KomiicSource(
     siteBases: List<String> = listOf("https://komiic.cc"),
     /** 借会话（M2 的 cookie 导出通道）；默认无登录态。 */
     private val cookies: () -> String? = { null },
-    /** 路径模板（F-36）：`api` = GraphQL 端点路径；空 = 内置默认。 */
+    /** 路径模板：`api` = GraphQL 端点路径；空 = 内置默认。 */
     paths: Map<String, String> = emptyMap(),
 ) : SourceAdapter {
 
@@ -74,7 +74,7 @@ class KomiicSource(
         // **服务端返回的不是阅读顺序**（实测 000,001,239,268,274,002,003 混在一起），
         // 必须自己按 serial 的数值排：serial 形如 "000"/"012"/"2.2"，用 Double 兼容小数话。
         // 另外同一本书会同时有「话」和「卷（单行本）」两套编号，serial 都只有数字
-        // （01/01、02/02…），**必须用 `type` 区分**，否则话卷交错（用户 2026-11-11 截图）。
+        // （01/01、02/02…），**必须用 `type` 区分**，否则话卷交错。
         val list = data.arr("chaptersByComicId")?.mapNotNull { el ->
             (el as? JsonObject)?.let {
                 SourceChapter(

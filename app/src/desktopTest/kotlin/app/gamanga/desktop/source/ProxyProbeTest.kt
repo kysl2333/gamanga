@@ -7,7 +7,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * 代理测试必须**真的**测代理（R-161，2026-10-29）。
+ * 代理测试必须**真的**测代理。
  *
  * 用户报：「输入一个连不通的 IP 和端口，点测试竟然通过了」。
  * 实测根因是 JDK 的 `HttpClient` 对 SOCKS 代理不可靠——不可达的代理也会返回 204（走直连）。

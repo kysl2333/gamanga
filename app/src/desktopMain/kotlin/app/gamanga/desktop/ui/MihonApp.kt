@@ -65,7 +65,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
     var browseKeyword by remember { mutableStateOf<String?>(null) }
     var browseAutoSearch by remember { mutableStateOf(false) }
     /**
-     * F-129：dock 里重复点「浏览」的次数。
+     * dock 里重复点「浏览」的次数。
      *
      * 详情是浏览页的二级页，用户要求「鼠标点击到一级菜单就把二级菜单收回去」——
      * 但那时 BROWSE 已经选中，`selected = it` 不产生任何状态变化，页面收不到信号。
@@ -77,7 +77,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
     LaunchedEffect(recommendState) { recommendState.initialize() }
     val snackbar = remember { SnackbarHostState() }
 
-    // **启动静默自检**（F-20）：后台并发探一次各源，红灯写日志、设置页亮灯。
+    // **启动静默自检**：后台并发探一次各源，红灯写日志、设置页亮灯。
     // 放在 IO 上跑，绝不阻塞首屏；失败了也无所谓（自检本身不该影响使用）。
     LaunchedEffect(Unit) {
         // 用**应用级作用域**跑：composition 被取消也不能掐断自检（否则会误报红灯）
@@ -85,7 +85,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
     }
 
     /**
-     * 书架章节刷新（F-271，2026-10-29 用户要求）。
+     * 书架章节刷新（用户要求）。
      *
      * 先把「看过的话数」读进内存（绿点要立刻显示，不能等网络），
      * 再按设置里的档位决定要不要在启动时自动刷一轮：
@@ -106,7 +106,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
                 if (item == NavItem.BROWSE && selected == NavItem.BROWSE) browseNavClick++
                 selected = item
             },
-            // 无边框窗口没有系统关闭按钮：右上角那颗 X 走这条路（F-60）
+            // 无边框窗口没有系统关闭按钮：右上角那颗 X 走这条路
             onClose = onClose,
         ) {
             // 除书架外，其余页面统一在顶部让出拖拽带：
@@ -142,20 +142,20 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
                     // 且它的右键菜单/置顶逻辑是回滚参照。
                     NavItem.LIBRARY -> BookshelfScreen(
                         repository = repository,
-                        // F-143（2026-10-27 用户口径）：「在书架页点击漫画封面时，
+                        // （用户口径）：「在书架页点击漫画封面时，
                         // 在**该书架页内**展示二级详情页」——不再把用户拽去浏览页。
                         // 面板里的「阅读」直接进阅读器。
                         onRead = openReader,
                         onOpenBrowser = { url, domain -> browserTarget = url to domain },
                         // 「继续阅读 → 查看全部」进历史页
                         onSeeAllHistory = { selected = NavItem.HISTORY },
-                        // 空书架的「去推荐页看看」（用户 2026-10-28）
+                        // 空书架的「去推荐页看看」
                         onOpenRecommend = { selected = NavItem.RECOMMEND },
                         // 顶栏搜索键：把词带去浏览页做全网搜索（书架内过滤是输入框实时做的）
                         onSearch = { q ->
                             browseKeyword = q.ifBlank { null }
                             // **必须清掉**：不清的话上一次从书架点开的那本书还在，
-                            // 浏览页一进去就直接打开它的详情页（用户 2026-10-26 实测
+                            // 浏览页一进去就直接打开它的详情页（实测
                             // 「输入第一个字马上跳转到浏览页内的详情页」就是这个）。
                             browsePrefill = null
                             selected = NavItem.BROWSE
@@ -215,14 +215,14 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
                             browseAutoSearch = false
                         },
                     )
-                    // R-04：下载管理页（任务进度 / 重试 / 删除 / 直接阅读已缓存章节）
+                    // 下载管理页（任务进度 / 重试 / 删除 / 直接阅读已缓存章节）
                     // 2026-10-27 第六批：点书名在本页弹出二级详情
                     NavItem.DOWNLOADS -> DownloadsScreen(
                         repository = repository,
                         onRead = openReader,
                         onOpenBrowser = { url, domain -> browserTarget = url to domain },
                     )
-                    // F-03：真设置页（WebDAV 备份 / 本地备份 / mihon 导入）
+                    // 真设置页（WebDAV 备份 / 本地备份 / mihon 导入）
                     NavItem.SETTINGS -> SettingsScreen(
                         repository = repository,
                         backupManager = AppGraph.backupManager

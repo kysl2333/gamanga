@@ -59,7 +59,7 @@ fun RemoteImage(
     dynamicRatio: Boolean = false,
     fallbackRatio: Float = 0.7f,
     /**
-     * 采样质量（批次46）。默认 `Low`（双线性、无 mipmap）。
+     * 采样质量。默认 `Low`（双线性、无 mipmap）。
      *
      * **阅读器整页必须传 `Medium`**：一页扫描图 3000×4000 被缩到 800×1000 左右显示，
      * `Low` 等于每帧让 GPU 从 48MB 的纹理里双线性采样——缩得越狠、采样点越散，
@@ -68,7 +68,7 @@ fun RemoteImage(
      * （`High` 是双三次，更慢，不要用在这个尺寸上。）
      */
     filterQuality: FilterQuality = FilterQuality.Low,
-    /** 真实宽高比出来时回调一次（R-98：调用方用它学习本章的真实比例，避免下次再猜错）。 */
+    /** 真实宽高比出来时回调一次（：调用方用它学习本章的真实比例，避免下次再猜错）。 */
     onRatioKnown: ((Float) -> Unit)? = null,
     /** 阅读器离屏预组合不应触发下载；其它调用点保持默认行为。 */
     loadEnabled: Boolean = true,
@@ -214,7 +214,7 @@ object ImageCache {
     /**
      * **同步**取缓存（不下载、不解码）。
      *
-     * R-98 十一轮：往上滑时新进入视口的项在**顶部**，它一改高度，下面全部内容就整体位移——
+     * 十一轮：往上滑时新进入视口的项在**顶部**，它一改高度，下面全部内容就整体位移——
      * 这就是"只有往上回弹"的原因。如果这张图已经预热好了，就应该在**第一帧**就用真实比例
      * 布局（高度一次到位、永不变化），而不是先按猜的比例摆一次再改。
      */
@@ -324,7 +324,7 @@ object ImageCache {
             // 大图解码几十毫秒，快速滚动时连续触发就会卡帧（用户实测
             // 「滚动太快图片没加载出来时卡了几秒，以为程序卡死了」）。
             val bitmap = withContext(Dispatchers.IO) {
-                // R-04 下载：已落盘章节的页面走 file://（阅读不再调源站，不烧配额）。
+                // 下载：已落盘章节的页面走 file://（阅读不再调源站，不烧配额）。
                 // Skia 按魔术数字识别真实格式，本地文件扩展名不影响解码。
                 // 前缀匹配 "file:" 而非 "file://"：Path.toUri() 给 file:///，
                 // 个别手搓 URI 可能是 file:/ 单斜杠形态，都放行。
@@ -339,7 +339,7 @@ object ImageCache {
             synchronized(cache) { putLocked(key, bitmap) }
             bitmap
         } catch (e: kotlinx.coroutines.CancellationException) {
-            // **取消必须原样抛出**（R-45 的教训）：快速滚动时上一张图的加载会被取消，
+            // **取消必须原样抛出**（教训）：快速滚动时上一张图的加载会被取消，
             // 吞掉它会让上层 LaunchedEffect 以为「加载完了但没图」，白占一个槽位。
             throw e
         } catch (t: Throwable) {

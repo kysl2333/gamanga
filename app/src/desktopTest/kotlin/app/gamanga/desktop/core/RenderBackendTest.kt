@@ -6,7 +6,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * 渲染后端开关（2026-10-30 批次46，用户问「我的程序没有使用硬件加速吗」）。
+ * 渲染后端开关（用户问「我的程序没有使用硬件加速吗」）。
  *
  * 这里只锁**纯逻辑**：偏好怎么翻译成 `skiko.renderApi`、枚举名怎么变成人话。
  * 「实际跑的是哪个后端」没法在单测里断言（要真窗口 + 真 GPU），

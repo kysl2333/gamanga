@@ -19,7 +19,7 @@ import kotlinx.serialization.json.jsonObject
 /**
  * 拷贝漫画源适配（第八轮 #9，第十轮域名修正）。
  *
- * **域名（用户 2026-10-24 第十二轮后重新指定）**：
+ * **域名**：
  * - 官方地址：`api.mangacopy.com`（**主**，用户要求用这个，不再用 copy4000）
  * - 备用：`api.copy4000.com`（大陆可达；仅在主域名连接失败时兜底）
  * - 旧 `api.copymanga.com`：大陆 DNS 污染不可达，弃用
@@ -46,12 +46,12 @@ import kotlinx.serialization.json.jsonObject
 class CopymangaSource(
     override val type: SourceType = SourceType.COPYMANGA,
     override val displayName: String = "拷贝漫画",
-    /** 网页站地址（DOM 模式 / 浏览器打开 / Referer 用；F-22 可配）。 */
+    /** 网页站地址（DOM 模式 / 浏览器打开 / Referer 用；可配）。 */
     // 与 SourceConfig.DEFAULTS 保持一致（正常启动由 Sources 显式传值）
     webBase: String = "https://www.mangacopy.com",
-    /** 接口地址候选（主在前，连接失败按序重试；F-22 可配）。 */
+    /** 接口地址候选（主在前，连接失败按序重试；可配）。 */
     apiBases: List<String> = listOf("https://api.mangacopy.com", "https://api.copy4000.com"),
-    /** 路径模板（F-36）：`search` / `detail` / `detailAlt` / `chapter`；空 = 内置默认。 */
+    /** 路径模板：`search` / `detail` / `detailAlt` / `chapter`；空 = 内置默认。 */
     paths: Map<String, String> = emptyMap(),
     /** 可替换的只读取数边界，离线测试覆盖缓存/冷却的真实调用链。 */
     private val apiReader: (suspend (String) -> String)? = null,
@@ -73,7 +73,7 @@ class CopymangaSource(
     /** 内嵌浏览器落地校验用的 host（去掉 `www.`，站点会自己跳 www）。 */
     private val webHost: String = hostOf(this.webBase).removePrefix("www.")
 
-    /** API 地址候选（按序尝试，官方域名优先——用户 2026-10-24 指定）。 */
+    /** API 地址候选（按序尝试，官方域名优先——指定）。 */
     private val apiBases: List<String> = normalizeBases(apiBases)
         .ifEmpty { listOf("https://api.mangacopy.com") }
 
@@ -491,7 +491,7 @@ class CopymangaSource(
  * 旧实现就退化成 path_word（拼音）。现在按 title 属性 → img.alt → 上级容器里的
  * 标题元素 → 容器文本 依次取，最后才用 path_word。
  */
-/** 路径模板默认值（F-36）：改版时可在 `sources.json` 的 `paths` 段覆盖。 */
+/** 路径模板默认值：改版时可在 `sources.json` 的 `paths` 段覆盖。 */
 private val COPY_DEFAULT_PATHS: Map<String, String> = mapOf(
     "search" to "/search?q={kw}",
     "detail" to "/comic/{id}",

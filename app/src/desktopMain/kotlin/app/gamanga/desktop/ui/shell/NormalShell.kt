@@ -61,7 +61,7 @@ import kotlinx.coroutines.delay
  * 正常模式外壳（阶段 4，2026-10-26）。
  *
  * 取代 [AppNavRail] 的左侧竖栏：底部浮空纯图标菜单 + 右上角窗口关闭键 + 全宽页面区。
- * 视觉依据是 `docs/ui/prototype/bookshelf-3x2.html`，交互细节按用户 2026-10-26 实测反馈调整过。
+ * 视觉依据是 `docs/ui/prototype/bookshelf-3x2.html`，交互细节按实测反馈调整过。
  *
  * **硬约束**（改这个文件前先读）：
  * 1. **关窗键必须在壳层**，不放进页面——窗口无系统边框，这是唯一出口；放页面里会切页重建、新增页面漏掉。
@@ -90,7 +90,7 @@ internal fun NormalShell(
             Modifier
                 .fillMaxSize()
                 //
-                // **上下都不让位**（用户 2026-10-27 两轮反馈：dock 下面一条白带、顶部一条白带）。
+                // **上下都不让位**（两轮反馈：dock 下面一条白带、顶部一条白带）。
                 //
                 // 让位的本质是「页面区缩小 → 空出来的地方露出页面底色 = 白带」。
                 // 所以壳层不再给任何浮层腾布局空间：
@@ -115,7 +115,7 @@ internal fun NormalShell(
         BottomDock(
             selected = selected,
             onSelect = onSelect,
-            // 实测**白色胶囊本体**的矩形 → 写进 [DockMetrics]（R-174，2026-10-30）。
+            // 实测**白色胶囊本体**的矩形 → 写进 [DockMetrics]。
             // 原来量的是 BottomDock 最外层那个 Row（= 推荐按钮 + 间距 + 胶囊），
             // 它的中心恰好就是窗口中心 → centerOffsetX 永远是 0，
             // 于是多选条永远偏左 32dp（用户截图里那两个圆钮就歪在菜单栏左边）。
@@ -152,7 +152,7 @@ internal val DragStripHeight = 36.dp
 internal val DockReservedHeight = 88.dp
 
 /**
- * dock 的**实测几何**（2026-10-29 R-160）。
+ * dock 的**实测几何**。
  *
  * ## 为什么改成实测
  *
@@ -224,7 +224,7 @@ private fun WindowCloseButton(onClose: () -> Unit, modifier: Modifier = Modifier
         animationSpec = tween(Tokens.Motion.HoverMs),
         label = "closeScale",
     )
-    // 三态：按住 = 亮红实心 + 白 X（用户 2026-10-26 要求）；悬停 = 淡红底红 X；常态 = 淡灰
+    // 三态：按住 = 亮红实心 + 白 X；悬停 = 淡红底红 X；常态 = 淡灰
     val bg by animateColorAsState(
         targetValue = when {
             pressed -> Tokens.Color.Danger
@@ -273,7 +273,7 @@ private fun WindowCloseButton(onClose: () -> Unit, modifier: Modifier = Modifier
  *
  * 选中项名称显示在 dock **上方的浮标**里（不是撑宽 dock）——见文件头第 3 条约束。
  *
- * 名称的显示规则（F-70，用户 2026-10-26 第二次口径）：
+ * 名称的显示规则：
  * - **只有点击后才出现**，不再跟着选中态常驻；
  * - 出现后 **[BUBBLE_VISIBLE_MS] = 1 秒自动消失**；
  * - **没有外框/底色/阴影**，文字直接浮在页面上；
@@ -287,7 +287,7 @@ private fun BottomDock(
     onBounds: (androidx.compose.ui.geometry.Rect) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    // 下载中状态：dock 的「下载」图标要变成动的（用户 2026-10-26 要求）。
+    // 下载中状态：dock 的「下载」图标要变成动的。
     // 只要有 QUEUED / DOWNLOADING 的任务就算「下载中」——排队也是在进行，
     // 用户点完下载立刻能看到反馈，不用等第一页真的开始。
     val downloadTasks by app.gamanga.desktop.data.AppGraph.downloadManager.tasks.collectAsState()
@@ -298,13 +298,13 @@ private fun BottomDock(
         }
     }
 
-    // 「正在搜索 / 刚搜完」：dock 的**浏览**按钮要跟着动（用户 2026-10-27 要求）
+    // 「正在搜索 / 刚搜完」：dock 的**浏览**按钮要跟着动
     val searchPhase by app.gamanga.desktop.ui.search.SearchStatus.phase.collectAsState()
     var searchDone by remember { mutableStateOf(false) }
     LaunchedEffect(searchPhase) {
         if (searchPhase == app.gamanga.desktop.ui.search.SearchStatus.Phase.Done) {
             searchDone = true
-            // 用户 2026-10-27：「打勾时图标背景颜色从 UI 蓝渐变成绿色然后再过 2 秒渐变回来」
+            // 「打勾时图标背景颜色从 UI 蓝渐变成绿色然后再过 2 秒渐变回来」
             // → 绿色**保持 2 秒**再退（上一版 1.6 秒，还没看清就没了）
             delay(2_000)
             searchDone = false
@@ -313,7 +313,7 @@ private fun BottomDock(
     }
 
     // 「刚下载完」状态：全部任务结束的那一刻，下载图标变成绿色打勾并停 5 秒
-    // （用户 2026-10-26：「全部任务下载完成后会变成好看的纯绿色图标变成打勾的图标停 5 秒
+    // （「全部任务下载完成后会变成好看的纯绿色图标变成打勾的图标停 5 秒
     // 然后正常恢复到最初按钮状态」）。
     var showDone by remember { mutableStateOf(false) }
     var everDownloaded by remember { mutableStateOf(false) }
@@ -355,7 +355,7 @@ private fun BottomDock(
     val liftPx = with(LocalDensity.current) { 6.dp.toPx() }
 
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        // 推荐按钮：**在 dock 框外**、最前面（用户 2026-10-26 明确要求「不在菜单栏框内」）
+        // 推荐按钮：**在 dock 框外**、最前面（要求「不在菜单栏框内」）
         RecommendButton(
             active = selected == NavItem.RECOMMEND,
             onClick = { onSelect(NavItem.RECOMMEND) },
@@ -443,7 +443,7 @@ private fun RecommendButton(active: Boolean, onClick: () -> Unit) {
     val hovered by interaction.collectIsHoveredAsState()
     val pressed by interaction.collectIsPressedAsState()
 
-    // 视觉**和 dock 里的按钮完全一致**（用户 2026-10-27：「这个推荐按钮还是像其他菜单按钮
+    // 视觉**和 dock 里的按钮完全一致**（「这个推荐按钮还是像其他菜单按钮
     // 一样的图标风格吧」）。之前那套玻璃/渐变/内高光全部删掉——它既有白圈又和邻居不搭。
     // 区别只剩三处：①它在 dock 框**外面**；②常态不涨水；③hover 只加阴影（用户最初的口径）。
     val level by animateFloatAsState(
@@ -509,7 +509,7 @@ private fun RecommendButton(active: Boolean, onClick: () -> Unit) {
 
 
 /**
- * 单个 dock 按钮：水位波浪三态（用户 2026-10-26 要求）。
+ * 单个 dock 按钮：水位波浪三态。
  *
  * - **常态**：无波浪，灰图标；
  * - **悬停**：蓝色波浪在图标中间流动（水位 42%，图标在水面之上）；
@@ -540,17 +540,16 @@ private fun DockButton(
         animationSpec = tween(400, easing = Tokens.Motion.DrawerEasing),
         label = "dockLevel",
     )
-    // ---- 下载中动效（用户 2026-10-26）----
+    // ---- 下载中动效----
     // 「图标变成能动的下载按钮动效」+「图标背景为鼠标碰到按钮那样的中间开始波浪」+
     // 「颜色是搜索按钮点击按住时的那几个柔和颜色」。
     // 水位固定 0.55（比 hover 的 0.42 高一点，能看出「在忙」），颜色从柔和色板里随机挑一个。
-    // 颜色要**流动**，不是随机定一色（用户 2026-10-26：「波浪没有变色，而是一个随机颜色的单色」）
+    // 颜色要**流动**，不是随机定一色（「波浪没有变色，而是一个随机颜色的单色」）
     // 用 State + colorProvider：换色只重绘不重组（否则每 1.4 秒整颗按钮重组 = 卡一下）
-    // 下载 / 搜索共用这套「忙碌」表现（用户 2026-10-27：「像下载按钮一样」）
+    // 下载 / 搜索共用这套「忙碌」表现
     val busy = downloading || searching
     val downloadColorState = rememberCyclingColorState(active = busy && !flooded)
-    // 完成态：进场 320ms（干脆），**退场 700ms + 缓出**（用户 2026-10-27：
-    // 「完成时的动效转换太过生硬」——上一版进退都是 400ms 线性，绿底「啪」地消失）
+    // 完成态：进场 320ms（干脆），**退场 700ms + 缓出**（    // 「完成时的动效转换太过生硬」——上一版进退都是 400ms 线性，绿底「啪」地消失）
     val doneLevel by animateFloatAsState(
         targetValue = if (done) 1f else 0f,
         animationSpec = tween(
@@ -561,7 +560,7 @@ private fun DockButton(
     )
     // 水位：
     // - 下载中 → 固定 0.55（「有活儿在跑」的稳定水位）
-    // - **搜索中 → 呼吸 0.30 ↔ 0.72**（用户 2026-10-27：「搜索中的特效还是像鼠标碰到按钮时的
+    // - **搜索中 → 呼吸 0.30 ↔ 0.72**（「搜索中的特效还是像鼠标碰到按钮时的
     //   中间波浪带颜色变化」——hover 是固定的 0.42，所以搜索必须用「会呼吸的水位」区分开）
     val busyLevel by animateFloatAsState(
         targetValue = if (busy && !flooded) 1f else 0f,
@@ -611,7 +610,7 @@ private fun DockButton(
     // 波浪只在「没被水淹没」时才流动——满水时再晃就是水面抖，很脏
     val phaseState = rememberWavePhaseState(active = (hovered && !flooded) || busy)
     // amplitude **必须动画过渡**：上一版直接按 hover 赋 0/0.05，鼠标一碰水面起伏瞬间从 0
-    // 跳到 5% —— 那就是用户说的「还是有跳动，没有连贯」。相位连续不代表振幅连续。
+    // 跳到 5% —— 那就是的「还是有跳动，没有连贯」。相位连续不代表振幅连续。
     val amplitude by animateFloatAsState(
         targetValue = when {
             hovered && !flooded -> 0.05f
@@ -628,7 +627,7 @@ private fun DockButton(
         label = "dockTint",
     )
 
-    // ---- 完成态：蓝 ⇄ 绿 的颜色渐变 + 图标弹簧互换（用户 2026-10-27）----
+    // ---- 完成态：蓝 ⇄ 绿 的颜色渐变 + 图标弹簧互换----
     //
     // 用户原话：「搜索后菜单键浏览页按钮的图标从一个放大镜到一个打勾应该有一个自然来回
     // 切换的动效，且打勾时图标背景颜色从 UI 蓝渐变成绿色然后在过 2 秒渐变回来」。

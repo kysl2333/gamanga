@@ -262,13 +262,13 @@ class MangabzSourceTest {
     @Test
     fun `source links know the new domains`() {
         assertEquals("https://www.mangabz.com/1864bz/", browserUrl(SourceType.MANGABZ, "1864"))
-        // 拷贝漫画：用户 2026-10-24 指定官方地址 mangacopy.com（不再用 copy4000）
+        // 拷贝漫画：指定官方地址 mangacopy.com（不再用 copy4000）
         assertEquals("https://www.mangacopy.com/comic/qiankezhe", browserUrl(SourceType.COPYMANGA, "qiankezhe"))
         assertEquals("www.mangabz.com", domainOf(SourceType.MANGABZ))
         assertEquals("www.mangacopy.com", domainOf(SourceType.COPYMANGA))
         assertEquals("Mangabz", sourceNameOf(SourceType.MANGABZ))
         assertEquals("拷贝漫画", sourceNameOf(SourceType.COPYMANGA))
-        // 空结果兜底入口：搜索页地址（ADR-0002 降级路径）
+        // 空结果兜底入口：搜索页地址（AD降级路径）
         assertEquals(
             "https://www.mangacopy.com/search?q=%E6%B5%B7%E8%B4%BC%E7%8E%8B",
             searchUrlOf(SourceType.COPYMANGA, "海贼王")

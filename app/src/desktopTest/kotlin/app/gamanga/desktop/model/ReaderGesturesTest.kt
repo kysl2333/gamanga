@@ -6,14 +6,14 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * 阅读器手势/布局纯函数（R-29 滚轮翻页 · R-30 适应高度 · R-31 滚轮缩放）。
+ * 阅读器手势/布局纯函数（滚轮翻页 · 适应高度 · 滚轮缩放）。
  *
- * 这些断言锁住的是用户 2026-10-22 实测指定的行为；UI 层（ReaderScreen）只负责调用。
+ * 这些断言锁住的是实测指定的行为；UI 层（ReaderScreen）只负责调用。
  * 浮点都用二进制精确的宽高比（0.5/0.75/2.0/0.125），断言值是精确值。
  */
 class ReaderGesturesTest {
 
-    // ---- fitHeightColumnWidth：适应高度（R-30）----
+    // ---- fitHeightColumnWidth：适应高度----
 
     @Test
     fun `normal page fits viewport height`() {
@@ -33,7 +33,7 @@ class ReaderGesturesTest {
         assertEquals(512f, fitHeightColumnWidth(1280f, 800f, 0.125f))
     }
 
-    // ---- wheelZoomStep：Ctrl+滚轮 / 侧滚轮缩放（R-31）----
+    // ---- wheelZoomStep：Ctrl+滚轮 / 侧滚轮缩放----
 
     @Test
     fun `ctrl wheel zooms`() {
@@ -53,7 +53,7 @@ class ReaderGesturesTest {
         assertNull(wheelZoomStep(scrollY = -1f, scrollX = 0f, ctrl = false, step = 0.1f))
     }
 
-    // ---- wheelPageForward：滚轮翻页（R-29）----
+    // ---- wheelPageForward：滚轮翻页----
 
     @Test
     fun `wheel direction is independent of reading direction`() {
@@ -188,7 +188,7 @@ class ReaderGesturesTest {
         assertEquals(-300f, edgeOverscroll(previous = 0f, requested = -300f, edge = ChapterEdge.PREV))
     }
 
-    // ---- inCenterTapBand：沉浸模式中心轻点带（R-43）----
+    // ---- inCenterTapBand：沉浸模式中心轻点带----
 
     @Test
     fun `center tap band covers the middle 30 percent`() {
@@ -212,7 +212,7 @@ class ReaderGesturesTest {
 }
 
 /**
- * 预加载窗口（R-100 回归）。
+ * 预加载窗口（回归）。
  *
  * 2026-10-24 线上崩溃：换话时 `pages` 变空，`coerceIn(0, -1)` 抛
  * `Cannot coerce value to an empty range`，炸在 AWT 事件线程上。

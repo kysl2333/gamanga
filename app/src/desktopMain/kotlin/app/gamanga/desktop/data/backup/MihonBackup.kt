@@ -18,7 +18,7 @@ data class MihonManga(
     val dateAdded: Long,
     val chapters: List<MihonChapter>,
     /**
-     * 备份里自带的封面图字节（R-170，2026-10-30）。
+     * 备份里自带的封面图字节。
      *
      * mihon 正典 `.tachibk` **不含**图片，但部分分支/魔改版会塞进去。用户口径：
      * 「如果备份里面有图片可以原封不动的使用这张自定义图片」→ 有就用，没有就退回 `thumbnailUrl`。
@@ -26,9 +26,9 @@ data class MihonManga(
      */
     val coverBytes: ByteArray? = null,
     /**
-     * 这一部在 mihon 里**在书架**（`BackupManga.favorite = 100`，R-178）。
+     * 这一部在 mihon 里**在书架**（`BackupManga.favorite = 100`）。
      *
-     * 用户 2026-10-30 口径：「备份书架是指，只选择书架的书恢复……而选择历史就是把历史的书
+     * 「备份书架是指，只选择书架的书恢复……而选择历史就是把历史的书
      * 给勾选出来」——所以导入范围要按这个标志筛，不能一律全导。
      *
      * 老备份/魔改版可能没有这个字段（`bool(100)` 返回 null）→ **默认 true**：
@@ -61,7 +61,7 @@ fun parseMihonBackup(gzipped: ByteArray): MihonBackupResult {
     val mangas = ArrayList<MihonManga>()
     val skipped = ArrayList<String>()
     for (m in top.messages(1)) { // Backup.backupManga
-        // 2026-10-29（F-275）：字段号用「多候选」读——用户问「很早之前的备份还能用吗」，
+        // 2026-10-29：字段号用「多候选」读——用户问「很早之前的备份还能用吗」，
         // 历代 mihon / Tachiyomi 把缩略图、章节列表的字段号挪过位，硬读单一字段号
         // 会把老备份读成「有书名没章节」。只要 url + title 还在，这一部就救得回来。
         val url = m.stringAny(2, 1) ?: continue
@@ -140,9 +140,9 @@ fun mihonUrlToSource(url: String): Pair<SourceType, String>? {
 }
 
 /**
- * mihon 章节 ↔ 本地章节列表的匹配（F-03 导入观看历史用；F-275 改为**按名字优先**）。
+ * mihon 章节 ↔ 本地章节列表的匹配（导入观看历史用；改为**按名字优先**）。
  *
- * 用户 2026-10-29 口径：「需要换源和对齐章数的**名字**而不是第几章」。
+ * 「需要换源和对齐章数的**名字**而不是第几章」。
  * 原因是源站之间话数经常对不上：mihon 里记的是「第 52 话」，换到的源把它拆成
  * 「第 52 话 上 / 下」两章，或者干脆从 1 重新编号 —— 按序号对齐必然错位，
  * 而「第 52 话」这个名字本身在大多数源上是稳定的。
@@ -233,7 +233,7 @@ fun chapterKey(raw: String): String {
 /**
  * 默认「别称」：拿标题去掉装饰符后的样子当搜索词（用户可在导入向导里改）。
  *
- * 源站搜索按子串匹配，`『』【】！` 这类符号会让整串命中率掉到 0（F-272 同一个根因），
+ * 源站搜索按子串匹配，`『』【】！` 这类符号会让整串命中率掉到 0（同一个根因），
  * 所以默认就给一个干净的词，用户不用自己删。
  */
 fun defaultSearchAlias(title: String): String {

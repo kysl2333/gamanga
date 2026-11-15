@@ -154,7 +154,7 @@ data class ReaderTarget(
     /** 已入书架时的本地 id；用于记录进度/已读。null = 只在书架外试读。 */
     val localMangaId: String? = null,
     /**
-     * 封面地址（R-123）。书架外的书也要进历史，而历史条目要显示封面——
+     * 封面地址。书架外的书也要进历史，而历史条目要显示封面——
      * 没有这一项就只能显示纯色占位块。可空：调用方拿不到封面时不影响功能。
      */
     val coverUrl: String? = null,
@@ -167,18 +167,18 @@ data class ReaderTarget(
  * ← / PageUp / ↑ 上一页，→ / PageDown / ↓ / 空格 下一页，
  * `[` `]` 切上一话/下一话，Esc 退出。
  *
- * 滚轮（R-29 翻页/下滑 · R-31 缩放手势，用户 2026-10-22 实测指定）：
+ * 滚轮（翻页/下滑 · 缩放手势，实测指定）：
  * 竖向连续 = 持续下滑；单页/双页 = 翻页（与 PageDown 同语义，RTL 反转）；
  * Ctrl+滚轮 / 鼠标侧滚轮 = 缩放（上滚/右滚放大）。
  *
- * 默认按「适应高度」显示（R-30）：竖向列宽 = 视口高 × 宽高比，页模式格子取真实
+ * 默认按「适应高度」显示：竖向列宽 = 视口高 × 宽高比，页模式格子取真实
  * 适应高度尺寸——都不再默认拉满整屏。
  *
- * 页模式放大（zoom>100%）后左键拖着看（用户 2026-10-23 要求）：平移量按放大余量
+ * 页模式放大（zoom>100%）后左键拖着看：平移量按放大余量
  * 夹紧（panLimit/clampPan），放大图永远铺满视口；没放大时横向滑动 = 翻页。
  * 竖向模式放大超过视口宽时同样可横向拖动（hScroll），并给"可拖动"光标提示。
  * 双页的缩放作用于**整行**（绕行中心）——旧实现每页各自绕自身中心缩放，
- * 缩小时中间裂缝、放大时两页互相重叠（用户 2026-10-23 实测）。
+ * 缩小时中间裂缝、放大时两页互相重叠。
  *
  * 章节边界跳话带「蓄力」：撞到边界后同向滚动要累计约两格滚轮
  * （EDGE_JUMP_ACCUM_PX）才跳，单格误触只累积不跳（用户实测"滚轮很容易
@@ -196,12 +196,12 @@ fun ReaderScreen(
     onOpenBrowser: () -> Unit,
     /** 打开该源的登录页（null = 这个源没有/不建议登录）。 */
     onOpenLogin: (() -> Unit)? = null,
-    /** R-04 下载管理器：已落盘章节读本地，不调源站（省配额/不拉浏览器）。 */
+    /** 下载管理器：已落盘章节读本地，不调源站（省配额/不拉浏览器）。 */
     downloadManager: DownloadManager = AppGraph.downloadManager
 ) {
     val adapter = remember(target.type) { Sources.of(target.type) }
     /**
-     * 详情二级页宿主（F-143）：阅读器内也能弹详情。
+     * 详情二级页宿主：阅读器内也能弹详情。
      *
      * 阅读器手上只有 [ReaderTarget]，没有完整的书架条目，所以从 target 还原一个
      * [SourceManga]——详情面板需要的字段（标题 / 封面 / 源站 id）它都有。
@@ -227,7 +227,7 @@ fun ReaderScreen(
     var currentPage by remember { mutableIntStateOf(if (index == initialIndex) savedPage else 0) }
 
     // ---- 滑动诊断日志（2026-10-25）----
-    // **默认关闭**：R-98 排查期间它是把回弹钉死的关键证据，但平时刷日志只会撑大文件。
+    // **默认关闭**：排查期间它是把回弹钉死的关键证据，但平时刷日志只会撑大文件。
     // 需要排查时用 `-Dgamanga.scrolllog=1` 启动，tag = Scroll。
     val sSeq = remember { intArrayOf(0) }
     fun sLog(msg: String) {
@@ -236,7 +236,7 @@ fun ReaderScreen(
     /** 换话或点「重试」时自增，驱动下面取图的 LaunchedEffect 重跑。 */
     var reloadKey by remember { mutableIntStateOf(0) }
 
-    // **列表状态必须在整个阅读器生命周期里唯一**（R-122，2026-10-26 用户实测
+    // **列表状态必须在整个阅读器生命周期里唯一**（用户实测
     // 「条漫滚动翻页失效、换话后一滚就提示下一话，切模式才好」）。
     //
     // 历史：2026-10-25 为了修「切上一话不回第一页」，这里写成了 `remember(index)`，
@@ -248,7 +248,7 @@ fun ReaderScreen(
     // 切模式会让 `when(mode)` 分支整体重建、pointerInput 重新捕获，所以「切一下就好」。
     //
     // 现在改成唯一实例，换话回第一页由 loadChapterPages 里显式 `scrollToItem` 保证
-    // （那里本来就有，R-115 的另一个半边）——**不要再把 index 加回 remember 的 key**。
+    // （那里本来就有，的另一个半边）——**不要再把 index 加回 remember 的 key**。
     val listState = remember { LazyListState() }
     val focus = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
@@ -323,7 +323,7 @@ fun ReaderScreen(
     }
 
 
-    // ---- 章节边界跳转（用户 2026-10-22 要求：第一页再往上 = 上一话的第一页；
+    // ---- 章节边界跳转（第一页再往上 = 上一话的第一页；
     // 最后一页再往下 = 下一话；最后一话读完给结束面板而不是静默无反应）----
     /** 跳话冷却：新话要异步取图，冷却期内继续滚不连环跳。 */
     var lastChapterJumpAt by remember { mutableStateOf(0L) }
@@ -338,7 +338,7 @@ fun ReaderScreen(
      */
     var edgeAccum by remember { mutableFloatStateOf(0f) }
     /**
-     * 沉浸模式开关（R-43）：true = 显示顶栏 + 控件栏（默认）；
+     * 沉浸模式开关：true = 显示顶栏 + 控件栏（默认）；
      * 轻点画面中心带切成 false，两条栏滑退、内容区补齐全屏。
      * 只影响 chrome，不影响任何输入——滚轮/键盘/轻点翻页在沉浸下全部可用。
      */
@@ -366,7 +366,7 @@ fun ReaderScreen(
      * `awt.dll` 访问违例就是这么来的；退出时窗口又跳回 AWT 记忆的旧尺寸，所以"很不自然"。
      *
      * 第二轮改成 190ms 逐帧插值 `bounds`，**还是卡**——12 次窗口矩形变化 = 12 次交换链 resize
-     * + 整窗重新布局 + 漫画页按新视口重新 Fit。用户 2026-10-30 第三轮明确：
+     * + 整窗重新布局 + 漫画页按新视口重新 Fit。第三轮明确：
      * 「把窗口和全屏的动画移除，让它能一下就变成全屏」。所以现在 [ReaderFullscreen.toggle]
      * 是**同步、一次赋值**，这里不再需要 `scope.launch`。
      */
@@ -434,11 +434,11 @@ fun ReaderScreen(
      */
     var pageIndex by remember { mutableIntStateOf(0) }
 
-    // R-98：条漫「上拖一小段又回弹、页面原地踏步」= 占位比例猜错。
+    // 条漫「上拖一小段又回弹、页面原地踏步」= 占位比例猜错。
     // 源站不下发宽高时按 0.7 占位，扫描漫画（一页其实是跨页扫描）真实比例常在 1.3~1.5，
     // 图片加载完 item 高度骤减 → LazyColumn 锚点被拉回 → 表现为往上滑不动。
     // 对策：**学习本章真实比例**（取已加载页的中位数），存进 appPrefs，下次进同一话直接真值占位。
-    // R-98 九轮：**每页比例都不一样**（日志实测同一话 0.36 / 0.48 / 2.24），
+    // 九轮：**每页比例都不一样**（日志实测同一话 0.36 / 0.48 / 2.24），
     // 「学一个统一比例」从根上就错了。改成**滚动锚点补偿**：记下每项实测高度，
     // 当**可视区上方**的项高度变化时，把滚动位置补回去，视觉上纹丝不动。
     val itemHeights = remember(index) { HashMap<Int, Int>() }
@@ -469,10 +469,10 @@ fun ReaderScreen(
         loading = true
         error = null
         pages = emptyList()
-        // R-122：`listState` 现在是全局唯一实例，换话不会自动归零——必须显式归零，
-        // 否则新一章会停在上话的 firstVisibleItemIndex 上（= R-115 复活）。
+        // `listState` 现在是全局唯一实例，换话不会自动归零——必须显式归零，
+        // 否则新一章会停在上话的 firstVisibleItemIndex 上（= 复活）。
         //
-        // **R-125（2026-10-26 用户实测「下载页点阅读只有进度条，切一下条漫才出图」）**：
+        // **（用户实测「下载页点阅读只有进度条，切一下条漫才出图」）**：
         // 这里**绝对不能**用 suspend 的 `scrollToItem`。`LazyListState.scroll` 内部会
         // `awaitScrollDependencies()`——**等列表 attach 才继续**。而单页/双页模式下
         // 根本没有 LazyColumn（只有 `mode == VERTICAL` 才建），于是这个 await
@@ -481,12 +481,12 @@ fun ReaderScreen(
         // `requestScrollToItem` 是**非挂起**的：只把目标位置写进 scroll position，
         // 列表下一次测量时生效，与是否 attach 无关。
         listState.requestScrollToItem(0)
-        // R-45 复发修复：换话/重试会取消上一次取图协程，取消不是失败——
+        // 复发修复：换话/重试会取消上一次取图协程，取消不是失败——
         // 吞掉 CancellationException 会让"僵尸协程"把 error 盖回已经出图的新章节，
         // 表现为「切到有缓存的章节也取图失败，点重试就好」。详见 loadChapterPages。
         loadChapterPages(
             load = {
-                // R-04：已完整落盘的章节直接读本地文件——不调 adapter.pages()，
+                // 已完整落盘的章节直接读本地文件——不调 adapter.pages()，
                 // Komiic 不再烧每日配额、G社 不再拉隐藏浏览器跑解密器。
                 val localId = target.localMangaId
                 val chId = chapter?.id
@@ -502,7 +502,7 @@ fun ReaderScreen(
                 } else {
                     withContext(Dispatchers.IO) { adapter?.pages(chId.orEmpty()) ?: emptyList() }
                 }
-                // R-98 三轮：**先把「马上要显示的那一页」拉下来，用它的真实比例定占位，再渲染列表。**
+                // 三轮：**先把「马上要显示的那一页」拉下来，用它的真实比例定占位，再渲染列表。**
                 // 只在顶部学习比例的做法救不了「从第 90 页续读」——那时 firstVisibleItemIndex 已经是 90，
                 // 永远学不到，占位一直是猜的 0.7；图片一加载 item 高度减半 → 锚点回拉 → 回弹。
                 // 这一页本来就要显示，所以不是额外浪费（顺带把它烘进缓存）。
@@ -554,9 +554,9 @@ fun ReaderScreen(
         val restoreTo = if (index == initialIndex) savedPage else 0
         sLog("chapter RESTORE to=$restoreTo pages=${pages.size} mode=${settings.mode} ratio=%.3f".format(learnedRatio))
         // **页码先落地，再定位**：`currentPage` 只是状态赋值，跟布局无关，
-        // 先写它能保证即使定位被跳过/超时，页码也不会停在上一话（R-125）。
+        // 先写它能保证即使定位被跳过/超时，页码也不会停在上一话。
         currentPage = restoreTo
-        // 定位同样**不能用 suspend 的 scrollToItem**（理由见本 effect 开头的 R-125）：
+        // 定位同样**不能用 suspend 的 scrollToItem**（理由见本 effect 开头的 ）：
         // 页模式下没有 LazyColumn，awaitScrollDependencies 会永久挂起；
         // 之前这里还有 `withFrameNanos {}`，窗口被遮挡/最小化时也不出帧。
         // `requestScrollToItem` 把目标位置写进 scroll position，下一次测量生效，
@@ -568,7 +568,7 @@ fun ReaderScreen(
         focus.requestFocus()
     }
 
-    // F-38 观看时长：每页最多计 60 秒（用户 2026-10-25 口径「有一页停留大于 1 分钟就暂停记录」），
+    // 观看时长：每页最多计 60 秒（「有一页停留大于 1 分钟就暂停记录」），
     // 翻页 / 切话自动重置（key 变化 = 重新开始计）。每 10 秒落一次库，
     // 剩下的在协程被取消（翻页/退出）时用 finally 补写——否则频繁翻页会一直丢零头。
     LaunchedEffect(chapter?.id, currentPage) {
@@ -589,9 +589,9 @@ fun ReaderScreen(
         }
     }
 
-    // F-39：打开章节 = 「点过」（详情页文字变灰），**与是否读完无关**。
+    // 打开章节 = 「点过」（详情页文字变灰），**与是否读完无关**。
     //
-    // R-123（2026-10-26 用户实测「看了个书架里没有的动漫，历史里没记录」）：
+    // （用户实测「看了个书架里没有的动漫，历史里没记录」）：
     // 这里必须**先补齐 manga/chapter 两行**再谈进度。根因是历史页的 selectHistory
     // 是 `readingProgress JOIN manga`——书架外的书没有 manga 行，进度写得进去，
     // JOIN 却把它整条丢掉，于是「看过但历史里没有」。
@@ -616,7 +616,7 @@ fun ReaderScreen(
         }
     }
 
-    // 页码跟踪 + 进度落库 + **切模式保页码（R-99）**，三件事必须在同一个 effect 里
+    // 页码跟踪 + 进度落库 + **切模式保页码**，三件事必须在同一个 effect 里
     // 按顺序完成。上一版把「切模式同步」拆成另一个 LaunchedEffect，结果页模式那个
     // 收集器先启动、立刻拿 `pageIndex` 的旧值调 record()——而竖向模式根本不更新
     // pageIndex（一直是 0），于是 currentPage 被写成 0，另一个 effect 再读 currentPage
@@ -635,7 +635,7 @@ fun ReaderScreen(
                 // 同步写会在每次滚动停稳时堵一次主线程——滑动卡顿的来源之一。
                 repository.saveProgressAsync(
                     ReadingProgress(localId, "$localId#$chapterId", page, pages.size),
-                    // F-39：翻到**倒数第 3 页（含）**就算读完（用户 2026-10-25 口径）。
+                    // 翻到**倒数第 3 页（含）**就算读完。
                     // 旧逻辑是 `page > 0`（翻一页就算读完），太松；页数未知时不标记。
                     markChapterRead = pages.isNotEmpty() && page >= maxOf(0, pages.size - READ_DONE_TAIL)
                 )
@@ -669,7 +669,7 @@ fun ReaderScreen(
         onDispose { /* 进度已在 snapshotFlow 里持续落库 */ }
     }
 
-    // 预加载窗口 + 窗口跟随（R-100）：实现在 ui/reader/ReaderPageLoader.kt，
+    // 预加载窗口 + 窗口跟随：实现在 ui/reader/ReaderPageLoader.kt，
     // 这里只把「当前起始页」传进去（lambda，避免翻页重启 effect）。
     val visibleOnly = target.type == SourceType.COPYMANGA
     val imageLoadDelay = if (visibleOnly) app.gamanga.desktop.ui.reader.VISIBLE_IMAGE_SETTLE_MILLIS else 0L
@@ -693,7 +693,7 @@ fun ReaderScreen(
         chapterToast = (if (delta > 0) "下一话" else "上一话") + " · " + target.chapters.getOrNull(next)?.name.orEmpty()
     }
 
-    /** 条漫里按"页"跳一格（F-27 左右点击用）。首项 ±1，夹在合法范围内。 */
+    /** 条漫里按"页"跳一格（左右点击用）。首项 ±1，夹在合法范围内。 */
     fun stepVerticalPage(delta: Int) {
         if (pages.isEmpty()) return
         val target = (listState.firstVisibleItemIndex + delta)
@@ -706,7 +706,7 @@ fun ReaderScreen(
     // 声明在 jumpChapter 之后：局部函数要先声明后使用。
     LaunchedEffect(Unit) {
         for (requested in wheelDeltas) {
-            // R-122 加固：取图中 / 空章（pages 为空）**不参与边界蓄力**。
+            // 加固：取图中 / 空章（pages 为空）**不参与边界蓄力**。
             // 换话瞬间新章还没出图，列表没有 item，`scrollBy` 必然消费 0 →
             // 会被判成「已到末尾」→ 攒满就跳下一话并弹提示（用户实测的
             // 「刚进下一话一滚就提示下一话」）。这一格直接丢掉，只消耗不蓄力。
@@ -736,7 +736,7 @@ fun ReaderScreen(
     // 翻页步长：双页模式一次翻一「对」（spread），否则会出现"同一对页反复重绘一半"的错位。
     // 「上一页/下一页」的语义不随阅读方向变（← 永远是屏幕左边），但在右→左模式下，
     // 屏幕左边那一页在语义上是"下一页"，所以方向键/滚轮语义要反过来。
-    // 走到章节边界时自动跳话（用户 2026-10-22 要求），不再"按不动"。
+    // 走到章节边界时自动跳话，不再"按不动"。
     val rtl = settings.direction == ReaderDirection.RTL && settings.mode != ReaderMode.VERTICAL
     /** 滚轮 lambda 不重启，用 rememberUpdatedState 拿最新 settings（否则连续滚轮拿旧缩放值算同一档）。 */
     val currentSettings by rememberUpdatedState(settings)
@@ -756,7 +756,7 @@ fun ReaderScreen(
 
     fun goPrev() {
         if (settings.mode == ReaderMode.VERTICAL) {
-            // R-122：取图中 pages 为空，列表没有 item，`canScrollBackward` 恒 false——
+            // 取图中 pages 为空，列表没有 item，`canScrollBackward` 恒 false——
             // 旧逻辑会立刻判成「到顶」跳上一话。空章时直接不动。
             if (pages.isEmpty()) return
             if (listState.firstVisibleItemIndex == 0 && !listState.canScrollBackward) {
@@ -779,7 +779,7 @@ fun ReaderScreen(
 
     fun goNext() {
         if (settings.mode == ReaderMode.VERTICAL) {
-            // R-122：同 goPrev——空章不能判成「到底」。
+            // 同 goPrev——空章不能判成「到底」。
             if (pages.isEmpty()) return
             if (!listState.canScrollForward) {
                 jumpChapter(+1, ChapterEdge.NEXT)
@@ -832,7 +832,7 @@ fun ReaderScreen(
         }
     }
 
-    // 外面包一层 Box：详情二级页要浮在整个阅读器之上（F-143），
+    // 外面包一层 Box：详情二级页要浮在整个阅读器之上，
     // 塞进 Column 里会被 Column 的布局约束压成一条。
     Box(Modifier.fillMaxSize().onPreviewKeyEvent { event ->
         if (event.type == KeyEventType.KeyDown && event.key == Key.Escape && (settingsOpen || chaptersOpen)) {
@@ -1017,12 +1017,12 @@ fun ReaderScreen(
                 )
 
                 settings.mode == ReaderMode.VERTICAL -> BoxWithConstraints(Modifier.fillMaxSize()) {
-                    // 适应高度（R-30，用户 2026-10-22 要求）：列宽 = 视口高 × 首页宽高比，
+                    // 适应高度：列宽 = 视口高 × 首页宽高比，
                     // zoom=1 即"一页一屏"的阅读宽度，不再默认拉满整屏。
                     // 条漫类超宽长图按高度算会窄到不可读，由 fitHeightColumnWidth 兜到 40% 视口宽；
                     // 比视口还宽的超宽图则锁到视口宽（等价适应宽度）。
                     // 列宽 ≤ 视口时列**居中**——旧版恒挂 horizontalScroll，内容左对齐，
-                    // zoom<1 时漫画整个靠左（R-32）；超出视口才启用横向滚动看细节。
+                    // zoom<1 时漫画整个靠左；超出视口才启用横向滚动看细节。
                     // **列宽必须和 item 高度用同一个比例**（2026-10-25）：
                     // 旧代码这里只看 `pages.first()` 的宽高，源站不下发时恒用 0.7；
                     // 而 item 高度已经用 learnedRatio（跨页扫描常 1.3~1.5）。
@@ -1056,7 +1056,7 @@ fun ReaderScreen(
                             //   顺序消费，滚动连续且零竞争。
                             // ②手势跟踪走 Initial 通道（父先于子）并在此消费——
                             //   LazyColumn 的原生拖拽再也收不到，杜绝双重滚动
-                            //   （与滚轮同一套 Input 收口模式，R-29~R-37 一贯做法）。
+                            // （与滚轮同一套 Input 收口模式，~一贯做法）。
                             // **不要用 needsHScroll 当 key**：比例学习完成后列宽会变一次，
                             // needsHScroll 跟着翻转 → pointerInput 重启 → 正在拖的手势被中断，
                             // 用户看到的就是「滑着滑着跳一下」。用 Unit + rememberUpdatedState。
@@ -1089,7 +1089,7 @@ fun ReaderScreen(
                                     scope.launch {
                                         try {
                                             for (delta in deltas) {
-                                                // R-122 加固：取图中（pages 为空）不参与边界蓄力，
+                                                // 加固：取图中（pages 为空）不参与边界蓄力，
                                                 // 理由同滚轮消费协程——否则换话瞬间拖一下就被判成
                                                 // 「到末尾」，攒够就跳话。
                                                 if (pages.isEmpty()) continue
@@ -1141,7 +1141,7 @@ fun ReaderScreen(
                                                 }
                                             }
                                         } catch (e: CancellationException) {
-                                            throw e // 取消是正常传播，不是错误（R-45 同款纪律）
+                                            throw e // 取消是正常传播，不是错误（同款纪律）
                                         } catch (e: Throwable) {
                                             // 滚动异常不能再让 EDT 裸奔——无堆栈的
                                             // "Exception in thread AWT-EventQueue-0" 就是这么来的
@@ -1185,7 +1185,7 @@ fun ReaderScreen(
                                     // 不 join：restricted scope 里不能调成员 suspend；
                                     // 剩余增量由 scrollJob 自己排空，与惯性的先后
                                     // 由 MutatorMutex 保证（见上方注释）。
-                                    // 松手惯性（用户 2026-10-23 要求「像手机一样滑动」）：
+                                    // 松手惯性：
                                     // 出手速度超过阈值就按指数衰减继续滚，撞到章节边界即停
                                     // （边界跳话交给滚轮/拖拽的蓄力，惯性不跳）。
                                     if (dragged) {
@@ -1282,7 +1282,7 @@ fun ReaderScreen(
                                         }
                                     }
                                     // 没拖动过 = 轻点：**左 1/3 上一页、右 1/3 下一页、中间切沉浸**
-                                    // （F-27，2026-10-25 用户要求「条漫也能左右点击翻页」）。
+                                    // （用户要求「条漫也能左右点击翻页」）。
                                     // 条漫一屏可能跨好几页，所以这里按"当前首项 ±1 项"跳，而不是整屏。
                                     if (!dragged) {
                                         val w = size.width.toFloat()
@@ -1305,7 +1305,7 @@ fun ReaderScreen(
                             itemsIndexed(pages, key = { i, page -> "$i:${page.url}" }) { i, page ->
                                 // LazyColumn 里高度无界，必须按图片比例占位（否则布局塌成 0 高）。
                                 // G社 不下发宽高（width/height=0），猜错比例时 FillWidth 会在图下方
-                                // 露出灰底、或把图伸进下一格——用户实测「条漫中间有白色间隔」（R-42）。
+                                // 露出灰底、或把图伸进下一格——用户实测「条漫中间有白色间隔」。
                                 // 改由 RemoteImage 加载完按真实比例重布（dynamicRatio）；
                                 // Komiic 有宽高的也会收敛到同一真值，行为一致。
                                 val itemRatio = when {
@@ -1388,7 +1388,7 @@ fun ReaderScreen(
                 )
             }
 
-            // 边界蓄力提示（R-46）：撞到章节边界、同向累积达到跳转阈值前，
+            // 边界蓄力提示：撞到章节边界、同向累积达到跳转阈值前，
             // 屏幕中间常驻提示「再滚就切话」——把原本沉默的蓄力状态说出来，
             // 用户知道再滚一格会发生什么，不会以为"没反应"或"误触了"。
             // edgeAccum 非零即正在蓄力（回到内容区/跳话后归零，提示随之消失）；
@@ -1512,7 +1512,7 @@ fun ReaderScreen(
             }
         }
 
-        // 详情二级页：宿主自带遮罩 + 底部上滑面板 + 换源弹窗（F-143）。
+        // 详情二级页：宿主自带遮罩 + 底部上滑面板 + 换源弹窗。
         // 放在阅读器最外层 Box 里，盖住顶栏与底部控件栏。
         DetailHost(
             state = detail,
@@ -1534,7 +1534,7 @@ fun ReaderScreen(
 
 private const val READ_DONE_TAIL = 3
 
-/** 同一页最多计多少秒观看时长（F-38）：超过就当「人不在」，停止计时。 */
+/** 同一页最多计多少秒观看时长：超过就当「人不在」，停止计时。 */
 private const val READING_SECONDS_PER_PAGE = 60
 
 /** 滑动诊断日志开关：默认关，`-Dgamanga.scrolllog=1` 打开。 */
@@ -1554,7 +1554,7 @@ private const val CHAPTER_TOAST_MS = 2_000L
 
 /**
  * 边界蓄力提示停留时长（ms）：撞到章节边界开始蓄力时屏幕中间提示
- * 「再滚就切话」，停止滚动这么久后蓄力衰减、提示消失（R-46）。
+ * 「再滚就切话」，停止滚动这么久后蓄力衰减、提示消失。
  */
 private const val EDGE_HINT_MS = 2_500L
 

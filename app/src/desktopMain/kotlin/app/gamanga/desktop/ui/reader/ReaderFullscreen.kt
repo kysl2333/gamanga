@@ -12,9 +12,9 @@ import java.util.WeakHashMap
  *
  * | 轮次 | 做法 | 结果 |
  * |---|---|---|
- * | 批次42 | `GraphicsDevice.fullScreenWindow`（独占全屏） | **闪退**：切显示模式 + 重建窗口/GL 上下文，机器上留下 NVIDIA `GPU has been disconnected (code 10)` 与 `awt.dll` 访问违例 |
- * | 批次45 | 190ms 逐帧插值 `window.bounds` | 不崩了，但**还是卡**：190ms 里要改 12 次窗口矩形，每次都是一次"交换链 resize + 整窗重新布局 + 漫画页按新视口重新 Fit" |
- * | 批次46 | **一次赋值，瞬间到位** | 用户原话「把窗口和全屏的动画移除，让它能一下就变成全屏」 |
+ * | | `GraphicsDevice.fullScreenWindow`（独占全屏） | **闪退**：切显示模式 + 重建窗口/GL 上下文，机器上留下 NVIDIA `GPU has been disconnected (code 10)` 与 `awt.dll` 访问违例 |
+ * | | 190ms 逐帧插值 `window.bounds` | 不崩了，但**还是卡**：190ms 里要改 12 次窗口矩形，每次都是一次"交换链 resize + 整窗重新布局 + 漫画页按新视口重新 Fit" |
+ * | | **一次赋值，瞬间到位** | 用户原话「把窗口和全屏的动画移除，让它能一下就变成全屏」 |
  *
  * ## 为什么动画在这个场景里注定贵
  *

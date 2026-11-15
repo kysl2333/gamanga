@@ -121,7 +121,7 @@ object GamangaDatabaseFactory {
         Step(2) { driver ->
             addColumnIfMissing(driver, "chapter", "pageCount INTEGER NOT NULL DEFAULT 0")
         },
-        // v3（R-04 下载）：downloadChapter 表（章节图片落盘 + 任务状态）。
+        // v3（下载）：downloadChapter 表（章节图片落盘 + 任务状态）。
         // 老库缺表时补建；已有下载行原样保留（IF NOT EXISTS，不清库）。
         // 文件级数据在 DownloadManager 的 rootDir，不在库里。
         Step(3) { driver ->
@@ -153,8 +153,8 @@ object GamangaDatabaseFactory {
                 0
             )
         },
-        // v5（F-39）：「点过」时间列。详情页灰显的判据是「点过」而不是「已读」——
-        // 用户 2026-10-25 明确「变灰不代表已读，只表示点过这一章」。
+        // v5：「点过」时间列。详情页灰显的判据是「点过」而不是「已读」——
+        // 「变灰不代表已读，只表示点过这一章」。
         //
         // ⚠️ 梯子**必须按版本升序**：ensureSchema 只读一次 user_version，然后逐条
         // 「version > current 才执行」并推进版本号。把 v5 写在 v4 前面，v3 的老库
@@ -162,7 +162,7 @@ object GamangaDatabaseFactory {
         Step(5) { driver ->
             addColumnIfMissing(driver, "chapter", "lastOpenedAt INTEGER NOT NULL DEFAULT 0")
         },
-        // v6（F-38）：观看时长表。只存「天 → 秒」，不存明细——统计页只要总数与今日。
+        // v6：观看时长表。只存「天 → 秒」，不存明细——统计页只要总数与今日。
         Step(6) { driver ->
             driver.execute(
                 null,
@@ -171,7 +171,7 @@ object GamangaDatabaseFactory {
                 0
             )
         },
-        // v7（R-123）：「是否在书架」列。用户实测「看了个书架里没有的动漫，历史里没记录」——
+        // v7：「是否在书架」列。用户实测「看了个书架里没有的动漫，历史里没记录」——
         // 历史页的 selectHistory 要 JOIN manga 拿书名/封面，而书架外的书根本没有 manga 行，
         // 于是 INNER JOIN 直接把进度丢了。现在允许写入 inLibrary = 0 的「幽灵行」：
         // 只服务历史/进度，书架查询一律过滤掉。

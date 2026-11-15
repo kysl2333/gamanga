@@ -13,7 +13,7 @@ import kotlin.math.pow
 /**
  * 竖向连续模式下「适应高度」的列宽（单位与传入的视口宽高一致，dp）。
  *
- * 默认显示改为适应高度（用户 2026-10-22 要求，R-30）：列宽 = 视口高 × 宽高比，
+ * 默认显示改为适应高度：列宽 = 视口高 × 宽高比，
  * 普通页漫正好一页一屏的阅读宽度；条漫（超宽长图）按高度算会窄到不可读，
  * 下限兜到 [STRIP_MIN_WIDTH_FRACTION] 视口宽；宽高比 >1 的超宽图则不超过视口宽
  * （此时等价于适应宽度）。
@@ -36,13 +36,13 @@ internal const val STRIP_MIN_WIDTH_FRACTION = 0.4f
 internal const val WHEEL_SCROLL_PX_PER_LINE = 300f
 
 /**
- * 沉浸模式（R-43）中心轻点带占画面宽度的比例：这一带里的轻点切 chrome 显隐，
+ * 沉浸模式中心轻点带占画面宽度的比例：这一带里的轻点切 chrome 显隐，
  * 不再翻页（页模式左右半屏仍各翻各的）。
  */
 internal const val CENTER_TAP_FRACTION = 0.3f
 
 /**
- * 轻点是否落在沉浸模式中心带内（R-43）。
+ * 轻点是否落在沉浸模式中心带内。
  *
  * [x] 是轻点横坐标、[width] 是画面宽度。中心带 = 画面正中间
  * [CENTER_TAP_FRACTION] 宽度——正中央命中，左右边缘翻页区不误触。
@@ -56,7 +56,7 @@ internal enum class ChapterEdge { NONE, PREV, NEXT }
 /**
  * 条漫模式松手后的惯性衰减系数（每秒保留比例）。
  *
- * 用户 2026-10-23 要求「像手机一样滑动」：拖到一半松手，漫画按出手速度继续滑，
+ * 「像手机一样滑动」：拖到一半松手，漫画按出手速度继续滑，
  * 速度指数衰减。0.08 = 一秒后剩 8% 速度；配合典型出手速度
  * 2000~4000 px/s，滑行距离约 800~1600px（距离 ≈ v0 / ln(1/0.08) ≈ v0 / 2.5）。
  */
@@ -114,7 +114,7 @@ internal fun pageChapterEdge(currentIndex: Int, lastIndex: Int, forward: Boolean
 /**
  * 一次滚轮事件对缩放的增量。
  *
- * 手势（用户 2026-10-22 指定，R-31）：Ctrl+滚轮 或 鼠标侧滚轮（横向滚动）。
+ * 手势：Ctrl+滚轮 或 鼠标侧滚轮（横向滚动）。
  * 上滚/右滚放大，下滚/左滚缩小。返回 null = 这次滚轮不缩放（普通纵向滚轮）。
  */
 internal fun wheelZoomStep(scrollY: Float, scrollX: Float, ctrl: Boolean, step: Float): Float? = when {
@@ -180,7 +180,7 @@ internal fun lastSpreadStart(pageCount: Int, count: Int): Int {
 }
 
 /**
- * 页模式（单页/双页）放大后单轴可平移的像素上限（用户 2026-10-23「拖着看」）。
+ * 页模式（单页/双页）放大后单轴可平移的像素上限。
  * 图片经 graphicsLayer 以视口中心为锚点放大 [zoom] 倍后，超出视口的部分每侧有
  * (contentSize*zoom - viewportSize)/2 像素。平移量夹在 ±返回值 内，恰好保证
  * 放大图永远铺满视口、露不出画布背景；没有超出时返回 0，平移自动归零。

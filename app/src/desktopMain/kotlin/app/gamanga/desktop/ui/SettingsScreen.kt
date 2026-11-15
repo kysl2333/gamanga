@@ -130,7 +130,7 @@ import java.io.File
  * 左列标题 + 一句说明，右列控件。视觉只靠留白、圆角和极淡投影分层，
  * 不再用「每块一个描边方框」——那是上一版看起来像配置表单的原因。
  *
- * ## 交互约定（用户 2026-10-28 明确要求）
+ * ## 交互约定
  *
  * - **左侧切换不做动画**：点哪一类立即换右侧内容。
  * - 清理类操作一律二次确认，确认框白底、圆角、危险项红字。
@@ -199,15 +199,15 @@ fun SettingsScreen(
     var confirmation by remember { mutableStateOf<Pair<String, () -> Unit>?>(null) }
     fun confirm(text: String, action: () -> Unit) { confirmation = text to action }
 
-    // F-275（2026-10-29）：mihon 导入改成向导——选文件 → 预览（可勾选 / 改别称 / 换源）→ 按选择导入。
+    // mihon 导入改成向导——选文件 → 预览（可勾选 / 改别称 / 换源）→ 按选择导入。
     // 旧流程是「解析完直接开干」，认不出的源默默跳过，用户既看不到是哪几部也没机会救。
     var mihonBytes by remember { mutableStateOf<ByteArray?>(null) }
     var mihonPreview by remember { mutableStateOf<MihonImportPreview?>(null) }
     var mihonBusy by remember { mutableStateOf(false) }
     var mihonResult by remember { mutableStateOf<MihonImportReport?>(null) }
-    // R-172：导入进度（正在导第几本），null = 没在导
+    // 导入进度（正在导第几本），null = 没在导
     var mihonProgress by remember { mutableStateOf<MihonImportProgress?>(null) }
-    // R-193（2026-10-30）：导入作业句柄。导入一部要拉一次源站章节列表，几十部就是几分钟，
+    // 导入作业句柄。导入一部要拉一次源站章节列表，几十部就是几分钟，
     // 期间弹窗把整屏都吃掉——没有「取消」用户只能强杀进程（他报的「按钮点了没反应」）。
     var mihonJob by remember { mutableStateOf<Job?>(null) }
 
@@ -430,7 +430,7 @@ fun SettingsScreen(
         )
     }
 
-    // mihon 导入向导（F-275）：预览 → 勾选 / 改别称 / 换源 → 按选择导入
+    // mihon 导入向导：预览 → 勾选 / 改别称 / 换源 → 按选择导入
     val preview = mihonPreview
     val bytes = mihonBytes
     if (preview != null && bytes != null) {
@@ -446,7 +446,7 @@ fun SettingsScreen(
                     mihonProgress = null
                 }
             },
-            // R-166：流式并发搜索（谁先回来先显示），不再等最慢的源
+            // 流式并发搜索（谁先回来先显示），不再等最慢的源
             progress = mihonProgress,
             onSearch = { alias, title -> backupManager.searchMihonCandidatesStreaming(alias, title) },
             onImport = { choices, mode ->
@@ -455,7 +455,7 @@ fun SettingsScreen(
                 mihonJob = scope.launch {
                     try {
                         val report = backupManager.importMihonSelection(bytes, choices, mode) { p ->
-                            // **不要在这里 launch 到 Dispatchers.Main**（R-193）：
+                            // **不要在这里 launch 到 Dispatchers.Main**：
                             // 桌面端缺 Main dispatcher 时 launch 会**同步抛异常**，异常顺着
                             // 回调冒进导入循环，整批导入当场中断——这就是用户「恢复备份后
                             // 书架/历史还是空的、按钮没反应」的根因。Compose 的 snapshot
@@ -1112,13 +1112,13 @@ private fun CacheSettings(
 }
 
 // ---------------------------------------------------------------------------
-// 书架刷新（F-271，2026-10-29）
+// 书架刷新
 // ---------------------------------------------------------------------------
 
 /**
  * 「书架刷新」设置页。
  *
- * 用户 2026-10-29 口径：「设置页增加刷新书架详情页章节的选项：
+ * 「设置页增加刷新书架详情页章节的选项：
  * 手动刷新 / 每次开启应用刷新 / 每七天刷新 / 每一天刷新」，默认手动。
  *
  * 交互约定与其它分组一致：**选哪一档立即生效**（不需要再点保存），
@@ -1457,7 +1457,7 @@ private fun AboutSettings(
     val osArch = System.getProperty("os.arch") ?: ""
     val buildInfo = "${AppVersion.NAME_ZH} $version (${AppVersion.NAME_EN})\nJava $javaVersion\n$osName $osArch\n数据目录：${dataDir.absolutePath}"
 
-    // ---- 渲染与性能（2026-10-30 批次46）----
+    // ---- 渲染与性能----
     val mainWindow = app.gamanga.desktop.ui.shell.LocalComposeWindow.current
     var hwAccel by remember { mutableStateOf(repository.getPref(RenderBackend.PREF_HW_ACCEL) != "0") }
     var renderBackend by remember { mutableStateOf(RenderBackend.describe(mainWindow)) }
@@ -1520,7 +1520,7 @@ private fun AboutSettings(
         SettingsCard {
             // 「当前后端」是**实测值**，不是偏好值：skiko 找不到 GPU 时会静默回退到
             // CPU 光栅，界面照样能开，只是每帧都慢。把真实后端摆在设置页里，
-            // 「卡」到底是不是渲染造成的就不用猜了（2026-10-30 批次46）。
+            // 「卡」到底是不是渲染造成的就不用猜了。
             SettingsRow("当前后端", renderBackend) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
@@ -1846,7 +1846,7 @@ private val SettingsCardShape = RoundedCornerShape(16.dp)
 /**
  * 设置页右侧内容的统一外框：**居中 + 固定最大宽度 760dp**。
  *
- * 用户 2026-10-28 提了两轮，方向是连着的：
+ * 提了两轮，方向是连着的：
  * 1. 「拉长界面间距会加大」→ 内容不能吃满可用宽度，否则卡片变宽、行内元素重新分配；
  * 2. 「左边间距好了右边又开始拉长，设置页应该居中才对」→ 光靠左也不行，要两侧对称。
  * 结论：外层 `CenterHorizontally`，内层 `widthIn(max = 760.dp).fillMaxWidth()`。
@@ -1963,7 +1963,7 @@ private fun SettingsStackRow(
  * 统一输入框：浅灰填充、无描边、聚焦时蓝边。
  *
  * 不用 Material 的 OutlinedTextField——它在白卡里会再套一层灰边方框，
- * 正是用户说的「方框设计不好看、风格不统一」。
+ * 正是的「方框设计不好看、风格不统一」。
  */
 @Composable
 internal fun SettingsField(
@@ -2009,7 +2009,7 @@ internal fun SettingsField(
 /**
  * 统一按钮：白底 + 极淡描边 + hover 投影 + 按下 3% 缩放。
  *
- * 用户 2026-10-28：「按钮触碰阴影也要改」——旧 Material 按钮是静态灰边，
+ * 「按钮触碰阴影也要改」——旧 Material 按钮是静态灰边，
  * 触碰时只有底色变化；这里把「触碰」做成真的浮起一层。
  */
 @Composable
@@ -2194,7 +2194,7 @@ private fun SettingsConfirm(
     )
 }
 
-/** 桌面端只认主键：clickable 会把右键也算点击（R-09）。 */
+/** 桌面端只认主键：clickable 会把右键也算点击。 */
 @OptIn(ExperimentalComposeUiApi::class)
 private fun Modifier.primaryPress(enabled: Boolean = true, onClick: () -> Unit): Modifier =
     this.onPointerEvent(PointerEventType.Press) { event ->

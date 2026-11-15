@@ -313,7 +313,7 @@ class LibraryRepositoryTest {
         assertTrue(r.chaptersOf("local-1").all { it.pageCount == 0 })
     }
 
-    // ---- 置顶（R-09）----
+    // ---- 置顶----
 
     @Test
     fun `pinned items sort first in pin order`() {
@@ -364,7 +364,7 @@ class LibraryRepositoryTest {
         assertTrue(items.none { it.pinned })
     }
 
-    // ---- R-123：书架外试读也要进历史 ----
+    // ---- ：书架外试读也要进历史 ----
 
     @Test
     fun `external reading shows up in history but not on the shelf`() = runTest {

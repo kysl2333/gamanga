@@ -130,7 +130,7 @@ class GamangaDatabaseFactoryTest {
 
     @Test
     fun `v2 database is migrated in place, not wiped`() {
-        // v2 形状（R-04 下载迁移前）：四张表齐 + chapter.pageCount 有，
+        // v2 形状（下载迁移前）：四张表齐 + chapter.pageCount 有，
         // 但没有 downloadChapter——正是「schema 加了表、用户库里还是旧形状」的线上形态。
         val f = dbFile()
         val d = JdbcSqliteDriver("jdbc:sqlite:${f.toAbsolutePath()}")
@@ -201,7 +201,7 @@ class GamangaDatabaseFactoryTest {
     /** v2 形状的四张基础表（chapter 已带 pageCount）。 */
     @Test
     fun `v7 adds inLibrary column and keeps existing shelf rows on the shelf`() {
-        // R-123：manga 加 inLibrary 列。这是**会碰用户真实库**的迁移，
+        // manga 加 inLibrary 列。这是**会碰用户真实库**的迁移，
         // 必须保证：①老行一条不少；②老行全部被当成「书架内」（DEFAULT 1）；
         // ③幽灵行（inLibrary = 0）插得进去，且不出现在书架查询里。
         val f = dbFile()

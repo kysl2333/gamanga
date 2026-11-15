@@ -106,7 +106,7 @@ import kotlin.math.roundToInt
  * 网格只认全局行，不认「某个源的第 2 排」。现在外层是 `LazyColumn`，
  * 每个源是独立 item，内部自己排两排。
  *
- * ## F-128（2026-10-27）：「只显示书架那一行」是怎么做的
+ * ## ：「只显示书架那一行」是怎么做的
  *
  * 用户口径：「搜索栏有文字但未点击搜索或回车时，只显示书架那一行；点击搜索或回车后，
  * 才显示漫画源信息」。这里**不加开关参数**，而是让调用方在「还没提交」时传
@@ -128,7 +128,7 @@ fun GlobalSearchPane(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
-    // 用户 2026-10-26：「再次搜索时界面没回到顶点」——关键词变化就回顶
+    // 「再次搜索时界面没回到顶点」——关键词变化就回顶
     LaunchedEffect(query) { listState.requestScrollToItem(0) }
 
     BoxWithConstraints(modifier.fillMaxSize()) {
@@ -282,7 +282,7 @@ private fun <T> SourceGrid(
                 // 空位补 **剩下的** 格子：必须扣掉折叠卡占的那一格，
                 // 否则「6 张卡 + 1 个 Spacer + 1 个折叠卡」= 8 份权重，
                 // 每张卡只有 7/8 的宽度 → 折叠时封面比例偏窄，展开后才正常
-                // （用户 2026-10-27：「封面排版比例还是不对，只有点击展开后才会变成正常排版比例」）。
+                // （「封面排版比例还是不对，只有点击展开后才会变成正常排版比例」）。
                 repeat(columns - rowCount - (if (showExpand) 1 else 0)) {
                     Spacer(Modifier.weight(1f))
                 }
@@ -340,7 +340,7 @@ private fun ExpandBadge(hidden: Int, onClick: () -> Unit) {
 /**
  * 伪搜索骨架：两排「还没拿到封面的空卡」，用**明度呼吸**表示在等数据。
  *
- * 用户 2026-10-27：「增加一个伪搜索的动效图案，就是那种等待搜索出封面的感觉」。
+ * 「增加一个伪搜索的动效图案，就是那种等待搜索出封面的感觉」。
  * UI-SPEC 第 5 节明令**禁止转圈 loading**，所以这里用呼吸（alpha 0.45↔0.85，1400ms 一周期）。
  */
 @Composable
@@ -648,7 +648,7 @@ internal fun SearchCard(
             }
         }
         Spacer(Modifier.height(8.dp))
-        // **文字区固定高度**（用户 2026-10-27：「封面没有对齐，封面比例各不相同」）。
+        // **文字区固定高度**（「封面没有对齐，封面比例各不相同」）。
         // 根因：同一排里有的卡有副标题、有的没有（源结果 author 常为 null），
         // 卡片总高就参差不齐，视觉上像「封面比例不同」。固定 36dp = 标题 22 + 间隙 2 + 副标题 16。
         Box(Modifier.height(36.dp).fillMaxWidth()) {
@@ -683,12 +683,12 @@ internal fun SearchCard(
  * 与书架页的顶栏同构（宽度也固定 420dp）。区别：这里的搜索键/回车才真正开始搜源。
  *
  * @param showEnterAction 输入了内容、但还没提交时，在**搜索栏最右端**浮出一个小回车图标。
- *   用户 2026-10-27 第四版口径：「取消气泡回车按钮的提示，改为在搜索栏最右侧放置一个
+ * 第四版口径：「取消气泡回车按钮的提示，改为在搜索栏最右侧放置一个
  *   回车小图标，并与现有 UI 风格保持统一」——前三版都是往搜索框**外面**挂东西
  *   （气泡/水滴），这一版回到框内、与搜索框同高同色，就是搜索栏的一部分。
  * @param bounds 传同一个 [SearchBarBounds] 给页面根的
  *   [dismissSearchFocusOnOutsidePress]，就能实现「点搜索框外面失焦」。
- * @param leading 搜索条**左端外侧**的一个槽位（书架页放阅读统计入口，F-38）。
+ * @param leading 搜索条**左端外侧**的一个槽位（书架页放阅读统计入口）。
  *   为什么不用「Row 里排一排」：那样加了按钮整条搜索栏会右移，两边页面就不齐了。
  *   这里用 `offset` 把槽位锚在居中搜索条的左端之外，搜索条自己的位置**一个像素都不动**。
  */
@@ -816,7 +816,7 @@ private val LeadingGap = 8.dp
 private val LeadingSize = 44.dp
 
 /**
- * 搜索栏右端的回车小图标（用户 2026-10-27 第四版）。
+ * 搜索栏右端的回车小图标。
  *
  * ## 为什么要占位 26dp 而不是「有才占」
  *

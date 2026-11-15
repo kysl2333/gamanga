@@ -16,7 +16,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * 取图 effect 的「取消 vs 失败」分流（R-45 复发修复的回归锁）。
+ * 取图 effect 的「取消 vs 失败」分流（复发修复的回归锁）。
  *
  * 用户实测症状：G社「无缓存切换有缓存的章节时也可能触发（取图失败），点重试就会恢复」。
  * 根因是旧实现用 `runCatching` 把换话时抛来的 CancellationException 也吞了，

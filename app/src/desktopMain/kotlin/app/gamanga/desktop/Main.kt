@@ -68,7 +68,7 @@ import kotlin.math.roundToInt
 /**
  * 窗口外观（阶段 4，2026-10-26）。
  *
- * 无系统边框 + 自绘圆角。**没有外阴影**——用户 2026-10-26 实测反馈：「窗口边缘有一层不应该有的
+ * 无系统边框 + 自绘圆角。**没有外阴影**——实测反馈：「窗口边缘有一层不应该有的
  * 阴影，选中对齐的是那个阴影而不是倒角的边框」，所以把 `Modifier.shadow` 和它需要的透明边距
  * 一起去掉了，窗口现在贴着内容边缘结束。
  */
@@ -88,13 +88,13 @@ fun main() = application {
     val repository: LibraryRepository = AppGraph.libraryRepository
     // ---- 渲染后端必须在第一个 Window（也就是第一个 SkiaLayer）之前定下来 ----
     //
-    // 2026-10-30 批次46：skiko 在 `SkiaLayer` 初始化时读 `skiko.renderApi`，
+    // skiko 在 `SkiaLayer` 初始化时读 `skiko.renderApi`，
     // 之后再设**完全无效**。`application { }` 的内容是组合期执行的，
     // 第一个 `Window(...)` 出现在后面，所以放在这里仍然早于任何 Skia 组件。
     runCatching {
         RenderBackend.apply(hwAccel = repository.getPref(RenderBackend.PREF_HW_ACCEL) != "0")
     }.onFailure { AppLog.w("Render", "读取渲染偏好失败，按默认（硬件加速）启动", it) }
-    // **不再回填示例数据**（用户 2026-10-28 明确要求）：首次安装、以及「清空所有数据」
+    // **不再回填示例数据**：首次安装、以及「清空所有数据」
     // 之后重启，书架和阅读历史都必须是真的空的。以前这里调 seedIfEmpty() 塞 6 本假漫画
     // + 1 条假进度，导致清空数据后一重启又是满屏测试封面。
     // 需要造数据的场景（单测）显式调 `seedDemoData()`，生产路径不再调用。
@@ -102,7 +102,7 @@ fun main() = application {
     // id 是种子 id 且没有封面，用户自己补过封面的不动）。
     runCatching { repository.purgeDemoData() }
         .onSuccess { n -> if (n > 0) AppLog.i("Library", "已清理 $n 本历史示例数据") }
-    // F-22：源站地址配置（sources.json）。**必须在任何 Sources.all() / of() 之前**——
+    // 源站地址配置（sources.json）。**必须在任何 Sources.all() / of() 之前**——
     // 适配器是惰性单例，第一次构造时就把 baseUrl / UA 读进去了，之后再改配置要重启。
     // remember：`application { }` 的内容会随重组再执行，不能每次重组都重读文件。
     remember { SourceConfig.loadOnce() }
@@ -111,7 +111,7 @@ fun main() = application {
     Sources.installCookieProvider { domain ->
         repository.getPref(LibraryRepository.cookiePrefKey(domain))
     }
-    // R-04：上次进程被杀时停在一半的下载任务退回队列续跑（借登录态之后才能取图）
+    // 上次进程被杀时停在一半的下载任务退回队列续跑（借登录态之后才能取图）
     AppGraph.downloadManager.resumeInterrupted()
 
     // 第八轮 #8：恢复 HTTP 代理配置（全局开关 + 协议 + 每个源的独立开关）
@@ -137,7 +137,7 @@ fun main() = application {
     }
 
     // 窗口尺寸：存过就用存的（用户缩成什么样就是什么样）；没存过用 3:2 作初始值。
-    // **不再强制锁定 3:2**——用户 2026-10-26：「固定 3:2 比例是最初打开程序的一个状态」，
+    // **不再强制锁定 3:2**——「固定 3:2 比例是最初打开程序的一个状态」，
     // 也就是只作初始尺寸，之后上下左右都能自由缩放。
     val savedSize = repository.getPref(LibraryRepository.PREF_WINDOW_SIZE)
     val savedWidth = savedSize?.substringBefore(',')?.toIntOrNull()
@@ -172,14 +172,14 @@ fun main() = application {
         undecorated = true,
         // 必须透明，否则四角会露出窗口底色，圆角等于白做
         transparent = true,
-        // 程序图标（用户 2026-10-27 给的 logo-C，已去底裁成 512 方图）
+        // 程序图标（logo-C，已去底裁成 512 方图）
         icon = brandPainter("brand/logo-mark-512.png"),
     ) {
         // 窗口自身背景刷透明（AWT 默认浅灰会在圆角外露出一圈）
         LaunchedEffect(window) {
             window.background = java.awt.Color(0, 0, 0, 0)
             window.minimumSize = Chrome.MinSize
-            // 把**实际**跑起来的渲染后端写进日志（2026-10-30 批次46）：
+            // 把**实际**跑起来的渲染后端写进日志：
             // skiko 的回退是静默的，驱动不支持时会自己掉到 CPU 光栅而界面照开，
             // 用户只会觉得"卡"。日志里有这一行，"卡"到底是 GPU 没起来还是别的原因，
             // 一眼就能分开。等 1.5s 是为了让 SkiaLayer 走完第一帧、把 renderApi 定下来。
@@ -192,12 +192,12 @@ fun main() = application {
             app.gamanga.desktop.ui.shell.LocalComposeWindow provides window
         ) {
         AppTheme {
-            // 窗口边界（用户 2026-10-26）：「界面的边界跟电脑画面不够清晰，给边界加个小阴影
+            // 窗口边界：「界面的边界跟电脑画面不够清晰，给边界加个小阴影
             // 不要太死，尽量集中，不要吃太多性能做静态」。
             //
             // 做法：四周留 **4dp 透明边距**给阴影落脚，内容是**静态** shadow(4dp) + 1dp 描边。
             // - 不能用动画/模糊：静态阴影由 Skia 一次性光栅化，零每帧成本；
-            // - 4dp 是刻意压窄的：R-118 那次被否掉是因为阴影铺得太宽（12dp+），
+            // - 4dp 是刻意压窄的：那次被否掉是因为阴影铺得太宽（12dp+），
             //   用户看到的是「选中对齐的是阴影不是边框」。4dp 只做过渡，不抢边框。
             Box(
                 Modifier
@@ -286,7 +286,7 @@ private const val SplashSettlePauseMs = 120L
 private val SplashLogoSize = 218.dp
 
 /**
- * 启动闪屏（F-131；2026-11-13 开源版简化）。
+ * 启动闪屏（开源版简化）。
  *
  * ## 2026-11-13 用户口径（1.2.1）
  *

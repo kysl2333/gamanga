@@ -3,7 +3,7 @@ package app.gamanga.desktop.data.backup
 import app.gamanga.desktop.model.SourceType
 
 /**
- * mihon 备份导入的**预览计划**（F-275，2026-10-29）。
+ * mihon 备份导入的**预览计划**。
  *
  * ## 为什么要有这一层
  *
@@ -51,9 +51,9 @@ data class MihonImportRow(
     /** 备份里已读的章数。 */
     val readCount: Int,
     val status: MihonRowStatus,
-    /** 备份里自带封面图（R-170）：为 true 时导入后直接用这张图，不去源站抓。 */
+    /** 备份里自带封面图：为 true 时导入后直接用这张图，不去源站抓。 */
     val hasCoverImage: Boolean = false,
-    /** 这一部在 mihon 里在书架（R-178）：决定它出现在哪一档导入范围里。 */
+    /** 这一部在 mihon 里在书架：决定它出现在哪一档导入范围里。 */
     val inLibrary: Boolean = true,
     /** 备份里有阅读痕迹（任一章已读 / 有进度）。 */
     val inHistory: Boolean = false,
@@ -133,7 +133,7 @@ data class MihonImportChoice(
     val source: SourceType? = null,
     val sourceId: String? = null,
     /**
-     * 换源后**新源上的标题 / 封面**（R-169，2026-10-30）。
+     * 换源后**新源上的标题 / 封面**。
      *
      * 用户：「导入后的名字应该为后面替换源的名字……可能就是换源后名字是原来的名字导致
      * 书架漫画封面出不来」。原来的实现把备份里的标题写进书架，但封面 URL 用的是备份里的
@@ -144,19 +144,19 @@ data class MihonImportChoice(
 )
 
 /**
- * 导入范围（R-171 / R-178，2026-10-30 用户最终口径）。
+ * 导入范围（/ ，2026-10-30 用户最终口径）。
  *
- * ## 用户原话（R-178 更正了 R-171 的理解）
+ * ## 用户原话（更正了 的理解）
  *
  * 「我说的备份书架是指，只选择**书架的书**恢复，同时恢复阅读记录；
  *   而选择历史就是**把历史的书给勾选出来**恢复历史的书」。
  *
  * 所以两档的差别是**列哪些书**，不是「写不写阅读进度」：
- * - [SHELF_ONLY]（默认，用户说「大多数人一般都是恢复书架的」）→ 只列 mihon 书架里的书；
+ * - [SHELF_ONLY]（默认，「大多数人一般都是恢复书架的」）→ 只列 mihon 书架里的书；
  * - [SHELF_AND_HISTORY] → 连只有阅读记录（不在书架）的书也列出来。
  *
  * ⚠️ 两档**都写阅读进度**：书架那一档用户明确要「同时恢复阅读记录」。
- * （R-171 时理解成「只恢复书架就不写进度」，导致书架里的书读到哪里全丢了。）
+ * （时理解成「只恢复书架就不写进度」，导致书架里的书读到哪里全丢了。）
  */
 enum class MihonImportMode {
     /** 只恢复书架里的书（含它们的阅读记录）。 */
@@ -172,7 +172,7 @@ fun MihonImportMode.includes(row: MihonImportRow): Boolean = when (this) {
     MihonImportMode.SHELF_AND_HISTORY -> row.inLibrary || row.inHistory
 }
 
-/** 导入过程中的进度（R-172）：`done/total` + 当前在导哪本。 */
+/** 导入过程中的进度：`done/total` + 当前在导哪本。 */
 data class MihonImportProgress(
     val done: Int,
     val total: Int,
@@ -217,7 +217,7 @@ fun normalizeTitle(raw: String): String =
         .lowercase()
 
 /**
- * 候选排序用的**细粒度**匹配分（R-179，2026-10-30 用户）。
+ * 候选排序用的**细粒度**匹配分（用户）。
  *
  * ## 用户原话
  *

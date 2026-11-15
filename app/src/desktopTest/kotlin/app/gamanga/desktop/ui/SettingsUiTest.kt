@@ -80,7 +80,7 @@ class SettingsUiTest {
 
     @Test
     fun contentIsCenteredWithFixedMaxWidth() {
-        // 用户 2026-10-28 连提两轮：先「拉长界面间距会加大」，改完又说「左边好了右边又开始拉长，
+        // 连提两轮：先「拉长界面间距会加大」，改完又说「左边好了右边又开始拉长，
         // 应该居中」。这条测试锁住「固定 760 宽 + 居中」：
         //   左边缘 = 24(padding) + (可用宽 - 760) / 2
         // 靠左会得到 24，吃满会得到 24，两种回归都会立刻红。
@@ -107,7 +107,7 @@ class SettingsUiTest {
 
     @Test
     fun emptyShelfOffersRecommendShortcut() {
-        // 用户 2026-10-28：「书架没书时界面给一个提示可以去推荐页查漫画」。
+        // 「书架没书时界面给一个提示可以去推荐页查漫画」。
         // 锁两件事：文案在、点了真的回调（不是只画个不可点的样子）。
         var clicked = false
         rule.setContent {

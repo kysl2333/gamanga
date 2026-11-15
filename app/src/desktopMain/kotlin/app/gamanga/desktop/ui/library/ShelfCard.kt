@@ -78,7 +78,7 @@ internal fun ShelfCard(
     item: LibraryRepository.ShelfItem,
     multi: Boolean,
     picked: Boolean,
-    /** F-271：这本有几话是没看过的（>0 时封面右上角出绿点）。 */
+    /** 这本有几话是没看过的（>0 时封面右上角出绿点）。 */
     newChapters: Int = 0,
     onClick: () -> Unit,
     /** 右键：上报按下点的**窗口**绝对坐标，由页面统一弹菜单。 */
@@ -228,7 +228,7 @@ internal fun ShelfCard(
                     }
                 }
             } else if (newChapters > 0) {
-                // F-271 新章节提示：封面框右上角一颗绿点（用户 2026-10-29 口径）。
+                // 新章节提示：封面框右上角一颗绿点。
                 // 多选态不显示——那时右上角是勾选圈，两个圆叠在一起会互相打架。
                 // 白描边是为了在任何封面上都读得出来（纯绿点压在深色封面上会糊掉）。
                 Box(

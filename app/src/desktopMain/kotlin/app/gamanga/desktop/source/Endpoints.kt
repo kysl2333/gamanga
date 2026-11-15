@@ -9,7 +9,7 @@ import java.net.http.HttpConnectTimeoutException
 import java.net.http.HttpTimeoutException
 
 /**
- * 地址候选与换域名重试（F-22）。
+ * 地址候选与换域名重试。
  *
  * 源站换域名有两种表现：**整个站点搬走**（旧域名 301/404）和**旧域名直接被墙**
  * （连接超时/DNS 失败）。后者才值得「换下一个地址重试」——业务错误（404/403/JSON

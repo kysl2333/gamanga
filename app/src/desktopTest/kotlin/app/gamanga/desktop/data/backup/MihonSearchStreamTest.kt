@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * 换源搜索的**流式 + 并发**回归（R-166，2026-10-29）。
+ * 换源搜索的**流式 + 并发**回归。
  *
  * 用户原话：「搜索速度太慢，搜索到的优先发出来」。原来 `searchMihonCandidates` 是
  * `for (type in types)` 串行 + 全部结束才返回，总耗时 = 最慢那个源（拷贝漫画 DOM 兜底能到 20s），

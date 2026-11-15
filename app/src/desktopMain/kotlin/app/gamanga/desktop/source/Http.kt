@@ -133,7 +133,7 @@ object Http {
      *
      * ## 为什么重做：填个连不通的 IP 也会「通过」
      *
-     * 用户 2026-10-29 报「输入一个连不通的 IP 和端口，点测试竟然通过了」。
+     * 报「输入一个连不通的 IP 和端口，点测试竟然通过了」。
      * 实测（JDK 21，`tools/jdk-21.0.12.1+1`）根因是 **JDK 的 `HttpClient` 对 SOCKS 代理不可靠**：
      * 同样不可达的地址，HTTP 协议稳定报 `HttpConnectTimeoutException`，
      * 而 SOCKS 协议有时**直接绕过代理走直连**（返回 204），于是「代理根本连不上」被判成通过。
@@ -243,7 +243,7 @@ object Http {
         else -> e.message?.take(80) ?: (e::class.simpleName ?: "未知错误")
     }
 
-    /** GET 文本（UTF-8）。 */
+    /** GET 文本（UT）。 */
     suspend fun getText(
         url: String,
         headers: Map<String, String> = emptyMap(),
@@ -323,7 +323,7 @@ object Http {
         String(request(url, headers + ("Content-Type" to "application/json"), body, sourceType), Charsets.UTF_8)
 
     /**
-     * 这个源该用哪个 UA（F-22）：`sources.json` 里配了就用它，否则用内置桌面 Chrome UA。
+     * 这个源该用哪个 UA：`sources.json` 里配了就用它，否则用内置桌面 Chrome UA。
      *
      * 适配器**不要**再各自硬编码 UA——否则配置项形同虚设（站点按 UA 分流时
      * 用户改了配置却不生效，排查起来极其费时）。

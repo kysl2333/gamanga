@@ -68,7 +68,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 /**
- * mihon 备份导入向导（F-275，2026-10-29）。
+ * mihon 备份导入向导。
  *
  * 用户原话：「mihon 里面应该有很多没办法使用的源的漫画，需要换源和对齐章数的名字而不是第几章，
  * 但是完全搜索不到的或者只能用几个字部分搜索才能搜索到的要实现解决它，
@@ -83,7 +83,7 @@ import kotlinx.coroutines.launch
  *
  * 视觉：白卡 + 遮罩，与换源窗口 / 选图弹窗同一档（`Radius.Drawer`、26dp 柔化阴影）。
  *
- * **2026-10-29 返工（R-165 / R-166）**：上一版 `RowState` 的 `selected` / `alias` / `picked`
+ * **2026-10-29 返工（/ ）**：上一版 `RowState` 的 `selected` / `alias` / `picked`
  * 写成了普通 `var`，不是 Compose 状态 → 点了不重组，表现为「勾选点不动、全选全不选没反应、
  * 滚一下才出现勾」「别称删不掉」。现在三个字段全部 `mutableStateOf`。
  * 搜索也从「串行等五个源」改成流式（`Flow`，谁先回来先显示），按钮里带转圈。
@@ -93,13 +93,13 @@ fun MihonImportDialog(
     preview: MihonImportPreview,
     busy: Boolean,
     result: MihonImportReport?,
-    /** 导入进行中的进度（`done/total` + 当前书名），null = 还没开始（R-172）。 */
+    /** 导入进行中的进度（`done/total` + 当前书名），null = 还没开始。 */
     progress: MihonImportProgress? = null,
     onDismiss: () -> Unit,
     onSearch: (alias: String, title: String) -> Flow<MihonCandidate>,
-    /** [mode] 由用户在界面上选：只恢复书架 / 书架 + 观看历史（R-171）。 */
+    /** [mode] 由用户在界面上选：只恢复书架 / 书架 + 观看历史。 */
     onImport: (List<MihonImportChoice>, MihonImportMode) -> Unit,
-    /** 导入进行中点「取消」：掐掉导入作业（R-193，已导入的书保留）。 */
+    /** 导入进行中点「取消」：掐掉导入作业（已导入的书保留）。 */
     onCancelImport: () -> Unit = {},
 ) {
     val rows = remember(preview) {
@@ -118,9 +118,9 @@ fun MihonImportDialog(
     }
     val scope = rememberCoroutineScope()
     var showOnlyUnresolved by remember { mutableStateOf(false) }
-    // R-171：默认「只恢复书架」——用户明确说「大多数人一般都是恢复书架的」
+    // 默认「只恢复书架」——用户明确说「大多数人一般都是恢复书架的」
     var mode by remember { mutableStateOf(MihonImportMode.SHELF_ONLY) }
-    // R-181（2026-10-30 用户）：「恢复备份还在搜索中时点击导入」会出问题。
+    // （用户）：「恢复备份还在搜索中时点击导入」会出问题。
     // 每行的搜索是个独立协程，导入开始时它还在往 `state.candidates` 里写；
     // 现在把 job 都留着，点「开始导入」/「取消」时**先全部掐掉**再往下走。
     val searchJobs = remember { mutableMapOf<String, Job>() }
@@ -169,7 +169,7 @@ fun MihonImportDialog(
                 .padding(Tokens.Space.Xxl),
         ) {
             // ---- 标题 + 统计 ----
-            // R-178：统计跟着**当前导入范围**走（「只恢复书架」时只数书架里的书），
+            // 统计跟着**当前导入范围**走（「只恢复书架」时只数书架里的书），
             // 否则标题写着 40 部、列表里只有 12 行，用户会以为丢数据了
             val modeRows = rows.filter { mode.includes(it.row) }
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -240,7 +240,7 @@ fun MihonImportDialog(
                 ImportReport(result)
             } else {
                 // ---- 列表 ----
-                // R-178：先按导入范围筛（只恢复书架 / 书架 + 历史），再按「只看需要换源」筛
+                // 先按导入范围筛（只恢复书架 / 书架 + 历史），再按「只看需要换源」筛
                 val visible = modeRows.filter {
                     !showOnlyUnresolved || it.row.status == MihonRowStatus.UNKNOWN_SOURCE
                 }
@@ -258,7 +258,7 @@ fun MihonImportDialog(
                                     state.error = null
                                     state.candidates = emptyList()
                                     state.expanded = false
-                                    // R-181：同一行重复点搜索时先掐掉上一次，避免两股流同时写候选
+                                    // 同一行重复点搜索时先掐掉上一次，避免两股流同时写候选
                                     searchJobs.remove(state.row.url)?.cancel()
                                     searchJobs[state.row.url] = scope.launch {
                                         val seen = HashSet<String>()
@@ -268,9 +268,9 @@ fun MihonImportDialog(
                                             onSearch(state.alias, state.row.title).collect { c ->
                                                 if (seen.add(c.source.name + ":" + c.sourceId)) {
                                                     acc += c
-                                                    // R-173：实时按**当前别称**的匹配度排（用户边打字边搜，
+                                                    // 实时按**当前别称**的匹配度排（用户边打字边搜，
                                                     // 用备份原题打分会让改短的别称搜到的结果排到最后）
-                                                    // R-179：「越靠前的文字优先级越高」→ 用位置加权的
+                                                    // 「越靠前的文字优先级越高」→ 用位置加权的
                                                     // [titleMatchRank]（开头命中 900 > 中间命中 800-位置）
                                                     val kw = state.alias
                                                     state.candidates = acc.sortedWith(
@@ -333,7 +333,7 @@ fun MihonImportDialog(
                         style = Tokens.Type.Caption.toTextStyle(),
                     )
                     Spacer(Modifier.width(Tokens.Space.Md))
-                    // R-193：导入中「取消」要能真的停下来——导入几十部要几分钟，
+                    // 导入中「取消」要能真的停下来——导入几十部要几分钟，
                     // 之前这里 `enabled = !busy` 把唯一出口也锁死了（用户体感「按钮点不动」）。
                     SmallAction(
                         text = if (busy) "取消导入" else "取消",
@@ -351,7 +351,7 @@ fun MihonImportDialog(
                         text = if (busy) "导入中…" else "开始导入",
                         enabled = !busy && chosen > 0,
                     ) {
-                        // R-181：导入前先掐掉所有在跑的搜索——否则它还在往列表里写候选，
+                        // 导入前先掐掉所有在跑的搜索——否则它还在往列表里写候选，
                         // 和导入过程抢状态（用户报的就是「搜索中点导入」后的怪现象）
                         cancelSearches()
                         onImport(
@@ -361,7 +361,7 @@ fun MihonImportDialog(
                                     alias = s.alias.trim().ifBlank { s.row.alias },
                                     source = s.picked?.source ?: s.row.source,
                                     sourceId = s.picked?.sourceId ?: s.row.sourceId,
-                                    // R-169：名字与封面以新源为准（否则书架里还是备份的旧名字 + 失效封面）
+                                    // 名字与封面以新源为准（否则书架里还是备份的旧名字 + 失效封面）
                                     pickedTitle = s.picked?.title,
                                     pickedCover = s.picked?.coverUrl,
                                 )
@@ -387,7 +387,7 @@ fun MihonImportDialog(
  * 一行的可变状态（勾选 / 别称 / 搜索结果 / 已绑定的候选）。
  *
  * ⚠️ 这三个字段**必须是 Compose 状态**：写成普通 `var` 时点勾选、删别称、选候选都不会触发重组，
- * 用户看到的就是「点了没反应，滚一下才更新」（R-165 的原始症状）。
+ * 用户看到的就是「点了没反应，滚一下才更新」（原始症状）。
  */
 private class RowState(
     val row: MihonImportRow,
@@ -519,7 +519,7 @@ private fun ImportRow(
 /**
  * 「搜索」按钮：搜索中显示转圈 + 已找到的条数（流式，数字会自己涨）。
  *
- * 用户 2026-10-29：「搜索速度太慢，搜索到的优先发出来并在适合的位置放置一个加载圈」。
+ * 「搜索速度太慢，搜索到的优先发出来并在适合的位置放置一个加载圈」。
  * 加载圈放在按钮里——用户视线本来就在这（刚点完），不用另找地方放全局 loading。
  */
 @Composable
@@ -571,7 +571,7 @@ private fun SearchButton(searching: Boolean, found: Int, enabled: Boolean, onCli
     }
 }
 
-/** 导入范围选择胶囊（R-171）：选中 = 强调色底 + 强调色字。 */
+/** 导入范围选择胶囊：选中 = 强调色底 + 强调色字。 */
 @Composable
 private fun ModeChip(text: String, selected: Boolean, enabled: Boolean, onClick: () -> Unit) {
     val interaction = remember { MutableInteractionSource() }
@@ -614,7 +614,7 @@ private fun ModeChip(text: String, selected: Boolean, enabled: Boolean, onClick:
 }
 
 /**
- * 导入进度（R-172）：用户原话「导入时间慢，不知道在干什么」。
+ * 导入进度：用户原话「导入时间慢，不知道在干什么」。
  *
  * 一行「正在导入 3/12：《书名》」+ 一条 4dp 的进度条。导入一部要拉一次源站章节列表，
  * 十几部就是十几秒，没有这个就只能干瞪眼。

@@ -11,5 +11,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "mihon-desktop"
+rootProject.name = "gamanga-desktop"
 include(":app")

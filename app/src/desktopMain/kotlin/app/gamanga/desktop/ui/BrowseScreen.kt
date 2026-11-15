@@ -52,7 +52,7 @@ import kotlinx.coroutines.launch
 /**
  * 浏览页（M3）：**浏览历史 → 搜索 → 详情/章节 → 加入书架 / 开读**。
  *
- * ## 三段式信息架构（F-128，2026-10-27 用户重新定义）
+ * ## 三段式信息架构（用户重新定义）
  *
  * | 状态 | 主区显示什么 |
  * |---|---|
@@ -77,12 +77,12 @@ fun BrowseScreen(
     /** 从书架顶栏搜索键带过来的词：进页面后自动搜一次（2026-10-26）。 */
     initialKeyword: String? = null,
     autoSubmitInitialKeyword: Boolean = false,
-    /** R-04 下载管理器（详情页选章下载 / 「已缓存」标记的数据源）。 */
+    /** 下载管理器（详情页选章下载 / 「已缓存」标记的数据源）。 */
     downloadManager: DownloadManager = AppGraph.downloadManager,
-    /** F-128：浏览历史（首屏内容 + 点击记录）。 */
+    /** 浏览历史（首屏内容 + 点击记录）。 */
     historyStore: BrowseHistoryStore = AppGraph.browseHistory,
     /**
-     * F-129：dock 里「浏览」按钮被点了几次（自增计数）。
+     * dock 里「浏览」按钮被点了几次（自增计数）。
      *
      * 用途：详情是二级页，用户要能「点一级菜单把二级页收回去」。但那时 `NavItem.BROWSE`
      * 已经是选中态，再点一次状态不变、页面收不到任何信号。壳层因此把「重复点同一个菜单项」
@@ -104,7 +104,7 @@ fun BrowseScreen(
     // ---- 全局搜索状态（2026-10-26 用户重定义）----
     /** 书架条目（简繁归一化后过滤，命中显示在第一排）。 */
     val shelfItems by repository.shelfItems.collectAsState()
-    /** 浏览历史（F-128）：只在浏览页点过的封面，与阅读进度历史无关。 */
+    /** 浏览历史：只在浏览页点过的封面，与阅读进度历史无关。 */
     val browseHistory by historyStore.items.collectAsState()
     val shelfHits = remember(shelfItems, keyword) {
         if (keyword.isBlank()) emptyList()
@@ -119,7 +119,7 @@ fun BrowseScreen(
     /** 正在跑的搜索（重复点搜索键要先取消上一次，否则两批结果混在一起）。 */
     var searchJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     /**
-     * 详情二级页宿主（F-143）。状态机与渲染都在 `ui/detail/DetailHost.kt`。
+     * 详情二级页宿主。状态机与渲染都在 `ui/detail/DetailHost.kt`。
      *
      * 用户这次要求「在书架页点封面就在书架页内弹出、在阅览页点封面就在阅览页内弹出」——
      * 详情页不能再长在某一个页面里。抽成宿主之后，三个页面各自持有一份 `DetailHostState`，
@@ -146,7 +146,7 @@ fun BrowseScreen(
         // 重复搜索先取消上一批，否则两批结果会混进同一个 map
         searchJob?.cancel()
         searchJob = scope.launch {
-            // 通知壳层：dock 的浏览按钮要播搜索动效（用户 2026-10-27 要求）
+            // 通知壳层：dock 的浏览按钮要播搜索动效
             app.gamanga.desktop.ui.search.SearchStatus.searching()
             try {
                 app.gamanga.desktop.data.SearchAll.search(keyword).collect { (type, state) ->
@@ -174,12 +174,12 @@ fun BrowseScreen(
     }
 
     // 从书架输入框跳进来：**只填词，不自动搜源**。
-    // 用户 2026-10-26 口径：「输入文字后立刻跳转到浏览页，浏览页立即搜索书架是否存在……
+    // 「输入文字后立刻跳转到浏览页，浏览页立即搜索书架是否存在……
     // 只有在用户点击了搜索键或者回车键后开始进行漫画源的搜索」。
     // 所以这里刻意不调 search()——书架命中是内存过滤，随 keyword 自动更新。
 
     /**
-     * 搜索词被**删空** → 退回浏览历史（F-128）。
+     * 搜索词被**删空** → 退回浏览历史。
      *
      * 用户口径：「搜索后搜索页常驻，直到用户删除全部搜索文字才回到浏览历史」。
      * 所以这里只在 `keyword` 变空时清场，**不**在每次改字时清——
@@ -197,7 +197,7 @@ fun BrowseScreen(
     }
 
     /**
-     * 书架命中被点开（F-128：顺手记进浏览历史）。
+     * 书架命中被点开（：顺手记进浏览历史）。
      *
      * 用户口径：「浏览历史只记录在浏览页点过的漫画封面，包括在浏览页点过的书架漫画封面」——
      * 所以记录点就在**这里**，而不是在书架页的点击回调里。
@@ -271,7 +271,7 @@ fun BrowseScreen(
     }
 
     // 「点搜索框外面就失焦」：页面根记下自己在窗口里的位置，搜索栏记下自己的矩形，
-    // 按下点落在栏外就 clearFocus（用户 2026-10-27：「点击其他任意地方无法关闭输入文本的状态」）
+    // 按下点落在栏外就 clearFocus（「点击其他任意地方无法关闭输入文本的状态」）
     val searchBounds = rememberSearchBarBounds()
     Column(
         Modifier
@@ -280,7 +280,7 @@ fun BrowseScreen(
             // 顶部不再由根 padding 出一份：顶距统一交给搜索栏的 [SearchBarTopInset]
             // （2026-10-29 三页对齐，见 GlobalSearchPane 里那个常量的注释）
             //
-            // ⚠️ **底部不要给根 padding**（R-176 / R-177，2026-10-30 用户）：
+            // ⚠️ **底部不要给根 padding**（/ ，2026-10-30 用户）：
             // 「搜索页多选的两图标比书架页的两图标高度高了」「撤销窗口也要对齐菜单栏」。
             // 根上那 20dp 会把整块内容区抬高 → 挂在 `Alignment.BottomCenter` 上的
             // 多选条 / 回撤条都跟着高 20dp，而它们的位置是按 **窗口底部** 算的
@@ -292,14 +292,14 @@ fun BrowseScreen(
         // 2026-10-26 用户重定义：这里是**全局搜索**，不再是「选一个源再搜」。
         // 输入即显示书架命中（纯内存），点搜索键/回车才真正去各源搜（拷贝漫画要 8~10 秒）。
         // **和书架页一样：页面从窗口顶开始，顶栏自己让出拖拽带**
-        // （用户 2026-10-27 截图对比：两边搜索框差约 11dp，根因是两套让位机制）
+        // （截图对比：两边搜索框差约 11dp，根因是两套让位机制）
         SearchTopBar(
             query = keyword,
             onQueryChange = { keyword = it },
             onSearch = { search() },
-            // 从书架跳过来要能直接接着打字（用户 2026-10-26：「跳转后搜索框就没激活」）
+            // 从书架跳过来要能直接接着打字（「跳转后搜索框就没激活」）
             autoFocus = true,
-            // 有内容、还没提交 → 搜索栏最右端浮出回车小图标（F-128 第四版：
+            // 有内容、还没提交 → 搜索栏最右端浮出回车小图标（第四版：
             // 用户把「气泡提示」整个否掉了，要的是框内的一个图标）
             showEnterAction = keyword.isNotBlank() && !sourceSearchStarted,
             bounds = searchBounds,
@@ -310,7 +310,7 @@ fun BrowseScreen(
         Spacer(Modifier.height(10.dp))
         // ---- 主区（一级） + 详情（二级，从底部中间上滑）----
         //
-        // F-133（2026-10-27 用户口径）：「二级详情页由一级界面中间底部向上展开，并带有现代审美的
+        // （用户口径）：「二级详情页由一级界面中间底部向上展开，并带有现代审美的
         // 过渡动效；展开时左右两侧仍可见一级菜单，二级菜单宽度占整体界面的二分之一至三分之二」。
         // 所以一级**宽度、布局、滚动位置一律不变**（覆盖层，不是分栏）——分栏会让一级页在
         // 300ms 内连续两次重排，封面列数跟着跳，看起来是「整页在抖」。
@@ -327,7 +327,7 @@ fun BrowseScreen(
                         onOpen = { entry -> openHistoryEntry(entry) },
                         onDelete = { keys -> historyStore.removeAll(keys) },
                         onClearAll = { historyStore.clear() },
-                        // F-138/F-139：删 / 清空都能回撤。回撤条由历史面板自己显示，
+                        // /删 / 清空都能回撤。回撤条由历史面板自己显示，
                         // 这里只负责把条目塞回 store（`restore` 按 visitedAt 重排）。
                         onRestore = { entries -> historyStore.restore(entries) },
                     )
@@ -346,7 +346,7 @@ fun BrowseScreen(
                         query = keyword,
                         shelfHits = shelfHits,
                         // **实际有适配器的源**，不是 SourceType.entries ——
-                        // 用户 2026-10-27：「我没有 komga 这个网站源可以去掉」。
+                        // 「我没有 komga 这个网站源可以去掉」。
                         // Komga 只是枚举里的死项（没有适配器），用 entries 会白列一个永远空的分区。
                         sourceTypes = remember { Sources.all().map { it.type } },
                         sourceStates = sourceStates,
@@ -358,8 +358,8 @@ fun BrowseScreen(
             }
 
             // 详情二级页：宿主自带遮罩 + 底部上滑面板 + 换源弹窗。
-            // 浏览 / 书架 / 阅览三个页面共用同一份实现（F-143）。
-            // 底距 20dp 原来加在根 Column 上，会把整页的浮层一起抬高（R-176）——
+            // 浏览 / 书架 / 阅览三个页面共用同一份实现。
+            // 底距 20dp 原来加在根 Column 上，会把整页的浮层一起抬高——
             // 现在只给详情面板：面板仍然离窗口底边 20dp，与改动前的观感一致。
             DetailHost(
                 state = detail,
@@ -373,7 +373,7 @@ fun BrowseScreen(
     }
 }
 
-@Suppress("unused") // F-128：详情改为「主区退半栏」后不再需要窄结果行，保留作回滚参照
+@Suppress("unused") // 详情改为「主区退半栏」后不再需要窄结果行，保留作回滚参照
 @Composable
 private fun ResultRow(manga: SourceManga, selected: Boolean, onClick: () -> Unit) {
     Row(
@@ -403,7 +403,7 @@ private fun ResultRow(manga: SourceManga, selected: Boolean, onClick: () -> Unit
 }
 
 /**
- * 章节在章节列表里的显示下标（R-08 定位 / 高亮共用）。
+ * 章节在章节列表里的显示下标（定位 / 高亮共用）。
  *
  * 倒序显示时列表是升序列表的镜像：第 1 话在最后一行。直接用阅读进度的下标
  * 会定位到对称的另一头。进度不存在（[index] < 0）返回 -1，调用方跳过定位。

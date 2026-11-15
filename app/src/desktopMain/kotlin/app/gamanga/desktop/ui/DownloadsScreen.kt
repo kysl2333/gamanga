@@ -86,7 +86,7 @@ import app.gamanga.desktop.ui.detail.rememberDetailHostState
 import kotlinx.coroutines.delay
 
 /**
- * 下载管理页（R-04）。
+ * 下载管理页。
  *
  * 按漫画分组的任务列表：进行中（进度条）/ 等待中 / 失败（重试）/ 已完成（阅读 + 删除）。
  * 顶部一行总览：缓存占用、已缓存话数、进行中任务数；并发数设置行（第七轮 #2）。
@@ -236,7 +236,7 @@ private fun DownloadsContent(
         ConcurrencyRow(repository = repository, downloadManager = downloadManager)
         Spacer(Modifier.height(6.dp))
 
-        // 空列表不再写说明文案（用户 2026-10-29 要求「去掉图片上的文字」）：
+        // 空列表不再写说明文案（「去掉图片上的文字」）：
         // 页头指标 + 筛选 + 并发行已经说明了这是下载页，再堆一段长句只是噪音。
         if (groups.isEmpty()) return@Column
 
@@ -445,7 +445,7 @@ private fun DownloadGroup(
         Row(
             Modifier
                 .fillMaxWidth()
-                // 只认主键：桌面端 `clickable` 把右键也算点击（书架页 R-09 的教训）
+                // 只认主键：桌面端 `clickable` 把右键也算点击（书架页 的教训）
                 .primaryClick(onClick = onOpenDetail)
                 .padding(vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -608,7 +608,7 @@ private fun readDownloaded(
  * 只认主键的点击（桌面端专用，与 `HistoryScreen.primaryPress` 同一套口径）。
  *
  * 为什么不用 `Modifier.clickable`：桌面端它把右键也算点击——右键点书名会直接开详情，
- * 用户想弹上下文菜单时会被抢走（书架页 R-09 的教训）。这里显式只认 `isPrimaryPressed`，
+ * 用户想弹上下文菜单时会被抢走（书架页 的教训）。这里显式只认 `isPrimaryPressed`，
  * 并且**只在事件还没被更深的子件消费时**才触发。
  */
 @OptIn(ExperimentalComposeUiApi::class)

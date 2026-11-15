@@ -16,7 +16,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * F-22 源配置化：`sources.json` 的读取/归一化/回落规则。
+ * 源配置化：`sources.json` 的读取/归一化/回落规则。
  *
  * 这些用例锁死三条容易退化的约定：
  * 1. **没配置文件 = 全部内置默认**（老用户升级后行为不变）；

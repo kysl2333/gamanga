@@ -33,7 +33,7 @@ class GodaSource(
     apiBases: List<String> = listOf(DEFAULT_API),
     /** 借会话：内嵌浏览器导出的登录态（`a=1; b=2`），未登录为 null。 */
     private val cookies: () -> String? = { null },
-    /** 路径模板（F-36，`sources.json` 的 `paths` 段）；空 = 内置默认。 */
+    /** 路径模板（`sources.json` 的 `paths` 段）；空 = 内置默认。 */
     paths: Map<String, String> = emptyMap(),
     private val htmlReader: (suspend (String) -> String)? = null,
     private val jsonReader: (suspend (String) -> String)? = null,
@@ -76,8 +76,7 @@ class GodaSource(
 
     override suspend fun search(keyword: String, page: Int, pageSize: Int): List<SourceManga> {
         // 站点改版（Nuxt→Astro）后搜索从「/s?q=查询串」变成「/s/<关键词>」路径式：
-        // 旧写法服务端直接忽略 q，对任意关键词都返回同一份默认列表（R-41，
-        // 用户感知「第二次搜索还是第一次的结果」）。卡片结构没变，CARD 正则仍适用。
+        // 旧写法服务端直接忽略 q，对任意关键词都返回同一份默认列表（        // 用户感知「第二次搜索还是第一次的结果」）。卡片结构没变，CARD 正则仍适用。
         val html = getHtml(path("search", "kw" to pathEncode(keyword)))
         // 卡片：<a href="/manga/slug">…<img src="cover">…<h3 class="cardtitle">标题</h3>
         return CARD.findAll(html).map { m ->
@@ -235,7 +234,7 @@ class GodaSource(
         // 简介是带 line-clamp-4 的那个 <p>（内容常常只有"标题 -作者"，但比 meta 描述优先）
         val DESC = Regex("""<p class="[^"]*line-clamp-4[^"]*"[^>]*>(.*?)</p>""", RegexOption.DOT_MATCHES_ALL)
         val STATUS = Regex("""(連載中|已完結|連載|完結)""")
-        /** 路径模板默认值（F-36）：改版时可在 `sources.json` 的 `paths` 段覆盖。 */
+        /** 路径模板默认值：改版时可在 `sources.json` 的 `paths` 段覆盖。 */
         val DEFAULT_PATHS: Map<String, String> = mapOf(
             "search" to "/s/{kw}",
             "detail" to "/manga/{id}",

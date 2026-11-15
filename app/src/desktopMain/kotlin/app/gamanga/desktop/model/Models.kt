@@ -1,7 +1,7 @@
 package app.gamanga.desktop.model
 
 /**
- * 首发源标识（ADR-0002 Locked details：Komiic + GoDa 首发，Komga 二期，Mangabz/拷贝漫画三期）。
+ * 首发源标识（ADLocked details：Komiic + GoDa 首发，Komga 二期，Mangabz/拷贝漫画三期）。
  */
 enum class SourceType { KOMIIC, GODA, KOMGA, MANGABZ, COPYMANGA }
 
@@ -29,7 +29,7 @@ data class Chapter(
     val read: Boolean = false,
     val pageCount: Int = 0,
     /**
-     * 「点过」的时间戳（0 = 没点过）。F-39。
+     * 「点过」的时间戳（0 = 没点过）。。
      *
      * **与 [read] 是两件事**：点过 = 打开过这一话（详情页文字变灰），已读 = 翻到了结尾。
      * 「标记未读」会把两者一起清掉。

@@ -15,7 +15,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * F-03 备份的收尾测试（2026-10-24）。
+ * 备份的收尾测试。
  *
  * 之前 `BackupManager` / `MihonBackup` / `ProtoReader` 代码写完但**没有一行测试**，
  * 属于「代码完成、未收尾」。这里覆盖三块能离线验证的部分：

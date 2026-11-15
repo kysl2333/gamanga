@@ -131,14 +131,14 @@ private val ChapterCellHeight = 58.dp
 
 /** 章节网格底部为右下角「下载」浮钮让出的高度（40dp 按钮 + 上下呼吸）。 */
 /**
- * 详情二级页的内容（F-133，2026-10-27 从「右侧整幅滑入」改为「底部中间上滑面板」）。
+ * 详情二级页的内容（从「右侧整幅滑入」改为「底部中间上滑面板」）。
  *
  * ## 三段式（`docs/ui/prototype/detail.md`）
  *
  * 1. **封面 + 信息**：封面严格 3:4、圆角 [Tokens.Radius.Card]（与书架卡/搜索卡同一颗令牌），
  *    右侧是元信息 + 简介 + 操作行；
  * 2. **进度栏**：172dp 窄栏（面板窄时折到信息区下方），只给百分比 / 细条 / 三个计数；
- * 3. **章节区**：5 列网格，整片章节共用**一层外框**（用户 2026-10-27：「减少方框的出现」，
+ * 3. **章节区**：5 列网格，整片章节共用**一层外框**（「减少方框的出现」，
  *    逐章加框在 5 列 × 上百话时会变成一面格子墙，视觉噪音压过章节名本身）。
  *
  * ## 为什么状态几乎都靠「传进来」而不是自己持有
@@ -187,7 +187,7 @@ internal fun DetailPanel(
     onEnqueueChapter: (SourceChapter) -> Unit,
     onRetryDownload: (chapterLocalId: String) -> Unit,
     onOpenBrowser: (url: String, domain: String) -> Unit,
-    /** F-45：换源入口（源站挂了就把这本书迁到别的源）。 */
+    /** 换源入口（源站挂了就把这本书迁到别的源）。 */
     onMigrate: () -> Unit,
     panelWidth: Dp,
 ) {
@@ -199,12 +199,12 @@ internal fun DetailPanel(
     val saved = remember(localId, chapters.size, inShelf, progressTick) {
         repository.progressOf(localId)
     }
-    // F-39：章节四态（未点过 / 点过 / 正在读 / 已读）。
+    // 章节四态（未点过 / 点过 / 正在读 / 已读）。
     val chapterStates = remember(localId, chapters.size, inShelf, progressTick) {
         repository.chaptersOf(localId).associateBy { it.id }
     }
 
-    // ---- 章节类型（话 / 卷 / 番外）：用户 2026-11-11 反馈「话和卷都在一起了」----
+    // ---- 章节类型（话 / 卷 / 番外）：实测「话和卷都在一起了」----
     // 有些源同一本书既有「连载话」又有「单行本卷」，两边编号都是 01/02/03…
     // 全塞进一个列表就是 01(52页)/01(192页)/02… 交错。这里先按
     // 源自带类型 → 名字标记 → 页数证据 把每条判成 话/卷/番外，
@@ -229,7 +229,7 @@ internal fun DetailPanel(
         kindChapters.indexOfFirst { "$localId#${it.id}" == p.chapterId }
     } ?: -1
     val startAt = savedIndex.coerceAtLeast(0)
-    // R-08：定位 + 高亮共用「显示下标」——倒序时列表是镜像的，用 savedIndex 会定位到对称那头。
+    // 定位 + 高亮共用「显示下标」——倒序时列表是镜像的，用 savedIndex 会定位到对称那头。
     // 筛选生效时下标要按**筛选后的列表**重算，否则会滚到别的话上。
     val savedDisplayIndex = remember(baseChapters, saved, chapterDesc) {
         val inBase = baseChapters.indexOfFirst { "$localId#${it.id}" == saved?.chapterId }
@@ -541,7 +541,7 @@ internal fun DetailPanel(
                     )
                 }
                 Spacer(Modifier.weight(1f))
-                // ---- 话 / 卷 滑动开关（用户 2026-11-11：先要能分开，后给了玻璃拟态开关参考图）----
+                // ---- 话 / 卷 滑动开关（先要能分开，后给了玻璃拟态开关参考图）----
                 // 只有「有话也有卷」的书才出现：单行本类、纯连载类的书不需要多一个选择。
                 if (hasVolume && !loading) {
                     ChapterKindSwitch(showVolumes = showVolumes, onChange = { showVolumes = it })
@@ -573,7 +573,7 @@ internal fun DetailPanel(
             }
             Spacer(Modifier.height(10.dp))
 
-            // 章节区：**不再套灰色容器**（用户 2026-10-28：「灰色框去掉，只给白色话数框加阴影」）。
+            // 章节区：**不再套灰色容器**（「灰色框去掉，只给白色话数框加阴影」）。
             // 层级改由每张白卡自己的常驻投影承担——阴影比底色差更轻，也不会在面板里
             // 再切出一块灰色矩形。hover / 当前话的强调色描边仍保留（状态指示，不是静态边框）。
             Box(
@@ -601,7 +601,7 @@ internal fun DetailPanel(
                             },
                         ) { i, row ->
                             when (row) {
-                                // R-55：编号跳空提示整行占满 5 列
+                                // 编号跳空提示整行占满 5 列
                                 is ChapterRow.Gap -> Box(
                                     Modifier.fillMaxWidth().padding(vertical = 6.dp),
                                     contentAlignment = Alignment.Center,
@@ -694,7 +694,7 @@ internal fun DetailPanel(
                                                         danger = false,
                                                     ) {
                                                         menuChapterId = null
-                                                        // R-159：带上章节名与序号——库里还没有这一行时
+                                                        // 带上章节名与序号——库里还没有这一行时
                                                         // 由仓储补一行幽灵章节，否则右键完全没反应
                                                         repository.setChapterRead(
                                                             "$localId#${ch.id}", true, ch.name, ch.index,
@@ -706,7 +706,7 @@ internal fun DetailPanel(
                                                         danger = false,
                                                     ) {
                                                         menuChapterId = null
-                                                        // 已读 + 点过一起清，章节恢复原色（F-39）
+                                                        // 已读 + 点过一起清，章节恢复原色
                                                         repository.setChapterRead(
                                                             "$localId#${ch.id}", false, ch.name, ch.index,
                                                         )
@@ -983,7 +983,7 @@ private fun DetailActions(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Tokens.Space.Sm)) {
         // **第一行：下载 + 放入书架**（两个同等分量的次动作，各占一半）
-        // 用户 2026-10-27 第四轮：「下载按钮不应该在最右下角，应该跟阅读一排……
+        // 第四轮：「下载按钮不应该在最右下角，应该跟阅读一排……
         // 上面是下载和添加到书架，下面是阅读按钮」。
         //
         // 2026-10-27 第五轮：「点击下载按钮不应该消失，而是再点一次下载按钮后取消下载界面」。
@@ -1032,7 +1032,7 @@ private fun DetailActions(
             horizontalArrangement = Arrangement.spacedBy(Tokens.Space.Xs),
         ) {
             TextAction(text = "浏览器查看", onClick = onBrowser)
-            // F-45 换源：源站改版 / 404 时唯一的出路（roadmap 第 5 节五步流程的入口之一）。
+            // 换源：源站改版 / 404 时唯一的出路（roadmap 第 5 节五步流程的入口之一）。
             // 不做「检测到失效才显示」——检测要额外打一次源站请求，而用户主动换源也是合理需求。
             TextAction(text = "换源…", onClick = onMigrate)
         }
@@ -1081,7 +1081,7 @@ private fun DetailButton(
     val content = if (primary) Tokens.Color.OnAccent else Tokens.Color.TextPrimary
     Row(
         modifier
-            // 40 → 38dp：用户说「阅读按钮太大了」。它现在独占一行、有主路径地位，
+            // 40 → 38dp：「阅读按钮太大了」。它现在独占一行、有主路径地位，
             // 高度反而该收一点，否则整块像一条横幅。
             .height(DetailButtonHeight)
             .clip(shape)
@@ -1277,10 +1277,10 @@ private fun DownloadToolbar(
 }
 
 /**
- * 「话 / 卷」滑动开关（用户 2026-11-11：先要能分开，随后给了玻璃拟态日夜开关的参考图）。
+ * 「话 / 卷」滑动开关（先要能分开，随后给了玻璃拟态日夜开关的参考图）。
  *
  * 参考图是「浅色轨道 + 一枚带光晕的玻璃浮片滑到选中侧」。正常模式**不用毛玻璃**
- * （ADR-0007/0002 的视觉纪律），所以用项目已有的语言表达同一件事：
+ * （AD/0002 的视觉纪律），所以用项目已有的语言表达同一件事：
  * 浅灰轨道（`BgSunken`）+ 白色浮片（2dp 阴影 + 4% 黑描边），浮片 180ms 滑到选中侧，
  * 选中字主色半粗、另一侧三级灰。
  *
@@ -1370,7 +1370,7 @@ private fun ChapterKindText(text: String, selected: Boolean) {
  * 描边转主色。下载模式下不给 hover 位移（那时点击是勾选，位移会让人以为格子会跑）。
  *
  * 着色：当前话主色字 + Medium + 主色描边；点过（`lastOpenedAt > 0`）文字变灰；
- * 其余主色字。灰 ≠ 已读（用户 2026-10-25 明确），已读在章节名右侧挂一枚中性灰底白勾。
+ * 其余主色字。灰 ≠ 已读，已读在章节名右侧挂一枚中性灰底白勾。
  *
  * [onContext] 给的是**窗口绝对坐标**（不是相对本格的 DpOffset）：菜单换成
  * 项目统一的 `WindowMenu` 之后按窗口坐标定位，格子这里得先把落点换算过去。
@@ -1406,7 +1406,7 @@ private fun ChapterCell(
         animationSpec = tween(Tokens.Motion.HoverMs),
         label = "chapterLift",
     )
-    // 白卡要在**白色面板**上立起来，靠 2dp 影子看不出来（用户 2026-10-28 反馈
+    // 白卡要在**白色面板**上立起来，靠 2dp 影子看不出来（实测
     // 「阴影不明显、没有按钮感、跟背景没区分开」）。常驻 4dp + 更深的 spot 色，
     // hover 抬到 10dp；再叠一条 4% 黑描边勾出边缘，白底上才有实体感。
     val elevation by animateDpAsState(

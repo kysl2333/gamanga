@@ -36,7 +36,7 @@ class MangabzSource(
     /** 站点候选（主站在前，连不上换下一个）。 */
     // 与 SourceConfig.DEFAULTS 保持一致（正常启动由 Sources 显式传值）
     siteBases: List<String> = listOf("https://www.mangabz.com"),
-    /** 路径模板（F-36）：`search` / `detail`；空 = 内置默认。 */
+    /** 路径模板：`search` / `detail`；空 = 内置默认。 */
     paths: Map<String, String> = emptyMap(),
     private val textReader: (suspend (String) -> String)? = null,
 ) : SourceAdapter {
@@ -226,7 +226,7 @@ class MangabzSource(
     // 真实图片前缀由 asHx 解包后的 pix 给出（/1/<mid>/<cid>），路径与后缀都不同。
 }
 
-/** 路径模板默认值（F-36）：改版时可在 `sources.json` 的 `paths` 段覆盖。 */
+/** 路径模板默认值：改版时可在 `sources.json` 的 `paths` 段覆盖。 */
 private val MANGABZ_DEFAULT_PATHS: Map<String, String> = mapOf(
     "search" to "/search?title={kw}",
     "detail" to "/{id}bz/",
@@ -290,7 +290,7 @@ internal fun parseMangabzSearch(html: String): List<SourceManga> {
  * - 封面：`img.detail-info-cover`（页面里第一个 img 是网站 logo，不能取首个）
  * - 章节：每话两个链接（「开始阅读」按钮区 `detail-info-btn-1` + 章节
  *   列表区 `detail-list-form-item`，232 话全量在 HTML）——限定列表区匹配
- *   并去重，否则重复 cid 会让浏览页 LazyColumn 的 items(key) 崩（R-72）。
+ * 并去重，否则重复 cid 会让浏览页 LazyColumn 的 items(key) 崩。
  */
 internal fun parseMangabzDetail(html: String, mangaId: String): Pair<SourceManga, List<SourceChapter>>? {
     val title = Regex("""class="detail-info-title"[^>]*>\s*([^<]+?)\s*<""").find(html)

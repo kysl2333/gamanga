@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * 隐私闸门（F-296，2026-11-13）。
+ * 隐私闸门。
  *
  * ## 为什么要有这条测试
  *

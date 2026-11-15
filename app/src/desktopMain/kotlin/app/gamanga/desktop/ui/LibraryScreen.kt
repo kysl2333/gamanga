@@ -71,7 +71,7 @@ import kotlinx.coroutines.launch
  *
  * 视觉对齐 M0 目标样稿：顶部标题 + 「全部 / 未读」筛选 chip；3 列封面网格；
  * 底部「最近阅读」条。新增：未读角标、长按封面移出书架（Snackbar 反馈）、
- * 右键上下文菜单（R-09：打开 / 置顶 / 浏览器打开 / 移出书架）、空库空态。
+ * 右键上下文菜单（：打开 / 置顶 / 浏览器打开 / 移出书架）、空库空态。
  */
 @Composable
 fun LibraryScreen(
@@ -85,7 +85,7 @@ fun LibraryScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    // 用户 2026-10-26：右上角「全部 8 / 未读 1263」两个筛选 chip 直接去掉，不需要。
+    // 右上角「全部 8 / 未读 1263」两个筛选 chip 直接去掉，不需要。
     // 连带 unreadOnly 状态与「没有未读章节」文案一起删干净，避免留死代码。
     val visible = items
 
@@ -97,7 +97,7 @@ fun LibraryScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("书架", fontSize = 22.sp, fontWeight = FontWeight.Medium)
-                // 搜索键：三态波浪动效（用户 2026-10-26 口述规格）。
+                // 搜索键：三态波浪动效。
                 // 旧书架页还没有搜索页，先给一条状态提示；新书架页 Compose 化时接到真实搜索入口。
                 WaveIconButton(
                     icon = DockIcons.Search,
@@ -204,7 +204,7 @@ private fun CoverCell(
                     val origin = coords.localToWindow(Offset.Zero)
                     cellOriginInWindow = IntOffset(origin.x.roundToInt(), origin.y.roundToInt())
                 }
-                // 右键菜单（R-09）。两个坑：
+                // 右键菜单。两个坑：
                 // 1) 必须放在 combinedClickable **之后**——同一节点链上后应用的修饰符
                 //    在 Main pass 先收到事件，这里才能赶在长按判定之前截胡；
                 // 2) 必须立即 consume——combinedClickable 的长按判定不区分左右键
@@ -225,7 +225,7 @@ private fun CoverCell(
                     .background(Color(item.coverColorArgb), RoundedCornerShape(8.dp))
             ) {
                 // 有远端封面就盖在占位色上（M3 起源站封面可用）。
-                // **封面落盘缓存**（R-101）：优先用本地文件，断网时书架不会变成一片灰块；
+                // **封面落盘缓存**：优先用本地文件，断网时书架不会变成一片灰块；
                 // 首次见到这张封面时后台下载并落盘（CoverCache）。
                 val remoteCover = item.entry.coverUrl
                 var coverUri by remember(remoteCover) {
@@ -289,7 +289,7 @@ private fun CoverCell(
                 maxLines = 1
             )
         }
-        // 右键菜单（R-09 修复：菜单要贴在按下点，不是离鼠标老远）。
+        // 右键菜单（修复：菜单要贴在按下点，不是离鼠标老远）。
         //
         // 旧实现用 DropdownMenu + DpOffset(格子内坐标)——DropdownMenu 的 offset 是相对
         // 锚点的又一套坐标空间，格子内坐标喂进去菜单直接弹到窗口别处（用户实测

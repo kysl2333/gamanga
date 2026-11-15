@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 
-/** 单个源的一次搜索结果（F-43）。 */
+/** 单个源的一次搜索结果。 */
 sealed interface SourceSearchState {
     /** 还在搜（拷贝漫画要 6~8 秒，UI 得先给个转圈）。 */
     data object Loading : SourceSearchState
@@ -23,9 +23,9 @@ sealed interface SourceSearchState {
 }
 
 /**
- * 多源并发搜索（F-43）。
+ * 多源并发搜索。
  *
- * 用户 2026-10-25 口径：「各源独立一起搜，再点对应源看结果」——所以这里**不合并结果**，
+ * 「各源独立一起搜，再点对应源看结果」——所以这里**不合并结果**，
  * 而是按源逐个发射状态，UI 按源分 tab 展示。
  *
  * 设计要点：

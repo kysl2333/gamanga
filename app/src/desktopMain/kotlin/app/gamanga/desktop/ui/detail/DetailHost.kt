@@ -57,7 +57,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * 详情二级页的**宿主**（F-143，2026-10-27 第二轮用户口径）。
+ * 详情二级页的**宿主**（第二轮用户口径）。
  *
  * ## 为什么要有这一层
  *
@@ -90,7 +90,7 @@ private const val PanelWidthFraction = 0.62f
 private val PanelTopGap = 24.dp
 
 /**
- * 详情面板的动画时长（F-144）与曲线（2026-11-08 批次65）。
+ * 详情面板的动画时长与曲线。
  *
  * 时长沿用「进入 380 × 1.35 ≈ 513ms、退出 300 × 1.35 ≈ 405ms」的既有口径；
  * 曲线与淡入淡出改为和推荐页详情完全一致（见 [DetailEnterMs] 等共享常量），
@@ -144,7 +144,7 @@ class DetailHostState internal constructor(
     var hint by mutableStateOf<String?>(null)
         private set
 
-    /** F-45 换源弹窗的目标（null = 关着）。 */
+    /** 换源弹窗的目标（null = 关着）。 */
     var migrateTarget by mutableStateOf<MangaEntry?>(null)
         private set
 
@@ -418,7 +418,7 @@ class DetailHostState internal constructor(
         showHint("已移出书架：$title（阅读记录已保留）")
     }
 
-    /** 打开换源弹窗（F-45）。 */
+    /** 打开换源弹窗。 */
     fun requestMigrate() {
         val id = localId ?: return
         val manga = selected ?: return
@@ -620,7 +620,7 @@ fun DetailHost(
             }
         }
 
-        // F-45 换源弹窗：整页最前（盖住详情面板）
+        // 换源弹窗：整页最前（盖住详情面板）
         state.migrateTarget?.let { target ->
             SourceMigrateDialog(
                 entry = target,

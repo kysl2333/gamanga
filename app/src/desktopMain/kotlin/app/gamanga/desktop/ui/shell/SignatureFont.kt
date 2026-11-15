@@ -4,9 +4,9 @@ import androidx.compose.ui.text.font.FontFamily
 import app.gamanga.desktop.core.AppLog
 
 /**
- * 底部菜单「选中项名称」用的艺术字体（F-70）。
+ * 底部菜单「选中项名称」用的艺术字体。
  *
- * 用户 2026-10-26 口径：**修长、有设计感、符合现代审美、可商用**。
+ * **修长、有设计感、符合现代审美、可商用**。
  *
  * 选型：**得意黑 Smiley Sans**（`atelier-anchor/smiley-sans`）。
  * - 授权：**SIL Open Font License 1.1**，允许嵌入与随软件分发、允许商用；

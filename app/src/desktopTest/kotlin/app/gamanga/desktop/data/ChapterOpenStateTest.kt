@@ -10,9 +10,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * F-39：「点过」与「已读」是两个独立状态。
+ * 「点过」与「已读」是两个独立状态。
  *
- * 用户 2026-10-25 明确：详情页变灰只表示「点过这一章」，**不代表已读**；
+ * 详情页变灰只表示「点过这一章」，**不代表已读**；
  * 「标记未读」要把两个状态一起清掉，章节才恢复原色。
  */
 class ChapterOpenStateTest {

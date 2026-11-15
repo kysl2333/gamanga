@@ -8,7 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * 源契约测试（F-20 剩余）。
+ * 源契约测试（剩余）。
  *
  * **目的**：新增/修改源适配器时，不用每次手工点一遍 UI —— 同一组断言对任意
  * [SourceAdapter] 跑一遍：能搜到 → 详情有标题 → 章节按 index 升序且不重复 → 图片是绝对地址。

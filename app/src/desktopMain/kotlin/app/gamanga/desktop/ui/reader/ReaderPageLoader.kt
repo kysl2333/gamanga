@@ -53,7 +53,7 @@ internal fun loadErrorMessage(e: Throwable): String = e.message ?: e::class.simp
  * **已经属于新章节**的状态上：错误页盖住刚出图的页面，表现就是
  * 「切换到（有缓存的）章节也取图失败，点重试就好」。
  *
- * 这正是 R-45 复发的真因：探针改可取消的 `delay` 之后（并发风暴修复），
+ * 这正是 复发的真因：探针改可取消的 `delay` 之后（并发风暴修复），
  * 快速切话必然取消在飞的探针，race 窗口从「偶尔」变成「每次切话」。
  * G社 探针一轮 3~5 秒、全是取消点，所以只在 G社 明显；Komiic 取图是秒回的
  * HTTP 调用，窗口极窄，很少撞上。
@@ -148,7 +148,7 @@ private fun CompactReaderPrefetch(
 }
 
 /**
- * 预加载窗口（R-100）；R-207拷贝源用当前屏补足三页的小窗口。
+ * 预加载窗口；拷贝源用当前屏补足三页的小窗口。
  *
  * 旧实现是 `pages.drop(start).take(8).forEach { scope.launch { ImageCache.load() } }`——
  * **每页一个 fire-and-forget 协程，且从不取消**。快速跳页（2 秒 1→60 页）时
@@ -170,7 +170,7 @@ internal fun ReaderPrefetch(
     visibleOnly: Boolean = false,
     currentPage: () -> Int,
 ) {
-    // R-207：只补足三页，不恢复前3后8/12的大窗口；退出窗口取消本等待者。
+    // 只补足三页，不恢复前3后8/12的大窗口；退出窗口取消本等待者。
     if (visibleOnly) {
         CompactReaderPrefetch(pages, mode, listState, currentPage)
         return
@@ -180,7 +180,7 @@ internal fun ReaderPrefetch(
     LaunchedEffect(pages, mode) {
         // **必须先把 pages 快照成本地 val**：它是 Compose state，在长生命周期的
         // 循环里读会拿到"未来值"——换话瞬间被清空，`coerceIn(0, lastIndex=-1)`
-        // 直接抛 "Cannot coerce value to an empty range"（2026-10-24 23:16 线上崩溃 R-105）。
+        // 直接抛 "Cannot coerce value to an empty range"（23:16 线上崩溃 ）。
         val list = pages
         if (list.isEmpty()) return@LaunchedEffect
         // 单一常驻 worker，每轮都**重新按当前窗口**挑最近的一张：
@@ -195,7 +195,7 @@ internal fun ReaderPrefetch(
             // 否则连翻两下就把预热吃光，第三下开始等图（用户实测双页最慢）。
             val ahead = if (mode == ReaderMode.DOUBLE) PREFETCH_AHEAD + 4 else PREFETCH_AHEAD
             val window = prefetchWindowAfter(start, list.size, ahead)
-            // **往回也预热**（R-98 十一轮）：只往后预热的话，往上滑进入的页永远是"没缓存的新页"，
+            // **往回也预热**（十一轮）：只往后预热的话，往上滑进入的页永远是"没缓存的新页"，
             // 必然先按猜的比例布局再变高 —— 而顶部项一变高，下面全部位移，就是回弹。
             // 往回预热的页数不用多（3 页 ≈ 1.5 屏），够覆盖一次回翻即可。
             val backCandidates = ((start - 1) downTo (start - PREFETCH_BACK))
@@ -227,7 +227,7 @@ internal fun ReaderPrefetch(
         }
     }
 
-    // ---- 窗口跟随阅读位置（用户 2026-10-23 要求"能预加载 5-10 页"）----
+    // ---- 窗口跟随阅读位置（"能预加载 5-10 页"）----
     // 没有它，翻页时新页从 0 开始下载，spinner 转半天很难受。当前页往后
     // PREFETCH_AHEAD 页提前烘进 ImageCache（已缓存的瞬间返回；LRU 256 张，
     // 翻远了自然淘汰）。窗口跟着阅读位置滑：页模式看 pageIndex，竖向看首个可见项。

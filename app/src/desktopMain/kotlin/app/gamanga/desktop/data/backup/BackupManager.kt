@@ -43,7 +43,7 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 /**
- * F-03：备份 / 恢复 / mihon 备份导入。
+ * 备份 / 恢复 / mihon 备份导入。
  *
  * 三种能力一张口：
  * 1. [exportBackup] / [restoreBackup]——我们自己的格式：一个 ZIP 里放一份 JSON
@@ -201,7 +201,7 @@ class BackupManager(
                     isRead = if (o.bool("isRead") == true) 1L else 0L,
                     // 旧备份（#30 之前）没有这个字段，缺省 0 = 未知，读的时候再回填
                     pageCount = o.long("pageCount") ?: 0L,
-                    // F-39「点过」：旧备份没有这个字段 → 0（不灰显）。已读的章节
+                    // 「点过」：旧备份没有这个字段 → 0（不灰显）。已读的章节
                     // 下次打开阅读器会重新记点过，不用从备份里推。
                     lastOpenedAt = 0L
                 )
@@ -237,9 +237,9 @@ class BackupManager(
     // ---- WebDAV ----
 
     /**
-     * 导出 → 上传到**固定文件名** [LATEST_BACKUP_NAME]（F-44 覆盖式备份）。
+     * 导出 → 上传到**固定文件名** [LATEST_BACKUP_NAME]（覆盖式备份）。
      *
-     * 与旧实现的区别（用户 2026-10-25 要求）：
+     * 与旧实现的区别：
      * 1. **不再每次新建时间戳文件**——单槽位覆盖，备份目录不会越堆越多；
      * 2. **防反向备份**：上传前比较「本地数据最后修改时间」与「云端文件时间」，
      *    云端更新就**拒绝上传**（抛 [BackupRemoteNewerException]），避免用旧数据盖掉新数据；
@@ -299,12 +299,12 @@ class BackupManager(
         return WebDavBackupReport(LATEST_BACKUP_NAME, bytes.size.toLong(), deleted)
     }
 
-    // ---- mihon 备份导入（F-03 起步，F-275 改成「预览 → 用户选择 → 导入」）----
+    // ---- mihon 备份导入（起步，改成「预览 → 用户选择 → 导入」）----
 
     /**
      * 第一步：**只解析、不联网**，把备份整理成给用户看的预览行。
      *
-     * 用户 2026-10-29 口径：「需要导入 mihon 备份后给用户选择还有改别称让用户自己修改的界面」。
+     * 「需要导入 mihon 备份后给用户选择还有改别称让用户自己修改的界面」。
      * 所以这里只回答三个问题：认不认得出源站、在不在书架、备份里有多少章 / 已读多少。
      */
     suspend fun previewMihonImport(bytes: ByteArray): MihonImportPreview = withContext(Dispatchers.IO) {
@@ -317,7 +317,7 @@ class BackupManager(
      * 按别称在可用源里搜候选（换源用）。
      *
      * 走 [SearchAll.searchWithFallback]：原词 0 条时按 `SearchKeywords` 退让（去装饰符 → 切段），
-     * 正好覆盖用户说的「完全搜索不到的、或者只能用几个字部分搜索才能搜索到的」。
+     * 正好覆盖的「完全搜索不到的、或者只能用几个字部分搜索才能搜索到的」。
      * 结果按 [titleMatchScore] 降序，标题完全一致的最前面。
      */
     suspend fun searchMihonCandidates(
@@ -344,7 +344,7 @@ class BackupManager(
                 )
             }
         }
-        // R-179：按**位置加权**排序（开头命中 > 中间命中），同档再比原始标题分与长度
+        // 按**位置加权**排序（开头命中 > 中间命中），同档再比原始标题分与长度
         out.sortedWith(
             compareByDescending<MihonCandidate> { titleMatchRank(kw, it.title) }
                 .thenByDescending { it.score }
@@ -353,7 +353,7 @@ class BackupManager(
     }
 
     /**
-     * 流式版换源搜索（R-166，2026-10-29 用户：「搜索速度太慢，搜索到的优先发出来」）。
+     * 流式版换源搜索（用户：「搜索速度太慢，搜索到的优先发出来」）。
      *
      * 与 [searchMihonCandidates] 的差别只有两点，但决定体感：
      * 1. **并发**：五个源同时打，谁先回来先发（原来是 for 循环串行，总耗时 = 最慢那个源）；
@@ -401,11 +401,11 @@ class BackupManager(
      * 每条选择：[MihonImportChoice.source] 有值就直接用那一本；为空则拿别称去搜，
      * 取打分最高的候选（用户在界面里没手动挑时才走这条）。
      *
-     * 2026-10-30 三条返工（R-169 / R-171 / R-172）：
+     * 2026-10-30 三条返工（/ / ）：
      * - **名字与封面以新源为准**（[MihonImportChoice.pickedTitle] / [pickedCover]）——
      *   用户报「换源后名字还是原来的名字，书架封面出不来」；
      * - **导入范围可选**（[mode]）：只恢复书架 / 书架 + 观看历史。范围只决定**列哪些书**，
-     *   两档都回填已读与阅读进度（R-178 用户更正）；
+     * 两档都回填已读与阅读进度（用户更正）；
      * - **逐步回报进度**（[onProgress]）：导入一部可能要拉一次章节列表，十几部就是十几秒，
      *   界面必须知道「正在导第几本」。
      */
@@ -426,11 +426,11 @@ class BackupManager(
         val skipped = ArrayList<SkippedManga>()
 
         for (choice in choices) {
-            // 用户点「取消导入」时立刻停手（R-193）：每部开头检查一次，已导入的保留。
+            // 用户点「取消导入」时立刻停手：每部开头检查一次，已导入的保留。
             currentCoroutineContext().ensureActive()
             val m = byUrl[choice.url]
             done++
-            // **进度回报绝不能打断导入**（R-193，2026-10-30）。
+            // **进度回报绝不能打断导入**。
             // 原来这里直接调 `onProgress(...)`：界面侧用 `scope.launch(Dispatchers.Main)`
             // 切线程，而桌面端没有 Main dispatcher 时 `launch` **同步抛异常**——
             // 异常从回调冒到本循环，整批导入在第一本之前就中断（用户看到「恢复后书架
@@ -522,8 +522,8 @@ class BackupManager(
      *
      * 单部失败（网络/解析）只跳过这一部，不拖垮整批。
      *
-     * 名字/封面取值顺序（R-169）：**用户挑中的新源那本** → 备份里的标题/缩略图。
-     * 备份里若自带封面图字节（R-170），入架后直接写成自定义封面，连源站封面都不用等。
+     * 名字/封面取值顺序：**用户挑中的新源那本** → 备份里的标题/缩略图。
+     * 备份里若自带封面图字节，入架后直接写成自定义封面，连源站封面都不用等。
      */
     private suspend fun importOneMihon(
         m: MihonManga,
@@ -575,7 +575,7 @@ class BackupManager(
                     queries.markChapterRead(1L, ch.id)
                     wrote = true
                 }
-                // R-178（2026-10-30 用户最终口径）：「只选择书架的书恢复**同时恢复阅读记录**」。
+                // （用户最终口径）：「只选择书架的书恢复**同时恢复阅读记录**」。
                 // 两档范围都写进度——上一版「只恢复书架就不写进度」把书架里的书读到哪里全丢了。
                 // 范围只决定**列哪些书**（见 `MihonImportMode.includes`），不再影响写什么。
                 if (mc.lastPageRead > 0L) {
@@ -588,7 +588,7 @@ class BackupManager(
             OneResult.Ok(newManga, newChapters, history, coverRestored)
         } catch (e: kotlinx.coroutines.CancellationException) {
             // 用户点「取消导入」→ 必须原样往上抛，不能被下面的通用 catch 吞成
-            // 「章节获取失败：StandaloneCoroutine was cancelled」（R-193）
+            // 「章节获取失败：StandaloneCoroutine was cancelled」
             throw e
         } catch (e: Exception) {
             OneResult.Skip("章节获取失败：${e.message?.take(60) ?: e::class.simpleName}")
@@ -643,7 +643,7 @@ class BackupManager(
         /** 云端最多保留几份（对齐 mihon 的 4 份自动备份）。 */
         const val DEFAULT_KEEP = 4
 
-        /** 覆盖式备份的固定文件名（F-44）。 */
+        /** 覆盖式备份的固定文件名。 */
         const val LATEST_BACKUP_NAME = "gamanga-latest.zip"
 
         /** 覆盖前保留的上一版。 */
@@ -671,7 +671,7 @@ data class MihonImportReport(
     /** 回填了观看历史的章节数（已读/进度）。 */
     val historyRestored: Int,
     val skipped: List<SkippedManga>,
-    /** 用备份里自带图片还原的自定义封面数（R-170）。 */
+    /** 用备份里自带图片还原的自定义封面数。 */
     val coversRestored: Int = 0,
     /** 本次的导入范围（报告里要写清「只导了书架」还是「书架 + 历史」）。 */
     val mode: MihonImportMode = MihonImportMode.SHELF_ONLY,
@@ -683,7 +683,7 @@ class BackupFormatException(message: String) : RuntimeException(message)
 
 class BackupUploadException(message: String) : RuntimeException(message)
 
-/** 覆盖式备份的判定结果（F-44）。 */
+/** 覆盖式备份的判定结果。 */
 enum class BackupDecision {
     /** 可以上传（覆盖云端）。 */
     Overwrite,
@@ -693,7 +693,7 @@ enum class BackupDecision {
 }
 
 /**
- * 该不该用本地覆盖云端（F-44 纯函数，方便单测）。
+ * 该不该用本地覆盖云端（纯函数，方便单测）。
  *
  * 规则：
  * - `force` → 一律覆盖（用户已确认）；
@@ -741,7 +741,7 @@ internal fun defaultLocalModifiedAt(): Long {
     return maxOf(db.lastModified(), wal.lastModified())
 }
 
-/** 云端比本地新，拒绝覆盖（F-44「反向备份」防护）。 */
+/** 云端比本地新，拒绝覆盖（「反向备份」防护）。 */
 class BackupRemoteNewerException(
     val remoteModifiedAt: Long,
     val localModifiedAt: Long,

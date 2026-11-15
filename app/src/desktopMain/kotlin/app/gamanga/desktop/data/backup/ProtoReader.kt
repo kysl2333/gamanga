@@ -1,7 +1,7 @@
 package app.gamanga.desktop.data.backup
 
 /**
- * 极简 protobuf wire format 读取器（F-03：导入 mihon 备份用）。
+ * 极简 protobuf wire format 读取器（：导入 mihon 备份用）。
  *
  * 为什么不引 protobuf 库：mihon 备份（`.tachibk` = gzip + protobuf）里我们只关心
  * 漫画条目和章节进度，字段号是固定的（见下）。手写 varint/length-delimited 解析
@@ -127,7 +127,7 @@ internal fun List<ProtoField>.float(number: Int): Float? =
             // kotlinx.serialization 对 Float 固定用 fixed32，但宽容起见也收 varint
             is ProtoValue.VarInt -> Float.fromBits(v.value.toInt())
             // **double 用 wireType 1**：不同版本的 mihon 备份把 chapterNumber 写成 double 过
-            // （2026-10-29 加，见 F-275：旧备份按话数对齐会整体落空，只能靠名字兜底）
+            // （加，见 ：旧备份按话数对齐会整体落空，只能靠名字兜底）
             is ProtoValue.Fixed64 -> Double.fromBits(v.value).toFloat()
             else -> null
         }
@@ -135,7 +135,7 @@ internal fun List<ProtoField>.float(number: Int): Float? =
 
 // ---- 「多候选字段号」取值：旧版本备份的字段号可能挪过位 ----
 //
-// 用户 2026-10-29 问「很早之前的 mihon 备份，代码还能用吗」。字段号在 Tachiyomi/mihon
+// 问「很早之前的 mihon 备份，代码还能用吗」。字段号在 Tachiyomi/mihon
 // 历代里大体稳定，但个别版本挪过（缩略图 9/13、章节 16/12 都出现过）。
 // 这里按候选顺序取第一个有值的，取不到再退到原来的单号读取——**宽容读、严格校验**：
 // 只要 url + title 还在，这一部就能救回来。
@@ -153,7 +153,7 @@ internal fun List<ProtoField>.longAny(vararg numbers: Int): Long? {
 /**
  * 所有 wireType=2 的原始字节（不解释内容）。
  *
- * 用途只有一个：**在备份里找封面图**（R-170）。mihon 的 `.tachibk` 正典格式不含图片，
+ * 用途只有一个：**在备份里找封面图**。mihon 的 `.tachibk` 正典格式不含图片，
  * 但部分分支/魔改版会把封面塞进某个 bytes 字段，字段号不固定 —— 所以不猜字段号，
  * 直接扫全部字节，靠文件头判是不是图片（[looksLikeImage]）。
  */

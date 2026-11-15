@@ -91,7 +91,7 @@ class WebViewIntegrationTest {
     }
 
     /**
-     * R-01 回归：按键必须真的能把文字打进输入框。
+     * 回归：按键必须真的能把文字打进输入框。
      *
      * 上一版只验了 `keydown` 探针——按键"到达页面"就算过，结果**测试全绿、功能全废**：
      * Chromium 靠 `KEY_TYPED` 插入字符，而 Compose 只派发 KeyDown/KeyUp，
@@ -147,7 +147,7 @@ class WebViewIntegrationTest {
 
 
     /**
-     * R-25 回归：条漫章节也要能取到图。
+     * 回归：条漫章节也要能取到图。
      *
      * 用户报「包子漫画该话没有图片」，页面被广告脚本跳到 tsyndicate.com 后
      * 隐藏浏览器里的 DOM 被带走，`#chapcontent img[data-path]` 自然取不到。

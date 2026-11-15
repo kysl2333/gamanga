@@ -58,9 +58,9 @@ private const val SWIPE_TURN_PX = 48f
  * 单页/双页的共同渲染。
  *
  * 轻点：左半边 = 上一页、右半边 = 下一页（鼠标党不必摸键盘）；
- * **中心带（宽 [inCenterTapBand] 定义的区域）= 切换沉浸模式**（R-43）。
+ * **中心带（宽 [inCenterTapBand] 定义的区域）= 切换沉浸模式**。
  * 右→左模式下把页序反转，使"阅读顺序"从右往左——这是日漫双页的实体书观感。
- * 拖拽（用户 2026-10-23 要求「拖着看」）：放大（zoom>100%）后左键拖动平移看图。
+ * 拖拽：放大（zoom>100%）后左键拖动平移看图。
  *
  * ## 2026-10-30 缩放重做（用户：放大缩小卡顿 + 放大缩小会闪退）
  *
@@ -116,7 +116,7 @@ internal fun PageSpread(
     val gapTotal = if (ordered.size > 1) PAGE_GAP_DP * (ordered.size - 1) else 0f
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        // 适应高度（R-30）：zoom=1 时整页正好铺满视口高度。
+        // 适应高度：zoom=1 时整页正好铺满视口高度。
         val baseCellHeight = if (totalRatio > 0f) {
             minOf(maxHeight.value, (maxWidth.value - gapTotal) / totalRatio)
         } else {
@@ -191,7 +191,7 @@ internal fun PageSpread(
                         val ly = limitYState
                         when {
                             !moved -> {
-                                // 中心带 = 沉浸模式开关（R-43）：左右半屏仍各翻各的页
+                                // 中心带 = 沉浸模式开关：左右半屏仍各翻各的页
                                 if (inCenterTapBand(down.position.x, size.width.toFloat())) {
                                     onTapCenter()
                                 } else if (down.position.x < size.width / 2f) {
@@ -214,7 +214,7 @@ internal fun PageSpread(
                     // 不重组、不重绘子树——这是"拖着看"跟手的关键。
                     .offset { IntOffset(clampedPan.x.roundToInt(), clampedPan.y.roundToInt()) }
                     // requiredSize 忽略父约束：放大后内容本来就该超出视口，
-                    // 用普通 size 会被父约束夹回视口大小（那就是"放大只放大白边"的 R-32）。
+                    // 用普通 size 会被父约束夹回视口大小（那就是"放大只放大白边"的 ）。
                     .requiredSize(width = contentWidth.dp, height = contentHeight.dp),
                 horizontalArrangement = if (ordered.size > 1) {
                     Arrangement.spacedBy(PAGE_GAP_DP.dp)

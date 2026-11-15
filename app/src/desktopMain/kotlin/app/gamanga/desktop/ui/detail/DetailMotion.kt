@@ -4,7 +4,7 @@ import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.FastOutSlowInEasing
 
 /**
- * 详情二级面板的统一动效（2026-11-08 批次65）。
+ * 详情二级面板的统一动效。
  *
  * 推荐页详情面板与漫画源详情共用这一份参数：进入 513ms、退出 405ms，
  * 曲线统一为 [FastOutSlowInEasing]（起手柔和、中段推进、落点收住），

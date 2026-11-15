@@ -17,7 +17,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import org.w3c.dom.Element
 
 /**
- * F-03：WebDAV 客户端（坚果云 / Nextcloud / 群晕自建等通用）。
+ * WebDAV 客户端（坚果云 / Nextcloud / 群晕自建等通用）。
  *
  * 零第三方依赖：JDK 自带 [HttpClient] 就能发 PROPFIND/MKCOL/PUT/DELETE，
  * Basic auth 预置请求头（不吃 401 挑战往返）。固定 HTTP/1.1——多家 WebDAV
@@ -31,7 +31,7 @@ class WebDavClient(
     private val user: String,
     private val pass: String,
     /**
-     * 备份子目录。**留空 = 直接放在上面那个地址里**，不再套一层（用户 2026-10-24 反馈：
+     * 备份子目录。**留空 = 直接放在上面那个地址里**，不再套一层（实测
      * 地址已经指向备份文件夹时，再套 `Gamanga/` 会多出一层同名目录）。
      */
     val dir: String = BACKUP_DIR
@@ -47,7 +47,7 @@ class WebDavClient(
         .version(HttpClient.Version.HTTP_1_1)
         .connectTimeout(Duration.ofSeconds(15))
         // 301/302 很常见（http→https、少写结尾斜杠、坚果云换域名）。
-        // 不跟随就只能看到一个裸 301，用户完全不知道真实地址是什么（R-104 实测）。
+        // 不跟随就只能看到一个裸 301，用户完全不知道真实地址是什么（实测）。
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build()
 
@@ -110,7 +110,7 @@ class WebDavClient(
     /**
      * 移动/重命名（WebDAV MOVE）。true = 成功。
      *
-     * 用来把 `gamanga-latest.zip` 改名成 `gamanga-prev.zip` 再上传新版（F-44 覆盖式备份）。
+     * 用来把 `gamanga-latest.zip` 改名成 `gamanga-prev.zip` 再上传新版（覆盖式备份）。
      * **部分服务器不支持 MOVE**（405/501）→ 返回 false，调用方降级为「不留上一版」，
      * 不能因此让整个备份失败。
      */
@@ -249,7 +249,7 @@ fun joinUrl(base: String, vararg parts: String): String {
 }
 
 /**
- * **历史**备份文件名：`gamanga_yyyy-MM-dd_HH-mm-ss.zip`（F-44 起不再新建）。
+ * **历史**备份文件名：`gamanga_yyyy-MM-dd_HH-mm-ss.zip`（起不再新建）。
  *
  * 现在走覆盖式（`gamanga-latest.zip` 单槽位），这个函数只用于识别/清理老版本留下的
  * 时间戳文件，别再拿它生成新文件名。

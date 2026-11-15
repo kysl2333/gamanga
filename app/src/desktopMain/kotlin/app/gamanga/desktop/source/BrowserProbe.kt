@@ -53,7 +53,7 @@ object BrowserProbe {
      */
     private val LANES = 2
 
-    /** 每通道一把锁：同一通道内串行（R-45 的并发风暴防护），通道之间并行。 */
+    /** 每通道一把锁：同一通道内串行（并发风暴防护），通道之间并行。 */
     private val laneLocks = Array(LANES) { Mutex() }
 
     /**
@@ -94,7 +94,7 @@ object BrowserProbe {
      * 打开 [url]，等页面就绪后反复执行 [expression]（JS 表达式，返回可 JSON 序列化的值），
      * 直到拿到非 null 结果或超时。返回 JSON 字符串，失败返回 null。
      *
-     * **串行化（R-45）**：每次求值都会建一个隐藏浏览器（GLCanvas + CEF browser + 整页加载）。
+     * **串行化**：每次求值都会建一个隐藏浏览器（GLCanvas + CEF browser + 整页加载）。
      * 用户快速切话时会并发起多个求值，隐藏浏览器互相抢 EDT / 显存 / CPU，
      * 表现为「切话过快就取图失败，过一会儿重试就好」。用一把互斥锁保证一次只有一个探针，
      * 且等待全部是可取消的（`delay` 而非 `Thread.sleep`）——被取消的探针立刻收工，
@@ -164,7 +164,7 @@ object BrowserProbe {
                     // 清掉上一轮的结果，避免复用 host 时读到旧 JSON
                     host.executeJavaScript("window.__gaP = null; document.title='';")
 
-                    // **必须先装一条自维持的 rAF 循环**（R-27 的第一个关键）。
+                    // **必须先装一条自维持的 rAF 循环**（第一个关键）。
                     // CEF 的离屏浏览器只在"有人持续请求帧"时才产帧；单个 requestAnimationFrame
                     // 回调在没帧的环境里永远不被派发。而站点把"插图"挂在 rAF 上，于是死锁：
                     // 没帧 → 不加载 → 更没帧。这条循环一开，帧管线点亮，图片才开始进 DOM。

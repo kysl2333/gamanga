@@ -4,11 +4,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * 阅读设置（F-02）。
+ * 阅读设置。
  *
  * 这些断言锁住的是**用户能感知的约束**：非法/缺失的 prefs 值不能让阅读器崩或出现怪值，
  * 缩放必须落在可用区间（0.4×~2.0×，两种模式通用——页模式的缩放现在直接作用在图片上，
- * 见 R-32 修复）。滚轮手势与布局计算见 ReaderGesturesTest。
+ * 见 修复）。滚轮手势与布局计算见 ReaderGesturesTest。
  */
 class ReaderSettingsTest {
 

@@ -131,8 +131,8 @@ import java.io.File
  *
  * ## 三个必须保留的行为（都是用户实测后提的）
  *
- * 1. **多选态下不弹右键菜单**（F-61）：菜单项全是单本语义，多选下弹出会被理解成批量执行。
- * 2. **搜索键可点**（F-62）：输入框里的放大镜只是装饰，用户不知道要按回车。
+ * 1. **多选态下不弹右键菜单**：菜单项全是单本语义，多选下弹出会被理解成批量执行。
+ * 2. **搜索键可点**：输入框里的放大镜只是装饰，用户不知道要按回车。
  * 3. **删除可撤销**：走 [LibraryRepository.hideFromLibrary]（只置 inLibrary=0，不硬删），
  *    6 秒内点撤销能把书连同进度一起放回来。
  */
@@ -142,7 +142,7 @@ fun BookshelfScreen(
     onOpenBrowser: (url: String, domain: String) -> Unit,
     /** 「查看全部」→ 历史页。 */
     onSeeAllHistory: () -> Unit,
-    /** 空书架的「去推荐页看看」→ 切到推荐页（用户 2026-10-28 要求）。 */
+    /** 空书架的「去推荐页看看」→ 切到推荐页。 */
     onOpenRecommend: () -> Unit,
     /** 顶栏搜索键：把词带去浏览页做全网搜索（书架内过滤是输入框实时做的）。 */
     onSearch: (String) -> Unit,
@@ -151,13 +151,13 @@ fun BookshelfScreen(
      * 章节列表由调用方从库里取（本地优先，不要等网络）。
      */
     onResume: (LibraryRepository.ShelfItem) -> Unit,
-    /** 详情面板里点「阅读」→ 进阅读器（F-143：书架页内弹出二级详情页）。 */
+    /** 详情面板里点「阅读」→ 进阅读器（：书架页内弹出二级详情页）。 */
     onRead: (ReaderTarget) -> Unit,
-    /** R-04 下载管理器：详情面板的「已缓存」标记与选章下载都读它。 */
+    /** 下载管理器：详情面板的「已缓存」标记与选章下载都读它。 */
     downloadManager: DownloadManager = AppGraph.downloadManager,
 ) {
     val all by repository.shelfItems.collectAsState()
-    // F-271 章节刷新：每本书「有几话是没看过的」（key = 本地漫画 id），以及是否正在刷新
+    // 章节刷新：每本书「有几话是没看过的」（key = 本地漫画 id），以及是否正在刷新
     val chapterUpdates by ChapterRefresh.pending.collectAsState()
     val refreshing by ChapterRefresh.running.collectAsState()
     val focus = androidx.compose.ui.platform.LocalFocusManager.current
@@ -188,12 +188,12 @@ fun BookshelfScreen(
     var coverBusy by remember { mutableStateOf(false) }
     /** 弹窗内的错误提示（链接写错 / 下载失败 / 文件不是图片）。 */
     var coverError by remember { mutableStateOf<String?>(null) }
-    /** F-45：换源弹窗的目标（null = 关着）。 */
+    /** 换源弹窗的目标（null = 关着）。 */
     var migrateTarget by remember { mutableStateOf<MangaEntry?>(null) }
     /**
-     * 详情二级页宿主（F-143）。
+     * 详情二级页宿主。
      *
-     * 用户 2026-10-27 第二轮口径：「在书架页点击漫画封面时，在**该书架页内**展示二级详情页」。
+     * 第二轮口径：「在书架页点击漫画封面时，在**该书架页内**展示二级详情页」。
      * 上一版是跳到浏览页再弹，等于把用户从书架拽走，回来还要重新找位置。
      */
     val detail = rememberDetailHostState(repository, downloadManager)
@@ -211,7 +211,7 @@ fun BookshelfScreen(
                 .filter { it.lastReadAt > 0L }
                 .sortedByDescending { it.lastReadAt }
                 .take(4)
-            // 用户 2026-10-26 口径：置顶的书**如果本来就在这 4 本里**，提到第一位；
+            // 置顶的书**如果本来就在这 4 本里**，提到第一位；
             // **不在就不硬塞**（继续阅读的语义是「你最近在读的」，不是「你收藏的」）。
             recent.filter { it.pinned } + recent.filterNot { it.pinned }
         }
@@ -299,12 +299,12 @@ fun BookshelfScreen(
         undo.show(UndoRequest("已取消自定义封面") { CustomCoverStore.setToPath(id, prevPath) })
     }
 
-    // 「点搜索框外面就失焦」（用户 2026-10-27）：按下点落在搜索栏矩形外 → clearFocus。
+    // 「点搜索框外面就失焦」：按下点落在搜索栏矩形外 → clearFocus。
     // 卡片用的是自定义 onPointerEvent 且会 consume，焦点系统收不到「点到别处了」，
     // 所以必须自己判一次几何。
     val searchBounds = rememberSearchBarBounds()
     Box(Modifier.fillMaxSize().dismissSearchFocusOnOutsidePress(searchBounds)) {
-        // ---- 沉浸式布局（用户 2026-10-27）----
+        // ---- 沉浸式布局----
         // 「菜单按钮是悬浮在主菜单的，现在漫画封面无法穿过底部和顶部；
         //   搜索栏和按钮是虚浮在书架上的，正常情况封面可以从他们下面经过」
         // 所以内容层**铺满整页**，顶栏是浮在上面的遮罩层，滚动时封面从它下面滑过。
@@ -319,7 +319,7 @@ fun BookshelfScreen(
                     multi = multi,
                     picked = picked,
                     onSeeAllHistory = onSeeAllHistory,
-                    // F-271：每本书的新章节数（卡片右上角绿点）+ 标题旁刷新按钮的状态
+                    // 每本书的新章节数（卡片右上角绿点）+ 标题旁刷新按钮的状态
                     chapterUpdates = chapterUpdates,
                     refreshing = refreshing,
                     onRefreshChapters = {
@@ -330,7 +330,7 @@ fun BookshelfScreen(
                     },
                     onCardClick = { item ->
                         // 搜索框有焦点时，第一下点击会先被输入框拿去「失焦」，
-                        // 卡片收不到事件（用户 2026-10-26 实测「优先触发搜索」）。
+                        // 卡片收不到事件。
                         // 这里先主动清焦点，再走原来的逻辑。
                         focus.clearFocus()
                         if (multi) {
@@ -339,7 +339,7 @@ fun BookshelfScreen(
                         } else {
                             // 用户口径「进入该漫画详情页后（绿点）消失」——点开即视为看过
                             ChapterRefresh.clear(repository, item.entry.id)
-                            // F-143：**留在书架页**弹出二级详情页，不跳浏览页。
+                            // **留在书架页**弹出二级详情页，不跳浏览页。
                             // 封面/作者从书架条目带上，面板第一帧就有内容（不必等网络）。
                             detail.open(
                                 SourceManga(
@@ -352,7 +352,7 @@ fun BookshelfScreen(
                             )
                         }
                     },
-                    // F-61（用户 2026-10-26 复验不通过）：多选态下**一律不弹**右键菜单。
+                    // 多选态下**一律不弹**右键菜单。
                     // 上一版把这个判断漏在了页面层，卡片照样上报，于是菜单还是出来了。
                     onCardContextMenu = { item, pos -> if (!multi) ctx = CtxTarget(item, pos) },
                 )
@@ -363,14 +363,14 @@ fun BookshelfScreen(
             query = query,
             onQueryChange = { typed ->
                 query = typed
-                // 用户 2026-10-26 新口径：「输入文字后立刻跳转到浏览页」——
+                // 新口径：「输入文字后立刻跳转到浏览页」——
                 // 书架页的搜索框只是全局搜索的入口，不再本地过滤书架
                 // （书架命中搬到浏览页第一排显示）。
                 if (typed.isNotBlank()) onSearch(typed)
             },
             onSearch = { onSearch(query.trim()) },
             bounds = searchBounds,
-            // 统计入口（F-38 UI 落地）：贴在搜索栏最左侧，只有图标没有文字。
+            // 统计入口（UI 落地）：贴在搜索栏最左侧，只有图标没有文字。
             // 和 dock 一样浮在书架之上，点开是一个悬浮小框。
             leading = {
                 StatsButton(statsProvider = { repository.readingStats() })
@@ -444,7 +444,7 @@ fun BookshelfScreen(
             )
         }
 
-        // F-45 换源弹窗（整页最前）：迁移成功后书架流会自动刷新，这里只给一条轻提示
+        // 换源弹窗（整页最前）：迁移成功后书架流会自动刷新，这里只给一条轻提示
         migrateTarget?.let { target ->
             SourceMigrateDialog(
                 entry = target,
@@ -468,7 +468,7 @@ fun BookshelfScreen(
                 onToggleRead = {
                     ctx = null
                     // 整本已读（unreadCount == 0）时这一项是「标记未读」，否则「标记已读」。
-                    // 用户 2026-10-26：「右键标记已读后这个已读漫画的右键标记已读变为标记未读」。
+                    // 「右键标记已读后这个已读漫画的右键标记已读变为标记未读」。
                     val id = target.item.entry.id
                     if (target.item.unreadCount == 0L) repository.markAllUnread(id)
                     else repository.markAllRead(id)
@@ -480,7 +480,7 @@ fun BookshelfScreen(
                 },
                 onTogglePin = {
                     ctx = null
-                    // 用户 2026-10-26：「右键置顶选项没有了」——上一版重写菜单时漏了这一项，
+                    // 「右键置顶选项没有了」——上一版重写菜单时漏了这一项，
                     // 而 `repository.togglePin` 一直在，只是没入口
                     repository.togglePin(target.item.entry.id)
                 },
@@ -516,7 +516,7 @@ fun BookshelfScreen(
             )
         }
 
-        // 详情二级页：宿主自带遮罩 + 底部上滑面板 + 换源弹窗（F-143）。
+        // 详情二级页：宿主自带遮罩 + 底部上滑面板 + 换源弹窗。
         // 声明在右键菜单之后 = 画在菜单之上（点封面进来的面板要盖住一切）。
         DetailHost(
             state = detail,
@@ -534,8 +534,7 @@ private data class CtxTarget(val item: LibraryRepository.ShelfItem, val position
 /**
  * 顶栏：居中「胶囊搜索框 + 圆形搜索键」（UI-SPEC 1.1 硬约束）。
  *
- * 搜索键用 [WaveIconButton]：三态波浪 + 点击注满出彩色，用户 2026-10-26
- * 已验收「搜索键好看就这样」，这里只是换位置复用，**不要重写一套**。
+ * 搜索键用 [WaveIconButton]：三态波浪 + 点击注满出彩色， * 已验收「搜索键好看就这样」，这里只是换位置复用，**不要重写一套**。
  */
 @Suppress("unused") // 已被 SearchTopBar 取代，注释保留供后续重构参考
 @Composable
@@ -552,7 +551,7 @@ private fun TopBar(query: String, onQueryChange: (String) -> Unit, onSearch: () 
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(
-            // 用户 2026-10-26：「搜索框不填满，缩短只要中间部分长度，搜索键在搜索框右侧」
+            // 「搜索框不填满，缩短只要中间部分长度，搜索键在搜索框右侧」
             // → 固定 420dp 居中，不再按可用宽度拉伸（1920 下拉伸到 560 仍然显得空）
             Modifier.width(420.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -577,7 +576,7 @@ private fun TopBar(query: String, onQueryChange: (String) -> Unit, onSearch: () 
 /**
  * 顶栏浮层：**完全透明**，只有搜索框和搜索键浮在封面上。
  *
- * ## 为什么最终是透明（用户 2026-10-27 第三轮）
+ * ## 为什么最终是透明
  *
  * 前两版都被否：
  * - 渐变遮罩 → 「不要什么遮罩」；
@@ -606,7 +605,7 @@ private fun TopBarOverlay(
             // [SearchBarTopInset]（= 拖拽带 + 20dp），与浏览页 / 推荐页落在同一条线上。
             .padding(top = SearchBarTopInset)
     ) {
-        // **与浏览页共用同一个顶栏组件**（用户 2026-10-27：「书架搜索栏和浏览页搜索栏没对齐，
+        // **与浏览页共用同一个顶栏组件**（「书架搜索栏和浏览页搜索栏没对齐，
         // 他们本身是同一个组件」）。之前两边各写一份，宽度/圆角/阴影慢慢就飘了。
         // 下面那个 `TopBar` 暂时留着（`@Suppress("unused")`）——它记录的「透明顶栏 + 拖拽带让位」
         // 注释还有价值，等下次重构一起清。
@@ -677,7 +676,7 @@ private fun SearchField(
 /**
  * 空书架 / 搜索无结果。
  *
- * 用户 2026-10-28：「书架没书时界面给一个提示可以去推荐页查漫画」。
+ * 「书架没书时界面给一个提示可以去推荐页查漫画」。
  * 所以**真的空**的时候不只丢一行灰字，而是给一句引导 + 一颗「去推荐页看看」按钮。
  * 搜索筛空的时候不给按钮——那不是书架空，是关键词没命中，给按钮反而误导。
  */
@@ -711,7 +710,7 @@ internal fun EmptyShelf(
 /**
  * 空书架的引导按钮：白卡 + 细描边 + hover 浮起，和设置页按钮同一套手感。
  *
- * 点击必须用 [onPointerEvent] 判主键（`clickable` 会把右键也算点击，R-09 教训）；
+ * 点击必须用 [onPointerEvent] 判主键（`clickable` 会把右键也算点击，教训）；
  * 这里没有复用设置页的 `primaryPress`——它是各文件里的 private 扩展，不跨文件可见。
  */
 @OptIn(ExperimentalComposeUiApi::class)
@@ -765,7 +764,7 @@ private fun ShelfGrid(
     multi: Boolean,
     picked: Set<String>,
     onSeeAllHistory: () -> Unit,
-    /** F-271：本地漫画 id → 新章节数（0/缺省 = 没有更新）。 */
+    /** 本地漫画 id → 新章节数（0/缺省 = 没有更新）。 */
     chapterUpdates: Map<String, Int>,
     refreshing: Boolean,
     onRefreshChapters: () -> Unit,
@@ -781,7 +780,7 @@ private fun ShelfGrid(
             contentPadding = PaddingValues(
                 start = Tokens.Grid.ContentPaddingH,
                 end = Tokens.Grid.ContentPaddingH,
-                // 顶部留出「拖拽带 + 顶栏」的高度（用户 2026-10-27：「书架页的设计太高了，
+                // 顶部留出「拖拽带 + 顶栏」的高度（「书架页的设计太高了，
                 // 应该在搜索栏下方才对」——上一版写 0，滚到顶时「继续阅读」标题跑到搜索框上面去了）。
                 // 留 96 = 36 拖拽带 + 60 顶栏：滚到顶时第一行正好在搜索框下方；
                 // 继续滚动时封面会向上滑过搜索框（顶栏是透明的，能看见）——沉浸感不丢。
@@ -798,7 +797,7 @@ private fun ShelfGrid(
                 item(span = { GridItemSpan(maxLineSpan) }, key = "sec-continue") {
                     SectionHeader(
                         title = "继续阅读",
-                        // 用户 2026-10-26：「继续阅读 把【4 部】给去掉」——这一区本来就只有 4 本，
+                        // 「继续阅读 把【4 部】给去掉」——这一区本来就只有 4 本，
                         // 计数是废话；「全部漫画」那区保留（用户要看到总数）
                         count = null,
                         action = "查看全部",
@@ -822,7 +821,7 @@ private fun ShelfGrid(
                     count = allItems.size,
                     action = null,
                     onAction = null,
-                    // 用户 2026-10-29：「如果有更新章节，就在书架页全部漫画 N 部灰字旁边加个
+                    // 「如果有更新章节，就在书架页全部漫画 N 部灰字旁边加个
                     // 章节刷新小图标按钮」——按钮常驻（手动档也要能点），有更新时带绿点数字。
                     refreshing = refreshing,
                     updates = chapterUpdates.size,
@@ -850,7 +849,7 @@ private fun SectionHeader(
     count: Int?,
     action: String?,
     onAction: (() -> Unit)?,
-    /** F-271：为 true 时刷新图标转圈（不用转圈 loading，UI-SPEC 第 5 节）。 */
+    /** 为 true 时刷新图标转圈（不用转圈 loading，UI-SPEC 第 5 节）。 */
     refreshing: Boolean = false,
     /** 有更新的漫画本数（0 = 没有，按钮上不挂绿点）。 */
     updates: Int = 0,
@@ -859,10 +858,10 @@ private fun SectionHeader(
     Row(
         Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 14.dp),
         // 兜底：右侧「查看全部」这类没有基线的元素按底对齐。
-        // 左边三件（标题 / N 部 / 刷新图标）**不走底对齐**，走基线——见 R-182 的注释。
+        // 左边三件（标题 / N 部 / 刷新图标）**不走底对齐**，走基线——见 的注释。
         verticalAlignment = Alignment.Bottom,
     ) {
-        // R-182（2026-10-30 用户）：「这三个都要底部对齐，对齐全部漫画」。
+        // （用户）：「这三个都要底部对齐，对齐全部漫画」。
         // 原来三个都用 `Alignment.Bottom`（对齐布局盒子底边），但文字盒子的底边是
         // 「基线 + 降部」，16sp 的降部约 3~4dp、12sp 的更小，图标又是 24dp 方盒 →
         // 三条底边各差几 dp，看上去就是没对齐。
@@ -886,8 +885,8 @@ private fun SectionHeader(
             )
         }
         if (onRefresh != null) {
-            // R-167（2026-10-29 用户）：「刷新图标对齐 2 部文字的底对齐并间距靠近」。
-            // R-182 起改成按基线对齐：图标的底边 = 「2 部」的字形底边，不用再补 padding 微调。
+            // （用户）：「刷新图标对齐 2 部文字的底对齐并间距靠近」。
+            // 起改成按基线对齐：图标的底边 = 「2 部」的字形底边，不用再补 padding 微调。
             Spacer(Modifier.width(4.dp))
             BaselineAtBottom(Modifier.alignByBaseline()) {
                 ChapterRefreshButton(refreshing = refreshing, updates = updates, onClick = onRefresh)
@@ -903,7 +902,7 @@ private fun SectionHeader(
 }
 
 /**
- * 章节刷新小图标按钮（F-271，2026-10-29）。
+ * 章节刷新小图标按钮。
  *
  * 尺寸跟分区标题的字高对齐（24dp 圆 + 15dp 图标），hover 出浅底——
  * 与「源分区标题里的登录小地球」同一套小图标语言，整页只有一种。
@@ -920,7 +919,7 @@ private fun ChapterRefreshButton(refreshing: Boolean, updates: Int, onClick: () 
         animationSpec = infiniteRepeatable(tween(900, easing = LinearEasing)),
         label = "refreshAngle",
     )
-    // R-175（2026-10-30 用户）：「刷新图标多了半点绿色的点」——绿点画在 24dp 方框的右上角，
+    // （用户）：「刷新图标多了半点绿色的点」——绿点画在 24dp 方框的右上角，
     // 而那个方框自己 `clip(CircleShape)` → 角上的点被圆裁掉一半，看着像半个绿点。
     // 拆成两层：外层不裁（只做定位），内层才是圆形按钮本体，绿点挂在外层上。
     Box(Modifier.size(24.dp)) {
@@ -941,7 +940,7 @@ private fun ChapterRefreshButton(refreshing: Boolean, updates: Int, onClick: () 
                     hovered -> Tokens.Color.Accent
                     else -> Tokens.Color.TextTertiary
                 },
-                // R-182 起不再自己补 1dp 找平：外层 [BaselineAtBottom] 已经把「按钮底边」
+                // 起不再自己补 1dp 找平：外层 [BaselineAtBottom] 已经把「按钮底边」
                 // 当成基线报给这一行，图标贴住按钮底边就等于贴住文字基线。
                 modifier = Modifier
                     .size(15.dp)
@@ -1055,7 +1054,7 @@ private fun CoverHint(text: String?, modifier: Modifier = Modifier) {
 /**
  * 右键菜单（页面级唯一实例）。
  *
- * 定位沿用旧书架页的教训（R-09）：`DropdownMenu` 的 `offset` 是相对锚点的另一套坐标空间，
+ * 定位沿用旧书架页的教训：`DropdownMenu` 的 `offset` 是相对锚点的另一套坐标空间，
  * 喂格子内坐标会弹到窗口别处。这里用 [Popup] + [PopupPositionProvider]，
  * 直接把**窗口绝对坐标**当菜单左上角，再按窗口尺寸夹取。
  */
@@ -1094,7 +1093,7 @@ private fun ShelfContextMenu(
             danger = false,
             onClick = onToggleCustomCover,
         )
-        // F-45 换源：源站 404 / 改版 / 被风控时，把这本书整本搬到别的源（章节与进度按对齐关系迁移）
+        // 换源：源站 404 / 改版 / 被风控时，把这本书整本搬到别的源（章节与进度按对齐关系迁移）
         CtxItem("换源…", DockIcons.Globe, danger = false, onClick = onMigrate)
         CtxItem("在浏览器打开", DockIcons.External, danger = false, onClick = onOpenBrowser)
         CtxItem("多选", DockIcons.Pick, danger = false, onClick = onEnterMulti)

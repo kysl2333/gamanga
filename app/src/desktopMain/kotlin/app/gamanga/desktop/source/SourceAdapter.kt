@@ -108,7 +108,7 @@ interface SourceAdapter {
     suspend fun pages(chapterId: String): List<PageImage>
 
     /**
-     * 自检探针用的搜索词（F-20/F-36）。
+     * 自检探针用的搜索词（/）。
      *
      * **必须选一个「当前站点确实有结果」的词**：自检把「返回 0 条」判成黄灯
      * （路径/选择器配错的唯一信号），拿一个本来就没结果的词去探，会把好源误判成黄灯。
@@ -130,7 +130,7 @@ interface SourceAdapter {
     val probeEmptyIsSuspicious: Boolean get() = true
 
     /**
-     * **健康自检探针**（F-20）：跑一次最小搜索。
+     * **健康自检探针**：跑一次最小搜索。
      *
      * 返回条数交给 `SourceHealth` 判定：>0 = OK，0 = 黄灯（可疑），抛异常 = 红灯。
      * 搜索不烧图片配额，是最便宜的可观测动作。
@@ -156,7 +156,7 @@ internal suspend fun <T> sourceOrNull(block: suspend () -> T): T? = try {
  * 有登录态和没有，差别很大——例如 Komiic 的图片票据有**每日配额**，匿名额度极小，
  * 登录后额度按账号走。所以这里不能把 cookie 写死成 null。
  *
- * **地址来自 `sources.json`（F-22）**：这里只做「取生效值 → 传进构造器」，
+ * **地址来自 `sources.json`**：这里只做「取生效值 → 传进构造器」，
  * 适配器内部不再硬编码域名。设置页保存配置后调 [rebuild] 重建全部适配器，
  * **改地址不需要重启应用**（2026-10-25 用户要求）。
  */

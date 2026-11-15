@@ -253,7 +253,7 @@ class JcefWebViewHost(
                     pendingUrl = null
                     b.loadURL(url)
                 }
-                // **必须给一个非零视口**（R-27 的真正原因）：
+                // **必须给一个非零视口**（真正原因）：
                 // 窗口化/离屏浏览器在没收到 wasResized 之前 `browser_rect_` 是 0×0，
                 // 合成器没有表面 → 一帧都不产出 → **requestAnimationFrame 永远不触发**。
                 // 页面照样能加载（网络/解析不需要布局），但所有"客户端异步渲染"的站点
@@ -440,7 +440,7 @@ class JcefWebViewHost(
     private fun importCookies(url: String, cookies: Map<String, String>) {
         val domain = runCatching { java.net.URI(url).host }.getOrNull() ?: return
         val manager = CefCookieManager.getGlobalManager()
-        // **只补缺失的，不覆盖已存在的**（R-126，2026-10-26 用户实测「浏览器里登录过，
+        // **只补缺失的，不覆盖已存在的**（用户实测「浏览器里登录过，
         // 关掉再打开又要重新登录」）。
         //
         // 旧实现是无条件 setCookie，于是「appPrefs 里的旧会话」会**盖掉**「浏览器里

@@ -5,7 +5,7 @@ import java.awt.Container
 import org.jetbrains.skiko.SkiaLayer
 
 /**
- * 渲染后端（硬件加速）开关 + 自检（2026-10-30 批次46）。
+ * 渲染后端（硬件加速）开关 + 自检。
  *
  * ## 为什么需要这一层
  *
@@ -57,7 +57,7 @@ object RenderBackend {
     /**
      * 把偏好写进系统属性。**必须在任何 Skia 组件创建之前调用**。
      *
-     * 只处理硬件加速一项：帧率浮层（`skiko.fps.enabled`）用户 2026-10-30 明确要求去掉，
+     * 只处理硬件加速一项：帧率浮层（`skiko.fps.enabled`）要求去掉，
      * 别再往这里加回来。
      */
     fun apply(hwAccel: Boolean) {

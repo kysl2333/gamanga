@@ -60,7 +60,7 @@ class GodaSourceTest {
         )
         // 封面在 CDN 上，至少要有一个能解析出来
         assertTrue(results.any { it.coverUrl?.startsWith("http") == true }, "没解析到任何封面")
-        // R-41 回归锁：站改版后搜索变路径式 /s/<关键词>，旧查询串写法服务端忽略 q，
+        // 回归锁：站改版后搜索变路径式 /s/<关键词>，旧查询串写法服务端忽略 q，
         // 对任意关键词返回同一份默认列表——只断言「非空」永远绿，必须验证结果与关键词相关。
         assertTrue(
             results.any { it.title.contains("剑来") },

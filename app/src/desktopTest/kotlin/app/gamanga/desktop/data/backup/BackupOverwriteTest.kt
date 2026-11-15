@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /**
- * F-44 覆盖式备份的判定逻辑（纯函数，不碰网络）。
+ * 覆盖式备份的判定逻辑（纯函数，不碰网络）。
  *
  * 核心是「防反向备份」：云端比本地新时**不许上传**，否则会用旧数据盖掉新数据。
  */

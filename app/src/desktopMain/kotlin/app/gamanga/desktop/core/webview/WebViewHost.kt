@@ -1,7 +1,7 @@
 package app.gamanga.desktop.core.webview
 
 /**
- * 半网页架构的浏览器宿主接口（ADR-0002）。
+ * 半网页架构的浏览器宿主接口（AD）。
  *
  * M2 以 JCEF 实现：内嵌真实 Chromium，负责源站登录、OAuth 回调与 Cloudflare 盾；
  * 原生 HTTP 层经 [exportCookies] 借会话取数（JCEF 的 CefCookieManager.visitUrlCookies，

@@ -8,14 +8,14 @@ import java.io.File
 import java.security.MessageDigest
 
 /**
- * 书架封面的**磁盘缓存**（R-101 / 用户需求「书架封面缓存到本地」）。
+ * 书架封面的**磁盘缓存**（/ 用户需求「书架封面缓存到本地」）。
  *
  * 为什么不能只靠 [app.gamanga.desktop.ui.ImageCache]：那是**进程内** LRU，重启即空；
  * 而封面的价值恰恰是「断网时书架别变成一片灰块」。所以落盘到
  * `%LOCALAPPDATA%\Gamanga\covers\<sha1(url)>.img`。
  *
  * 扩展名统一 `.img`：Skia 按魔术数字识别真实格式，扩展名不影响解码
- * （和 R-04 下载页面的做法一致）。
+ * （和 下载页面的做法一致）。
  */
 object CoverCache {
 

@@ -19,9 +19,9 @@ import kotlin.test.assertTrue
 /**
  * mihon 导入的行为回归（2026-10-30 用户实机反馈）。
  *
- * - **R-169**：换源后书架里的名字/封面要用**新源**的（原来用备份里的旧名字 + 失效的 mihon CDN 图）；
- * - **R-170**：备份里自带图片时原封不动用这张（解析层识别 `coverBytes`）；
- * - **R-178**：导入范围 = 「列哪些书」而不是「写不写进度」。
+ * - ****：换源后书架里的名字/封面要用**新源**的（原来用备份里的旧名字 + 失效的 mihon CDN 图）；
+ * - ****：备份里自带图片时原封不动用这张（解析层识别 `coverBytes`）；
+ * - ****：导入范围 = 「列哪些书」而不是「写不写进度」。
  *   只恢复书架 = 只列 mihon 书架里的书，**连阅读记录一起恢复**；
  *   书架 + 观看历史 = 连只有阅读记录的书也列出来。
  *
@@ -125,9 +125,9 @@ class MihonImportModeTest {
         // 章节已读标记要保留（书架上的未读数才对）
         val chapters = db.mangaQueries.selectChaptersByManga("komiic:42").executeAsList()
         assertEquals(1, chapters.count { it.isRead == 1L })
-        // R-178：用户明确「只选择书架的书恢复**同时恢复阅读记录**」→ 必须有进度行
+        // 用户明确「只选择书架的书恢复**同时恢复阅读记录**」→ 必须有进度行
         val progress = db.mangaQueries.selectAllProgress().executeAsList()
-        assertEquals(1, progress.size, "只恢复书架也要写阅读进度（用户 2026-10-30 更正）")
+        assertEquals(1, progress.size, "只恢复书架也要写阅读进度")
         assertEquals(5L, progress.single().page)
     }
 
@@ -174,7 +174,7 @@ class MihonImportModeTest {
         assertTrue(!buildMihonPreview(parsed, emptySet()).rows.single().hasCoverImage)
     }
 
-    // ---- R-178：导入范围只决定「列哪些书」----
+    // ---- ：导入范围只决定「列哪些书」----
 
     /** 两本书：A 在 mihon 书架（favorite=1，没读过）；B 不在书架但读过（历史里）。 */
     private fun twoBooksBackup(): ByteArray {
@@ -221,7 +221,7 @@ class MihonImportModeTest {
         assertTrue(preview.rows.single().inLibrary)
     }
 
-    // ---- R-193（2026-10-30 实机）：进度回调抛异常**不能**打断导入 ----
+    // ---- （实机）：进度回调抛异常**不能**打断导入 ----
 
     /**
      * 真实故障复现：桌面端没有 `Dispatchers.Main` 时，界面侧在进度回调里

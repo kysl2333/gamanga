@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * 详情页章节列表的「显示下标」映射（R-08 定位 + 高亮共用）。
+ * 详情页章节列表的「显示下标」映射（定位 + 高亮共用）。
  *
  * 倒序显示时列表是升序列表的镜像：直接用阅读进度下标定位会滚到对称的另一头，
  * 高亮也会标错行。UI 层（BrowseScreen）只负责调用，这里把规则锁住。

@@ -164,7 +164,7 @@ private fun PickerBody(
     val locations = remember { quickLocations() }
 
     // 记住这次浏览到哪了：下次打开直接回到同一个目录。
-    // 用户 2026-10-27 第六轮反馈「本地文件并不能浏览图片」——一半原因是每次打开都回到
+    // 第六轮反馈「本地文件并不能浏览图片」——一半原因是每次打开都回到
     // 「图片」目录，而他的图在别的盘，每次都得从头点一遍，体感就是「根本不能浏览」。
     LaunchedEffect(dir.absolutePath) {
         AppGraph.libraryRepository.setPrefAsync(CoverLastDirKey, dir.absolutePath)
@@ -483,11 +483,11 @@ private fun EntryRow(
     /**
      * 上一次点击的时间戳（判双击用）。
      *
-     * **为什么不用 `detectTapGestures(onDoubleTap)`**（2026-10-28 R-137）：
+     * **为什么不用 `detectTapGestures(onDoubleTap)`**：
      * 它内部第一件事就是 `awaitFirstDown()` + `down.consume()`，而这个手势检测器挂在
      * `clickable` 的**内层**（Modifier 链后声明者更靠近内容，Main pass 先收到事件）——
      * 于是 down 被它吃掉，外层 `clickable` 的单击**永远不触发**。
-     * 表现就是用户说的「无法浏览图片」：点目录不进去、点文件不选中，
+     * 表现就是的「无法浏览图片」：点目录不进去、点文件不选中，
      * 只能盯着起始目录那一屏，什么也翻不了。
      *
      * 现在改成「在 onClick 里比时间戳」：单击照常走 clickable，连点两下且是文件 → 直接用。
@@ -770,7 +770,7 @@ private fun initialCoverDir(): File {
  * 权限受限目录），用户至少还能用熟悉的系统框选到图。
  *
  * 只放图片扩展名过滤器，并且**不阻塞**主线程太久——`JFileChooser` 是模态的，
- * 在 Compose 的 AWT 线程上弹是安全的（和旧的 F-150 存图同一个做法）。
+ * 在 Compose 的 AWT 线程上弹是安全的（和旧的 存图同一个做法）。
  */
 private fun nativePickImage(start: File): File? {
     val chooser = javax.swing.JFileChooser(start).apply {

@@ -157,7 +157,7 @@ fun HistoryScreen(
     onRead: (ReaderTarget) -> Unit,
     /** 详情面板里「用浏览器打开」——本页**不跳页**，直接由壳层盖浏览器。 */
     onOpenBrowser: (url: String, domain: String) -> Unit,
-    /** R-04 下载管理器：详情面板的「已缓存」标记与选章下载都读它。 */
+    /** 下载管理器：详情面板的「已缓存」标记与选章下载都读它。 */
     downloadManager: DownloadManager = AppGraph.downloadManager,
 ) {
     val entries by repository.history.collectAsState()
@@ -462,7 +462,7 @@ private fun EmptyHistory(filtered: Boolean = false) {
  *
  * 1. **主键点击 = 进二级详情**（2026-10-27 第六批口径：点卡片跳详情，点「继续阅读」进阅读器）。
  *    不用 `Modifier.clickable`：桌面端它把右键也算点击，
- *    右键会既弹菜单又开详情（书架页 R-09 的教训）。这里显式只认 `isPrimaryPressed`。
+ * 右键会既弹菜单又开详情（书架页 的教训）。这里显式只认 `isPrimaryPressed`。
  * 2. **右键 = 页面级唯一菜单**。卡片只上报「按下的窗口坐标」，菜单挂在页面层——
  *    每张卡各持一个 Popup 会在滚动时残留。
  * 3. **内层按钮先截胡**：卡片上的「继续阅读 / 垃圾桶」是真按钮（`clickable`），
@@ -614,7 +614,7 @@ private fun HistoryCard(
  * 只认主键的点击（桌面端专用）。
  *
  * 为什么不用 `Modifier.clickable`：桌面端它把右键也算点击——封面右键会先打开详情页，
- * 卡片那层的右键菜单就永远轮不到（书架页 R-09 的同一个坑）。这里显式只认 `isPrimaryPressed`，
+ * 卡片那层的右键菜单就永远轮不到（书架页 的同一个坑）。这里显式只认 `isPrimaryPressed`，
  * 并且**只在事件还没被更深的子件消费时**才触发（`isConsumed` 判断）。
  */
 @OptIn(ExperimentalComposeUiApi::class)
@@ -630,7 +630,7 @@ private fun Modifier.primaryPress(enabled: Boolean = true, onClick: () -> Unit):
 /**
  * 封面：3:4、圆角 10、底部一条白色进度。
  *
- * 点封面 = 进详情页（用户 2026-10-24 定的口径：封面是「这本书」，标题行是「这一话」）。
+ * 点封面 = 进详情页（定的口径：封面是「这本书」，标题行是「这一话」）。
  * 封面走本地缓存（`CoverCache`）：源站删图/改域名之后历史页还能显示。
  */
 @Composable
@@ -729,7 +729,7 @@ private fun DeleteIconButton(enabled: Boolean, onClick: () -> Unit) {
 /**
  * 右键菜单（页面级唯一实例）。
  *
- * 定位沿用书架页的教训（R-09）：`DropdownMenu` 的 `offset` 是相对锚点的另一套坐标空间，
+ * 定位沿用书架页的教训：`DropdownMenu` 的 `offset` 是相对锚点的另一套坐标空间，
  * 喂格子内坐标会弹到窗口别处。这里直接把**窗口绝对坐标**当菜单左上角。
  */
 @Composable

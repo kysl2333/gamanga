@@ -14,7 +14,7 @@ import app.gamanga.desktop.model.SourceType
  * 返回 null 表示该站点不提供登录、或**不建议登录**——
  * G社/包子是盗版聚合站，没有登录的必要，也不该在那里用常用密码。
  *
- * **域名走 `sources.json`（F-22）**：换域名后登录页要跟着走，否则「去登录」会把
+ * **域名走 `sources.json`**：换域名后登录页要跟着走，否则「去登录」会把
  * 用户送到旧域名（站点搬走后就是 404），这是配置化最容易漏的一处。
  */
 object LoginUrls {

@@ -123,7 +123,7 @@ private fun Modifier.softDialogShadow(shape: Shape): Modifier = this
     )
 
 /**
- * 手动换源弹窗（roadmap 第 5 节 / F-46）。
+ * 手动换源弹窗（roadmap 第 5 节 / ）。
  *
  * ## 为什么是「一屏五步」而不是多步向导
  *
@@ -139,7 +139,7 @@ private fun Modifier.softDialogShadow(shape: Shape): Modifier = this
  *
  * ## 为什么没有「自动换源」
  *
- * 用户 2026-10-25 明确：检测到源失效**只提示，不自动改数据**。这个弹窗是唯一入口，
+ * 检测到源失效**只提示，不自动改数据**。这个弹窗是唯一入口，
  * 必须由用户点「确认迁移」。
  *
  * ## 入口（由壳层接）

@@ -86,7 +86,7 @@ object CefRuntime {
             AppLog.i("Cef", "CEF 目录=${cefDir.absolutePath}（存在=${cefDir.isDirectory}，非ASCII=${containsNonAscii(cefDir.absolutePath)}）")
             runCatching { builder.setInstallDir(cefDir) }
                 .onFailure { AppLog.w("Cef", "setInstallDir 失败，回退 jcefmaven 默认（cwd/jcef-bundle）", it) }
-            // **关掉隐藏窗口的节流与冻结**（R-27 的真正原因）：
+            // **关掉隐藏窗口的节流与冻结**（真正原因）：
             // 我们的 OSR 宿主是一个移到屏幕外 (-10000,-10000) 的 JFrame。Windows 的
             // native window occlusion 计算会判定这个窗口"被完全遮挡"，Chromium 随后把整个
             // 页面**冻结**——实测症状极其误导：
@@ -97,7 +97,7 @@ object CefRuntime {
             // 表现为「该话没有图片」。
             // CalculateNativeWinOcclusion 是这条链路的总闸，关掉它页面才不会被判遮挡。
             builder.addJcefArgs(
-                // **不要用 `--enable-logging`**（2026-10-25 R-97）：Windows 上它会让 Chromium
+                // **不要用 `--enable-logging`**：Windows 上它会让 Chromium
                 // 给子进程**分配一个控制台窗口**——用户实测「搜索拷贝漫画时弹出一个黑框终端」，
                 // 里面是 CEF 的日志。改为把日志写文件（见下方 CefSettings.log_file）。
                 // 顺带关掉扩展：CEF 有独立的 user-data-dir，这条**不会影响系统 Chrome/Edge**，

@@ -15,7 +15,7 @@ import kotlinx.serialization.json.put
 import java.io.File
 
 /**
- * 单个源的地址配置（F-22）。
+ * 单个源的地址配置。
  *
  * 四个字段都是「**空 = 用内置默认**」的语义，所以用户只在需要改的时候写一项即可：
  * - [baseUrl] 站点根地址（浏览器打开 / 搜索兜底页 / Referer 都跟着它走）
@@ -32,7 +32,7 @@ data class SourceEndpoint(
     val apiBaseUrls: List<String> = emptyList(),
     val userAgent: String = "",
     /**
-     * 路径模板（F-36）：`search` / `detail` / `chapter` / `api` 等 key → 相对路径模板。
+     * 路径模板：`search` / `detail` / `chapter` / `api` 等 key → 相对路径模板。
      * 占位符只允许 `{kw}` `{id}` `{manga}` `{chapter}` `{page}`（空 = 内置默认）。
      */
     val paths: Map<String, String> = emptyMap(),
@@ -44,7 +44,7 @@ data class SourceEndpoint(
 }
 
 /**
- * 源站地址配置化（F-22）。
+ * 源站地址配置化。
  *
  * **要解决的问题**：源站换域名时**不改代码**。改代码意味着重新编译打包，
  * 而这类站点换域名是常态（G社/包子系一年换好几次，拷贝漫画换过 3 次）。
@@ -106,7 +106,7 @@ object SourceConfig {
         SourceType.MANGABZ to SourceEndpoint(
             baseUrl = "https://www.mangabz.com",
             // 翻页器（/m{cid}-p{n}）与 asHx 取图路径没模板化：改那两条时解析代码也要改，
-            // 只改路径救不回来（见 ADR-0004 档 1 的范围）
+            // 只改路径救不回来（见 AD档 1 的范围）
             paths = mapOf(
                 "search" to "/search?title={kw}",
                 "detail" to "/{id}bz/",
@@ -392,7 +392,7 @@ internal fun hostOf(url: String): String {
 }
 
 /**
- * 归一化路径模板（F-36）：去空白、丢空值、补前导斜杠。
+ * 归一化路径模板：去空白、丢空值、补前导斜杠。
  *
  * 补斜杠是因为模板要和 baseUrl 直接拼（`base + path`）：写成 `s/{kw}` 会拼出
  * `https://hosts/...` 这种把主机名吃掉的地址，症状是「换了路径反而整站 404」。

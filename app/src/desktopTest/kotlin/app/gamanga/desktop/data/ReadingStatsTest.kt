@@ -7,7 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * F-38 统计数据层：5 个数字都要对，尤其「下载漫画数按漫画计数」。
+ * 统计数据层：5 个数字都要对，尤其「下载漫画数按漫画计数」。
  */
 class ReadingStatsTest {
 

@@ -12,7 +12,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * 章节状态的写入语义（R-159，2026-10-29）。
+ * 章节状态的写入语义。
  *
  * 用户报：「详情页章节右键标记已读和未读一开始好像无法生效，后面点进去再标记又成功了」。
  *

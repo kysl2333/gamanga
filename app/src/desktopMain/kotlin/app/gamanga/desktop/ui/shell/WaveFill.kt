@@ -67,7 +67,7 @@ import kotlin.random.Random
  * 单层正弦在水位低时看起来像一条抖动的横线，两层才有水面感。
  *
  * 颜色由调用方算好传进来（搜索键的色板过渡在 [WaveIconButton] 里），
- * 这里**不做渐变**——用户 2026-10-26 两次纠正过：不要彩虹，要「涨的过程换色、满了定格一个颜色」。
+ * 这里**不做渐变**——两次纠正过：不要彩虹，要「涨的过程换色、满了定格一个颜色」。
  */
 @Composable
 internal fun WaveFill(
@@ -80,7 +80,7 @@ internal fun WaveFill(
      * 在**绘制阶段**取色（优先于 [color]）。
      *
      * 颜色循环每 1.4 秒换一次色。如果在 compose 层读 `State.value`，**整个按钮会重组**
-     * （Canvas 重建 + 布局校验），那一帧就是用户说的「过 2 秒卡顿一下、抽帧感」。
+     * （Canvas 重建 + 布局校验），那一帧就是的「过 2 秒卡顿一下、抽帧感」。
      * 传成 provider 后在 draw lambda 里读 —— Compose 只重绘，不重组。
      */
     colorProvider: (() -> Color)? = null,
@@ -125,7 +125,7 @@ internal fun WaveFill(
  */
 @Composable
 internal fun rememberWavePhase(active: Boolean, periodMs: Int = 1600): Float {
-    // **流动相位必须用 infiniteTransition**（用户 2026-10-26 实测：「波浪播放结束后与开始的
+    // **流动相位必须用 infiniteTransition**（实测：「波浪播放结束后与开始的
     // 画面不衔接，能明显看到动效过一会儿就跳了一下」）。
     //
     // 旧写法是 `Animatable.animateTo(2π, infiniteRepeatable(...))`：每次 repeat 都会
@@ -153,7 +153,7 @@ internal fun rememberWavePhase(active: Boolean, periodMs: Int = 1600): Float {
 }
 
 /**
- * 搜索键注满时随机挑一个的**柔和色板**（F-71，用户 2026-10-26 第二次口径）。
+ * 搜索键注满时随机挑一个的**柔和色板**。
  *
  * 上一版让色相在整个色环上旋转（210° → 210+90+random(300)°），用户实测
  * 「色系太多、闪得太快」。问题不在动画时长，在于**色相环本身跨度过大**：
@@ -270,7 +270,7 @@ internal fun rememberCyclingColorState(
 }
 
 /**
- * 圆形波浪图标按钮 —— 顶栏搜索键用的就是它（用户 2026-10-26 口述的三态）。
+ * 圆形波浪图标按钮 —— 顶栏搜索键用的就是它。
  *
  * | 状态 | 水位 | 波浪 | 颜色 | 图标 |
  * |---|---|---|---|---|
@@ -310,7 +310,7 @@ internal fun WaveIconButton(
         label = "waveBtnLevel",
     )
 
-    // 颜色：从柔和色板里随机挑一个，一次平滑过渡过去（F-71）。
+    // 颜色：从柔和色板里随机挑一个，一次平滑过渡过去。
     // **目标色存在 state 里、由 LaunchedEffect(pressed) 决定**，而不是在组合里现算——
     // 组合里现算 `Random` 会让每次重组都换色（视觉上就是闪）。
     var targetFill by remember { mutableStateOf(accent) }

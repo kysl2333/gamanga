@@ -9,7 +9,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
- * 图片列表缓存 + 瞬时失败重试（R-05 / R-07）。
+ * 图片列表缓存 + 瞬时失败重试（/ ）。
  *
  * 背景：Komiic 每调一次 `imageTicketsByChapterId` 就烧一份每日配额，来回切话会把额度烧光，
  * 用户看到的就是「点下一话报错」「从书架进去图加载失败，切话再回来才好」。

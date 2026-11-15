@@ -102,13 +102,13 @@ internal fun ReaderBar(
     total: Int,
     page: Int,
     pageCount: Int,
-    /** F-26：点页码输入数字跳转（用户 2026-10-25 要求）。 */
+    /** 点页码输入数字跳转。 */
     onJumpPage: (Int) -> Unit,
     onBrowser: () -> Unit,
     onClose: () -> Unit,
     onDoubleClickDrag: (() -> Unit)? = null,
     /**
-     * F-143（2026-10-27 用户口径）：「在阅览页点击漫画封面时，在该阅览页内展示二级详情页」。
+     * （用户口径）：「在阅览页点击漫画封面时，在该阅览页内展示二级详情页」。
      * 阅读器原来**没有封面元素**，这里补一个 30×40 的小封面当入口——
      * 比再加一颗图标按钮更符合直觉（用户认的是「封面」这个物件）。
      */
@@ -119,7 +119,7 @@ internal fun ReaderBar(
         Modifier
             .fillMaxWidth()
             .background(Tokens.Color.ReaderSurface)
-            // 白底与深色画布之间只留 1px 细线（用户 2026-10-27：「上面加了一层 UI 风格不好看」，
+            // 白底与深色画布之间只留 1px 细线（「上面加了一层 UI 风格不好看」，
             // 所以不做阴影、不做圆角，就是一条干净的白色横条）。
             .drawBehind {
                 val y = size.height - 1f
@@ -136,7 +136,7 @@ internal fun ReaderBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 出口：只剩一颗 ✕（用户 2026-10-26：「以后把返回去掉，只保留 X」）。
+        // 出口：只剩一颗 ✕（「以后把返回去掉，只保留 X」）。
         // 独立窗口之后它 = **关闭这个阅读器窗口**（不影响主界面和其它阅读器）。
         // 小封面入口：点它弹二级详情页（整本换源 / 看章节进度都在那儿）
         Box(
@@ -175,7 +175,7 @@ internal fun ReaderBar(
                 if (pageCount > 0) {
                     Text(" · ", color = Tokens.Color.ReaderInkTertiary, fontSize = 11.5.sp)
                     if (editing) {
-                        // F-26：点页码变输入框，回车跳转、Esc 取消
+                        // 点页码变输入框，回车跳转、Esc 取消
                         BasicTextField(
                             value = input,
                             onValueChange = { input = it.filter { c -> c.isDigit() }.take(5) },
@@ -232,7 +232,7 @@ internal fun ReaderBar(
                 }
             }
         }
-        // 顶栏中间的空白 = **窗口拖拽把手**（用户 2026-10-27：「需要拖拽把手，现在阅读器拽不动」）。
+        // 顶栏中间的空白 = **窗口拖拽把手**（「需要拖拽把手，现在阅读器拽不动」）。
         // 阅读器是独立窗口，这个把手就是拖窗口的唯一入口（无系统边框）。
         // 高度 40 → 34dp：它是顶栏里最高的一颗（撑起整条的高度），
         // 不跟着收窄的话，上面 6 → 3dp 的收窄等于白做。
@@ -594,7 +594,7 @@ internal fun ReaderSettingsPanel(
 }
 
 /**
- * 设置面板的一行：上方小标签 + 下方**无灰底轨道**的选项组（2026-11-08 批次65）。
+ * 设置面板的一行：上方小标签 + 下方**无灰底轨道**的选项组。
  *
  * 旧版每组套一层 `BgSunken` 圆角灰框，框里再放白/灰胶囊，视觉上「框套框」；
  * 现在去掉轨道，选项直接落在白卡上，靠间距和选中色分层。
@@ -620,7 +620,7 @@ private fun ReaderSettingRow(label: String, content: @Composable androidx.compos
 }
 
 /**
- * 面板里的选项胶囊（2026-11-08 批次65 重做）。
+ * 面板里的选项胶囊（重做）。
  *
  * - 选中：主色 12% 浅底 + 主色半粗字，一眼能看出当前值，又不会像实心按钮那样抢眼；
  * - 未选中：完全透明、无描边，hover 时才浮出一层 6% 黑；

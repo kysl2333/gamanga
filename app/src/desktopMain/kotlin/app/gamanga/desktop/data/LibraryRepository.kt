@@ -53,7 +53,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
         val entry: MangaEntry,
         val unreadCount: Long,
         val coverColorArgb: Long,
-        /** R-09：置顶条目排网格最前，封面左上角有角标。 */
+        /** 置顶条目排网格最前，封面左上角有角标。 */
         val pinned: Boolean = false
     )
 
@@ -77,7 +77,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
     /**
      * **库里所有 manga 行**的主键集合（不区分 `inLibrary`）。
      *
-     * 专门给「下载缓存的孤儿清理」用（R-136，2026-10-28）：
+     * 专门给「下载缓存的孤儿清理」用：
      * 下载行有 `FOREIGN KEY (mangaId) REFERENCES manga(id) ON DELETE CASCADE`，
      * 所以「下载该不该留」的判据应该是**这一行 manga 还在不在库里**，
      * 而**不是**「它在不在书架上」。
@@ -206,7 +206,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
     /**
      * 历史页（排期第 4 项）：按最近阅读时间倒序的全量记录。
      *
-     * R-123（2026-10-26）起**书架外试读也会进历史**：阅读器打开章节时会先调
+     * 起**书架外试读也会进历史**：阅读器打开章节时会先调
      * [ensureReadingRows] 补一行 `inLibrary = 0` 的幽灵 manga + 幽灵 chapter，
      * 所以 `selectHistory` 的 INNER JOIN 不再把进度丢掉。
      * 章节名仍可能为 null（chapter 行被级联删），UI 用「第 N 页」兜底。
@@ -256,7 +256,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
      * 为什么不是一条 UPSERT：SQLDelight 方言是 `sqlite_3_18`，`ON CONFLICT(id) DO UPDATE`
      * 要 SQLite 3.24+，生成阶段会直接报语法错。两条语句的组合语义完全等价，而且都不产生
      * DELETE —— 这是关键：`INSERT OR REPLACE` 的 DELETE 会顺着 `ON DELETE CASCADE` 把
-     * 阅读进度 / 已读标记 / 下载记录一起删掉（2026-10-27 第五轮 R-131 的根因）。
+     * 阅读进度 / 已读标记 / 下载记录一起删掉（第五轮 的根因）。
      *
      * 两条都在**同一个事务**里：中途失败不会留下「有 manga 没元信息」的半行。
      */
@@ -348,18 +348,18 @@ class LibraryRepository(private val db: GamangaDatabase) {
      * 整本标记已读（书架右键菜单「标记已读」，2026-10-26）。
      *
      * 只改 `isRead`，**不清 `lastOpenedAt`**——读过必然点过，清了章节会重新变黑
-     * （与 F-39「灰 ≠ 已读」的口径一致：变灰看 lastOpenedAt，打勾看 isRead）。
+     * （与 「灰 ≠ 已读」的口径一致：变灰看 lastOpenedAt，打勾看 isRead）。
      */
     fun markAllRead(mangaId: String) {
         queries.markAllChaptersRead(mangaId)
-        // 推进版本号：详情页拿它当 key 重读章节状态，否则标记完颜色不变（F-39/F-40）
+        // 推进版本号：详情页拿它当 key 重读章节状态，否则标记完颜色不变（/）
         _progressVersion.value += 1
     }
 
     /**
      * 整本标记未读（2026-10-26 用户要求：右键菜单在整本已读时切换成「标记未读」）。
      *
-     * 连 `lastOpenedAt` 一起清——与单章「标记未读」同一口径（F-39）：
+     * 连 `lastOpenedAt` 一起清——与单章「标记未读」同一口径：
      * 只清 isRead 的话章节还是灰的，用户会以为点了没反应。
      */
     fun markAllUnread(mangaId: String) {
@@ -374,7 +374,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
      * 这个是置 `inLibrary = 0`。新书架页的删除带 6 秒撤销条，硬删之后无法恢复进度，
      * 所以必须走这个。撤销就是 [restoreToLibrary]。
      *
-     * 副作用（刻意接受）：书会留在历史页里。R-123 的口径本来就是「看过就进历史」，
+     * 副作用（刻意接受）：书会留在历史页里。的口径本来就是「看过就进历史」，
      * 书架外试读同样会留痕，语义一致。
      */
     fun hideFromLibrary(mangaIds: List<String>) {
@@ -397,7 +397,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
         }
     }
 
-    // ---- 置顶（R-09）----
+    // ---- 置顶----
 
     /** 置顶 / 取消置顶。新置顶的排在最前还是末尾？末尾——先置顶的更重要。 */
     fun togglePin(mangaId: String) {
@@ -433,7 +433,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
      * 本地主键约定：漫画 `"<source>:<sourceMangaId>"`，章节 `"<mangaId>#<sourceChapterId>"`，
      * 都能反解回源站 id（见 [sourceChapterIdOf]），阅读器据此回源取图。
      *
-     * [addedAt] 可显式传入（F-03 导入 mihon 备份时用备份里的收藏时间，保持原有排序）；
+     * [addedAt] 可显式传入（导入 mihon 备份时用备份里的收藏时间，保持原有排序）；
      * 默认当前时间。
      */
     fun importFromSource(
@@ -443,11 +443,11 @@ class LibraryRepository(private val db: GamangaDatabase) {
         addedAt: Long = System.currentTimeMillis()
     ): String {
         val mangaId = "${type.name.lowercase()}:${manga.sourceId}"
-        // **重新入架必须保留已读 / 点过 / 页数**（2026-10-27 第五轮 R-131）：
+        // **重新入架必须保留已读 / 点过 / 页数**（第五轮 ）：
         // 这张表走 INSERT OR REPLACE（整行替换），不带上旧值就会把读过 200 话的书
         // 全部重置成「未读 + 没点过」，用户看到的就是「加入书架把记录清了」。
         //
-        // 2026-10-29（R-159）进一步改成「先补不存在的行、再原地刷新元信息」：
+        // 2026-10-29进一步改成「先补不存在的行、再原地刷新元信息」：
         // 状态列不再参与写回，所以**不存在「读快照 → 写回」把刚标的已读冲掉**的竞态。
         db.transaction {
             // 入架两步走（INSERT OR IGNORE + UPDATE），**不能**用 INSERT OR REPLACE：
@@ -496,7 +496,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
      *
      * 只在**已在书架**的书上写（没入架不落库，避免脏数据）。
      *
-     * **2026-10-29 R-159：不再「读快照 → INSERT OR REPLACE 写回」**。
+     * **2026-10-29 ：不再「读快照 → INSERT OR REPLACE 写回」**。
      * 旧写法在详情页打开时的后台刷新里跑，与用户点「标记已读」撞车时会把刚标好的
      * 已读冲成未读（用户看到的就是「一开始标记不生效，过一会儿再标又好了」）。
      * 现在：不存在的行用 `insertGhostChapter` 补，存在的行用 `updateChapterMeta`
@@ -507,7 +507,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
         val existing = queries.selectChaptersByManga(localMangaId).executeAsList()
         // 不在书架：不落库。
         //
-        // **2026-10-30（T-06 缓存体检）改判据**：原来只看「章节表空不空」——
+        // **2026-10-30（缓存体检）改判据**：原来只看「章节表空不空」——
         // 章节表空但书**在书架**时（导入中途失败 / 手动清过章节），章节就永远进不了库，
         // 于是每次打开详情都得重新联网拉一遍，断网时章节区永远是空的（本地缓存等于没有）。
         // 现在按 manga 行的 `inLibrary` 判断，书架里的书一定会被缓存下来。
@@ -532,7 +532,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
      * 一次性清掉历史版本遗留的示例数据（[seedDemoData] 造的 6 本）。
      *
      * 背景：老版本在 `main()` 里首启自动回填示例数据，已经装过/跑过老版本的机器上，
-     * 这 6 本还留在库里。用户 2026-10-28 要求「打包应该把这些假的漫画封面直接移除」，
+     * 这 6 本还留在库里。「打包应该把这些假的漫画封面直接移除」，
      * 光删掉回填调用不够——已有数据得主动清一次，否则他还得手动右键移出 6 次。
      *
      * **判据刻意保守**：id 必须是种子 id，且 `coverUrl` 仍为 null（种子数据从不写封面）。
@@ -558,7 +558,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
     /**
      * 造一批示例数据（6 本漫画 + 章节 + 1 条阅读进度）。
      *
-     * **只给测试用，生产启动路径不调用。** 用户 2026-10-28 明确要求：
+     * **只给测试用，生产启动路径不调用。** 要求：
      * 「清空所有数据或者新安装的页面是我测试时的界面，打包应该把这些假的漫画封面直接移除」。
      * 之前是 `main()` 里首启空库自动回填，结果「清空所有数据」重启后又长出 6 本假漫画，
      * 看上去像没清干净。
@@ -620,17 +620,17 @@ class LibraryRepository(private val db: GamangaDatabase) {
             )
         }
 
-    /** 某本已落库的章节数（F-271 章节刷新用它判断「比看过的那一版多了几话」）。 */
+    /** 某本已落库的章节数（章节刷新用它判断「比看过的那一版多了几话」）。 */
     fun chapterCountOf(mangaId: String): Int =
         queries.selectChapterCountByManga(mangaId).executeAsOne().toInt()
 
     /**
      * 标记已读 / 未读。
      *
-     * **标记未读要连「点过」一起清**（F-39，用户明确）：否则章节还是灰的，
+     * **标记未读要连「点过」一起清**（用户明确）：否则章节还是灰的，
      * 用户会以为「点了没反应」。已读只改 isRead，不动 lastOpenedAt（读过必然点过）。
      *
-     * **2026-10-29 R-159：行不存在时补一行**。旧实现是纯 UPDATE，碰上「书架里有这本、
+     * **2026-10-29 ：行不存在时补一行**。旧实现是纯 UPDATE，碰上「书架里有这本、
      * 但该章的行还没落库」（换源迁移 / 备份导入 / 源站重建了章节 id）就静默无事发生，
      * 用户看到的就是「右键标记已读完全没反应」。现在先查一次，缺行就补幽灵行再写状态。
      *
@@ -654,13 +654,13 @@ class LibraryRepository(private val db: GamangaDatabase) {
             AppLog.i("Library", "标记已读补行 $chapterId（$name）")
         }
         if (read) queries.markChapterRead(1L, chapterId) else queries.markChapterUnread(chapterId)
-        // 推进版本号：详情页拿它当 key 重读章节状态，否则标记完颜色不变（F-39/F-40）
+        // 推进版本号：详情页拿它当 key 重读章节状态，否则标记完颜色不变（/）
         _progressVersion.value += 1
         return true
     }
 
     /**
-     * 累加观看时长（F-38）。[day] 用本地日期 `yyyy-MM-dd`，默认今天。
+     * 累加观看时长。[day] 用本地日期 `yyyy-MM-dd`，默认今天。
      *
      * 计时规则在调用方（阅读器）：每页最多计 60 秒、翻页/切话重置——这里只负责落库。
      */
@@ -670,7 +670,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
         queries.addReadingSecondsOfDay(seconds.toLong(), day)
     }
 
-    /** 统计快照（F-38 数据层；UI 在阶段 4 做）。 */
+    /** 统计快照（数据层；UI 在阶段 4 做）。 */
     fun readingStats(today: String = java.time.LocalDate.now().toString()): ReadingStats =
         ReadingStats(
             libraryCount = queries.selectLibraryCount().executeAsOne(),
@@ -707,7 +707,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
      * |---|---|
      * | 阅读进度 | `readingProgress` 全部行（历史页的数据源） |
      * | 阅读统计 | `readingTime` 全部行 |
-     * | 书架 | `manga` 里**没有下载记录**的全部行（含 R-123 幽灵行） |
+     * | 书架 | `manga` 里**没有下载记录**的全部行（含 幽灵行） |
      * | 章节 | 同上那些书的 `chapter` 行（已读标记在这里） |
      * | 配置 | `appPrefs` 除 `download.root` 外**全部**（窗口尺寸 / 代理 / WebDAV / 阅读设置 / cookie / 置顶 / 浏览历史 / 自定义封面映射） |
      *
@@ -770,7 +770,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
         val removedBooks: Int,
     )
 
-    /** 记「点过」（F-39）：点开章节时调，只影响详情页灰显，与已读无关。 */
+    /** 记「点过」：点开章节时调，只影响详情页灰显，与已读无关。 */
     fun setChapterOpened(chapterId: String) {
         queries.markChapterOpened(System.currentTimeMillis(), chapterId)
     }
@@ -823,7 +823,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
         }.toMap()
 
     /**
-     * R-123：补齐「这本书 + 这一话」的行，让书架外试读也能进历史。
+     * 补齐「这本书 + 这一话」的行，让书架外试读也能进历史。
      *
      * **用户实测**：「我刚刚看了个书架里没有的动漫，但是历史上并没有记录下来」。
      * 根因不在写入端（阅读器一直在写 `readingProgress`），而在读取端：
@@ -975,11 +975,11 @@ class LibraryRepository(private val db: GamangaDatabase) {
     companion object {
         const val PREF_WINDOW_SIZE = "window.size"
 
-        /** 置顶 id 列表（逗号分隔，按置顶先后）。R-09。 */
+        /** 置顶 id 列表（逗号分隔，按置顶先后）。。 */
         const val PREF_PINNED = "library.pinned"
 
         /**
-         * 浏览历史（JSON 数组，见 [BrowseHistoryStore]）。F-128。
+         * 浏览历史（JSON 数组，见 [BrowseHistoryStore]）。。
          *
          * 与阅读进度历史**完全独立**：这里只记「在浏览页点开过」，没读过也算。
          */
@@ -1059,7 +1059,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
 }
 
 /**
- * 书架排序（R-09）：置顶的排最前（按置顶先后），其余保持原序（SQL 的 addedAt DESC）。
+ * 书架排序：置顶的排最前（按置顶先后），其余保持原序（SQL 的 addedAt DESC）。
  *
  * 稳定排序——同一档位内相对顺序不变，否则每次重排书架都会"洗牌"。
  * 纯函数，由 desktopTest 的 [LibraryOrderTest] 锁住。
@@ -1079,7 +1079,7 @@ object AppGraph {
     val database: GamangaDatabase by lazy { GamangaDatabaseFactory.create() }
     val libraryRepository: LibraryRepository by lazy { LibraryRepository(database) }
 
-    /** R-04 下载管理器：落盘根目录默认 `%LOCALAPPDATA%\Gamanga\downloads`，
+    /** 下载管理器：落盘根目录默认 `%LOCALAPPDATA%\Gamanga\downloads`，
      * 可在设置页改（pref 记住位置，[DownloadManager.relocate] 负责搬文件）。 */
     val downloadManager: DownloadManager by lazy {
         val repo = libraryRepository
@@ -1107,16 +1107,16 @@ object AppGraph {
         app.gamanga.desktop.data.backup.BackupManager(database, libraryRepository)
     }
 
-    /** F-128：浏览页的「浏览历史」（与阅读进度历史独立，存 appPrefs）。 */
+    /** 浏览页的「浏览历史」（与阅读进度历史独立，存 appPrefs）。 */
     val browseHistory: BrowseHistoryStore by lazy {
         BrowseHistoryStore(libraryRepository)
     }
 }
 
 /**
- * 统计页要的全部数字（F-38）。
+ * 统计页要的全部数字。
  *
- * 「下载漫画数」按**漫画**计数：同一本下了 3 话也只算 1 本（用户 2026-10-25 口径）。
+ * 「下载漫画数」按**漫画**计数：同一本下了 3 话也只算 1 本。
  */
 data class ReadingStats(
     val libraryCount: Long,

@@ -15,7 +15,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 /**
- * F-43 多源并发搜索。
+ * 多源并发搜索。
  *
  * 锁定的行为：每个源先发 Loading 再发结果；**一个源失败不影响其它源**；
  * 关键词为空时不发任何东西（UI 不用处理空搜索）。

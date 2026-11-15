@@ -16,7 +16,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
 
 /**
- * 「点搜索框以外的任何地方 → 搜索框失焦」（F-130，用户 2026-10-27）。
+ * 「点搜索框以外的任何地方 → 搜索框失焦」。
  *
  * ## 用户原话
  *

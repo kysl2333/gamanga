@@ -18,9 +18,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 /**
  * 「点搜索框以外的任何地方 → 搜索框失焦」。
  *
- * ## 用户原话
- *
- * 「点击搜索框后点击其他任意地方无法关闭输入文本的状态」。
  *
  * ## 为什么会这样
  *

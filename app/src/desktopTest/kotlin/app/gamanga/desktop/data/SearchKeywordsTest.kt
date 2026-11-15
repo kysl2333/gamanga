@@ -55,7 +55,6 @@ class SearchKeywordsTest {
 
     @Test
     fun `title with numbers keeps the numeric chunk searchable`() {
-        // 用户原话：「我只搜索 9999 才搜索到」——数字段必须能作为退让候选出现
         val chunks = SearchKeywords.chunks(longTitle)
         assertTrue(chunks.any { it.contains("9999") }, "实际=$chunks")
     }

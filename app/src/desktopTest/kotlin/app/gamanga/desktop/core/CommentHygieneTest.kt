@@ -29,6 +29,7 @@ class CommentHygieneTest {
         Regex("""\d{4}-\d{2}-\d{2}""") to "开发日期记录",
         Regex("""用户\s*20\d{2}-\d{2}-\d{2}""") to "开发日期记录",
         Regex("""用户\s*(要求|说|反馈|口径|指出|明确|希望|觉得|认为)""") to "开发过程叙述",
+        Regex("""原话""") to "需求原话引用",
         Regex("""docs/(plan|sources|agents)/""") to "内部文档引用",
     )
 

@@ -105,8 +105,6 @@ fun DownloadsScreen(
     /**
      * 详情二级页宿主（第六批）。
      *
-     * 原话：「历史页面和下载页面都要在自己页面打开二级详情页，点击漫画卡片就会跳转到
-     * 二级详情，点击阅读进入阅读器」。本页的「卡片」就是一本漫画的分组标题行。
      */
     val detail = rememberDetailHostState(repository, downloadManager)
 

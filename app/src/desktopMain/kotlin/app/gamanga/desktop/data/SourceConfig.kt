@@ -197,7 +197,7 @@ object SourceConfig {
     /**
      * 已停用的旧官方域名 → 现默认域名。
      *
-     * Komiic 官方从 `komiic.com` 迁到 `komiic.cc`（2026-10-28 实测旧域名 DNS 已不可达、
+     * Komiic 官方从 `komiic.com` 迁到 `komiic.cc`（实测旧域名 DNS 已不可达、
      * `komiic.cc` 的 GraphQL 正常）。老用户的 `sources.json` 里存的还是旧值，
      * 读时自动纠正，不要求用户手改文件。
      */

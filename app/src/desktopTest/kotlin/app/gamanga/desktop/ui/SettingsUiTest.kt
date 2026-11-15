@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * 设置页重做后的交互契约（2026-10-28）。
+ * 设置页重做后的交互契约。
  *
  * 只锁定用户明确提出的三条可测事实：
  * 1. 左侧点哪一类立即回调，没有过渡动画（autoAdvance = false 时也要马上生效）；

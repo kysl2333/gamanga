@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 /** 导航项。顺序 = 侧栏显示顺序。 */
 internal enum class NavItem(val label: String) {
     /**
-     * 推荐（2026-10-26）。**排在第一位**是用户要求：「菜单栏区域增加推荐页的按钮并放在菜单栏的最前面」。
+     * 推荐。**排在第一位**是用户要求：「菜单栏区域增加推荐页的按钮并放在菜单栏的最前面」。
      * 但它在 dock 里**不占框内位置**——底部菜单的推荐按钮单独浮在框外左侧（见 `NormalShell`）。
      */
     RECOMMEND("推荐"),

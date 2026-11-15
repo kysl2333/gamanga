@@ -51,7 +51,7 @@ class ZhSearchTest {
 
     @Test
     fun `简体字不该被错转（字典错位回归）`() {
-        // 2026-10-27 事故：ts-characters 里混进 293 个非 BMP 生僻字，
+        // 事故：ts-characters 里混进 293 个非 BMP 生僻字，
         // 「每 2 char 一对」的等距解析整体错位，把「装」映射成「裡」，
         // 导致搜「装备」永远搜不到。这条用例锁死「简体字必须原样保留」。
         assertEquals("装备我最强", ZhSearch.normalize("装备我最强"))

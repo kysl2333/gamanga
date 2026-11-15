@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 /**
  * G社章节排序的**离线**回归（不联网）。
  *
- * 锁 2026-10-23 用户实测 bug：API 的 order 字段偶尔是小数（装备我最强 292 章实录：
+ * 锁 实测PI 的 order 字段偶尔是小数（装备我最强 292 章实录：
  * 239 话 order=240.1、268 话 order=270.1、274 话 order=275.1），旧代码用
  * `intOrNull` 解析失败 → 兜底 `?: 1` → 这三章 chapterIndex 全变 0，稳定排序后
  * 夹在第 1 话后面，章序大乱。

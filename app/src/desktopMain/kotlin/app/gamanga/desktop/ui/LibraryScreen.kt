@@ -134,7 +134,7 @@ fun LibraryScreen(
                         CoverCell(
                             item = item,
                             onClick = { onOpen(item.entry) },
-                            // 2026-10-24 用户要求：长按不再直接移除书架，改为弹出右键菜单，
+                            // 实测接移除书架，改为弹出右键菜单，
                             // 「移出书架」只能从菜单里点（避免误触把书删掉）。
                             onRemove = {
                                 val title = item.entry.title
@@ -190,7 +190,7 @@ private fun CoverCell(
                 .combinedClickable(
                     onClick = onClick,
                     // 长按 = 打开同一个菜单（与右键一致）。原来长按直接移出书架，
-                    // 手指一滑就误删，用户要求改成菜单（2026-10-24）。
+                    // 手指一滑就误删，用户要求改成菜单。
                     onLongClick = {
                         menuOpen = true
                         // pressInCell 是**格子内**坐标（菜单定位会再加 cellOriginInWindow），
@@ -280,7 +280,7 @@ private fun CoverCell(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            // 网站源标签（第七轮 #5）：书架页直接显示每本漫画来自哪个源站
+            // 网站源标签：书架页直接显示每本漫画来自哪个源站
             // （Komiic / 包子漫画），多源书架不用点进详情也能分清。
             Text(
                 sourceNameOf(item.entry.source),
@@ -335,7 +335,7 @@ private fun CoverCell(
                     // **父窗口大小**做最大约束测量，而 DropdownMenuItem 内部带
                     // fillMaxWidth——不加这一行，每项都会被撑到整个窗口宽，
                     // 弹层跟着变成全屏 Surface，用户实测「右键面积太大了
-                    // 覆盖了整个画面」（2026-10-23 反馈）。加上后 fillMaxWidth
+                    // 覆盖了整个画面」（反馈）。加上后 fillMaxWidth
                     // 解析到最宽文本项的固有宽度，菜单恢复窄条。
                     Column(
                         Modifier

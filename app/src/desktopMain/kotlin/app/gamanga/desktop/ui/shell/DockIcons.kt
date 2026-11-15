@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
 
 /**
- * 壳层图标（阶段 4，2026-10-26）。
+ * 壳层图标（阶段 4）。
  *
  * **为什么自己写而不引 `material-icons-extended`**：那一套约 10MB，而我们只需要 7 个图标；
  * 且 Material 图标是 2px 实心/描边混合风，与 UI-SPEC 要求的「统一 1.6~1.8px 描边、20px 网格」
@@ -74,7 +74,7 @@ internal object DockIcons {
     /** 搜索键（顶栏，与 [Browse] 同形，语义不同故单独命名）。 */
     val Search: ImageVector = Browse
 
-    // ---- 书架页右键菜单 / 多选条（2026-10-26，路径取自原型 bookshelf-3x2.html）----
+    // ---- 书架页右键菜单 / 多选条（路径取自原型 bookshelf-3x2.html）----
 
     /** 开始阅读：实心三角。 */
     val Play: ImageVector = strokeIcon(
@@ -134,7 +134,7 @@ internal object DockIcons {
         "M9 9h6",
     )
 
-    /** 推荐：四角星（2026-10-26）。 */
+    /** 推荐：四角星。 */
     val Sparkle: ImageVector = strokeIcon(
         "Sparkle",
         "M12 3.4l1.9 5.1 5.1 1.9-5.1 1.9-1.9 5.1-1.9-5.1-5.1-1.9 5.1-1.9z",
@@ -159,7 +159,7 @@ internal object DockIcons {
     )
 
     /**
-     * 刷新（圆环 + 右上箭头）：书架「全部漫画」标题右侧的章节刷新按钮用（2026-10-29）。
+     * 刷新（圆环 + 右上箭头）：书架「全部漫画」标题右侧的章节刷新按钮用。
      *
      * 只在**刷新中**转圈，静态时是一颗普通图标——不引转圈 loading（UI-SPEC 第 5 节禁转圈），
      * 用 `graphicsLayer.rotationZ` 驱动。
@@ -173,7 +173,7 @@ internal object DockIcons {
     /**
      * 图片（相框 + 太阳 + 山）：右键菜单「自定义封面 / 取消自定义封面」用。
      *
-     * 两种状态**共用同一颗图标**（2026-10-27）：语义是「这本的封面图」，
+     * 两种状态**共用同一颗图标**：语义是「这本的封面图」，
      * 换文案已经说清是设置还是取消；换图标反而要用户重新认一遍。
      */
     val Picture: ImageVector = strokeIcon(
@@ -184,7 +184,7 @@ internal object DockIcons {
     )
 
     /**
-     * 全屏（四个角向外）：阅读器右下角的全屏切换键（2026-10-30 用户要求）。
+     * 全屏（四个角向外）：阅读器右下角的全屏切换键（实测）。
      *
      * 只画四个角、不画边框——和 dock 里的图标同一套 1.8px 描边语言，
      * 在深色阅读器里也读得清。

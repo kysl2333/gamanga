@@ -40,7 +40,7 @@ import org.junit.Test
 import kotlin.test.assertTrue
 
 /**
- * 条漫拖拽回弹的复现回路（第九轮 #3，mp-diagnosing-bugs 第一步）。
+ * 条漫拖拽回弹的复现回路（mp-diagnosing-bugs 第一步）。
  *
  * 复刻 ReaderScreen 条漫滚动全部要素（Initial 通道收口 + Channel 单协程
  * scrollBy(-delta.y) + 惯性 + 边界蓄力），performMouseInput 注入真实鼠标，
@@ -71,7 +71,7 @@ class ReaderDragScrollTest {
         val scope = rememberCoroutineScope()
         var edgeAccum = 0f
         var flingJob: Job? = null
-        // 与 ReaderScreen 一致：滚轮增量汇入 Channel、常驻协程顺序滚（第九轮 #4）
+        // 与 ReaderScreen 一致：滚轮增量汇入 Channel、常驻协程顺序滚
         val wheelDeltas = remember { Channel<Float>(Channel.UNLIMITED) }
         wheelDeltasRef = wheelDeltas
         LaunchedEffect(Unit) {
@@ -284,8 +284,8 @@ class ReaderDragScrollTest {
         scrollToMiddle()
 
         // 连拖 3 次（每次上拖 200px + 松手 + 等惯性停）——用户实测
-        // 「中键连续拖动几次后约 130% 幅度异常上跳」（第十轮 #4），修完后
-        // 又反馈「没有滑动感」（第十二轮 #2）——故区间定为
+        // 「中键连续拖动几次后约 130% 幅度异常上跳」，修完后
+        // 又反馈「没有滑动感」——故区间定为
         // 「有惯性（>200）但不带飞（≤150%）」。
         // 注：产品手势逻辑不区分鼠标按键（awaitFirstDown 收所有键），
         // 中键与左键走同一条拖拽路径，这里用默认 press 覆盖该场景。

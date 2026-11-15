@@ -135,7 +135,7 @@ class GodaSource(
      * order 偶尔是小数（实测 240.1/270.1/275.1，站方给补章/换页让位）：
      * intOrNull 解析小数直接返回 null，旧兜底 `?: 1` 把 239/268/274 全压成
      * index 0——用户实测「章序混乱，239/268/274 夹在第 1 话后面」
-     * （2026-10-23，装备我最强 292 章实录）。按 double 收。
+     * （装备我最强 292 章实录）。按 double 收。
      *
      * 排序策略：order 齐全 → 按 order 排（站方偶发乱序数组时唯一可靠的键，
      * Komiic 实测服务端就返回乱序）；只要有**任何一个**缺 order → 整表信任
@@ -249,7 +249,7 @@ class GodaSource(
 /**
  * 路径段编码：URLEncoder 把空格编成 `+`（查询串语义），路径里必须是 `%20`。
  *
- * 从 GodaSource 的私有成员提为包内共享（第八轮 #9）：MangaBZ / 拷贝漫画
+ * 从 GodaSource 的私有成员提为包内共享：MangaBZ / 拷贝漫画
  * 的 URL 拼装同样需要（关键词进路径的站都吃这一套）。
  */
 internal fun pathEncode(s: String): String =

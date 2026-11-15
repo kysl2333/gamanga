@@ -102,7 +102,7 @@ fun EmbeddedBrowserOverlay(
             withContext(Dispatchers.IO) { CefRuntime.ensureStarted { s -> stage = s } }
             ready = true
         } catch (t: Throwable) {
-            // 记日志（2026-11-11）：用户报「浏览器创建失败」时，日志里必须有这条，
+            // 记日志：用户报「浏览器创建失败」时，日志里必须有这条，
             // 否则只能靠 cef.log 里 libcef 的原生错误码反推。
             AppLog.w("Browser", "CEF 引擎启动失败", t)
             cefError = t.message ?: t::class.simpleName
@@ -144,7 +144,7 @@ fun EmbeddedBrowserOverlay(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(16.dp))
-                // 2026-10-24：CEF 起不来时原来只能干等（用户实测「卡在准备中、无法操作」）。
+                // CEF 起不来时原来只能干等（用户实测「卡在准备中、无法操作」）。
                 // 给一个明确的退出口——至少能回到阅读器/书架。
                 OutlinedButton(onClick = onClose) { Text("取消（返回）") }
             }
@@ -155,7 +155,7 @@ fun EmbeddedBrowserOverlay(
 }
 
 /**
- * 先建宿主、再渲染界面（2026-10-24 修「点浏览器卡在准备中、整个窗口无法操作」）。
+ * 先建宿主、再渲染界面（修「点浏览器卡在准备中、整个窗口无法操作」）。
  *
  * [JcefWebViewHost] 的构造里有三个**同步 JNI** 调用：`CefApp.getInstance()`、
  * `createBrowser()`、`createImmediately()`。原来它写在 `remember { }` 里——也就是在
@@ -187,7 +187,7 @@ private fun BrowserContent(
         built.onSuccess { host = it }
             .onFailure {
                 // 同样必须落日志：这条路是「引擎起来了但浏览器没建出来」，
-                // 2026-11-11 用户报的就是这一条（界面上只有一行"浏览器创建失败"）。
+                // 实测界面上只有一行"浏览器创建失败"）。
                 AppLog.w("Browser", "创建 WebView 失败 url=$url", it)
                 buildError = it.message ?: it::class.simpleName ?: "未知错误"
             }
@@ -361,7 +361,7 @@ private fun BrowserBody(
                 }
             }) { Text(if (closing) "关闭中…" else "✕") }
         }
-        // 进度条别一直转（2026-10-24 用户实测「进度条一直在跑，不知道有什么没加载」）：
+        // 进度条别一直转（实测在跑，不知道有什么没加载」）：
         // 站点常有永不结束的统计/广告请求，isLoading 可能长期为 true。超过 15 秒就
         // 换成一句可读的提示，让用户知道「不是卡死，是某个资源没回来」。
         var slowLoading by remember { mutableStateOf(false) }

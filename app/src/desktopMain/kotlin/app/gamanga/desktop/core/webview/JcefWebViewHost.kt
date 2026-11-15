@@ -134,8 +134,7 @@ class JcefWebViewHost(
                 )
                 // 主框架「加载完」是注入的最佳时机之一——**不能只等 onLoadEnd**：
                 // MangaBZ 详情页有长期未完成的统计/广告请求，onLoadEnd 迟迟不触发，
-                // 于是 target=_blank 的改写没执行、按钮点不动（2026-10-24 用户实测
-                // 「各话按钮还是点不动，进度条一直在跑」）。
+                // 于是 target=_blank 的改写没执行、按钮点不动（实测                // 「各话按钮还是点不动，进度条一直在跑」）。
                 if (!isLoading) injectNoBlank(b)
             }
 
@@ -152,7 +151,7 @@ class JcefWebViewHost(
             /**
              * 页面加载完成后把 `target="_blank"` 全部改成 `_self`。
              *
-             * **为什么不能只靠 onBeforePopup**（2026-10-24 用户实测：MangaBZ 详情页
+             * **为什么不能只靠 onBeforePopup**（实测BZ 详情页
              * 「每话按钮点了没一点反应」）：`target="_blank"` 走的是「新建弹窗浏览器」
              * 流程，OSR 下弹窗不可见；即便在 onBeforePopup 里返回 true 并调 loadURL，
              * 这次导航也常常发生在弹窗创建上下文里被 CEF 丢弃（表现为彻底无反应）。
@@ -229,7 +228,7 @@ class JcefWebViewHost(
             ): Boolean {
                 // target=_blank / window.open：改为当前窗口导航并取消弹窗。
                 // **必须推迟到下一个事件循环**：在 onBeforePopup 回调里同步 loadURL
-                // 会被 CEF 的弹窗创建流程吞掉（2026-10-24 实测「点了没反应」的
+                // 会被 CEF 的弹窗创建流程吞掉（实测「点了没反应」的
                 // 另一半原因）。页面级还有 NO_BLANK_TARGET_JS 兜底，这里是 JS 没
                 // 生效时（脚本禁用的页 / window.open）的第二条腿。
                 if (!targetUrl.isNullOrBlank()) {
@@ -331,7 +330,7 @@ class JcefWebViewHost(
     /**
      * 暂停帧泵。
      *
-     * 2026-10-24：隐藏浏览器会话复用（45 秒）后，帧泵仍在每 33ms 泵一次——
+     * 隐藏浏览器会话复用（45 秒）后，帧泵仍在每 33ms 泵一次——
      * 空闲期白白占 CPU，机器慢的时候能感觉到整体响应变钝。复用回收时调这个。
      */
     fun pauseFramePump() {

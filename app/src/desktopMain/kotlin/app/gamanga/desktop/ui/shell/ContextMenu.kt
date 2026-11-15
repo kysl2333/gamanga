@@ -42,7 +42,7 @@ import app.gamanga.desktop.ui.theme.MixText
 import app.gamanga.desktop.ui.theme.Tokens
 
 /**
- * 页面级右键菜单的共用件（2026-10-27 抽取）。
+ * 页面级右键菜单的共用件（抽取）。
  *
  * ## 为什么要抽
  *

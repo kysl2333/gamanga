@@ -11,11 +11,11 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /**
- * 应用日志（第八轮 #11，用户要求「能看到问题操作并进行修复」）。
+ * 应用日志（用户要求「能看到问题操作并进行修复」）。
  *
  * **为什么不是 println**：实测 `System.err` 被多线程并发写时，30 个 EDT 异常的
  * `printStackTrace` 互相覆盖，日志里只剩 30 句 `Exception in thread "AWT-EventQueue-0"`
- * 前缀、**一条堆栈都不剩**（2026-10-23 用户实测期间出现，logs/app-run.log 第 41 行）。
+ * 前缀、**一条堆栈都不剩**（实测，logs/app-run.log 第 41 行）。
  * 本类用一把锁 + 每次落盘，保证一条日志的「头部 + 堆栈」连续完整。
  *
  * **落点**：`%LOCALAPPDATA%\Gamanga\logs\gamanga.log`（与 DB、下载缓存同根，分发后

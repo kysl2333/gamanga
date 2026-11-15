@@ -159,7 +159,7 @@ class GamangaDatabaseFactoryTest {
 
     @Test
     fun `v3 download table gains createdAt column without losing rows`() {
-        // v3 形状（第七轮 #2 迁移前）：downloadChapter 在，但没有 createdAt 列。
+        // v3 形状（迁移前）：downloadChapter 在，但没有 createdAt 列。
         // 老行必须被回填（= updatedAt，保序不洗牌），不能丢。
         val f = dbFile()
         val d = JdbcSqliteDriver("jdbc:sqlite:${f.toAbsolutePath()}")

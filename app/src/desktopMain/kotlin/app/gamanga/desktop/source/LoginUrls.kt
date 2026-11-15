@@ -35,7 +35,7 @@ object LoginUrls {
         return when (type) {
             // Komiic：`/login` 是实测能登的那条路（详情页弹窗会报密码错误）
             SourceType.KOMIIC -> "$base/login"
-            // 拷贝漫画（2026-10-24 实测）：`/login` 是正常登录页（Vue 应用，200）；
+            // 拷贝漫画（实测）：`/login` 是正常登录页（Vue 应用，200）；
             // `/web/login` 是 301、`/web/register` 是 404。章节列表很可能要登录态才下发，
             // 给用户一个明确的登录入口，比让他在页面里乱找强。
             SourceType.COPYMANGA -> "$base/login"

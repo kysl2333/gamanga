@@ -175,7 +175,7 @@ internal fun DetailPanel(
     onExitDownloadMode: () -> Unit,
     onToggleSelected: (chapterId: String) -> Unit,
     onSelectAllUncached: () -> Unit,
-    /** 全选全部章节（2026-10-30 用户要求 2）。 */
+    /** 全选全部章节（实测）。 */
     onSelectAll: () -> Unit = {},
     /** 取消全选（清空勾选）。 */
     onClearSelection: () -> Unit = {},
@@ -270,7 +270,7 @@ internal fun DetailPanel(
     // ---- 局部状态 ----
     var menuChapterId by remember { mutableStateOf<String?>(null) }
     // 右键菜单锚点是**窗口绝对坐标**（不是相对格子的 DpOffset）：
-    // 2026-10-27 第五轮用户「详情页右键还没修改为现在风格的右键菜单栏」——
+    // 用户「详情页右键还没修改为现在风格的右键菜单栏」——
     // 换成项目统一的 `WindowMenu` 之后，它自己按窗口坐标定位（和书架卡右键同一套），
     // 于是这里必须把落点换算成窗口坐标再传进去。
     var menuAnchor by remember { mutableStateOf(Offset.Zero) }
@@ -436,7 +436,7 @@ internal fun DetailPanel(
                                         0, chapters.lastIndex.coerceAtLeast(0)
                                     ),
                                     localMangaId = localId,
-                                    // 2026-10-30：阅读器顶栏的小封面读这个值。
+                                    // 阅读器顶栏的小封面读这个值。
                                     // 原来这条（最常用的「开始阅读/继续阅读」）漏了它，
                                     // 于是顶栏只剩一个灰占位块。
                                     coverUrl = manga.coverUrl,
@@ -655,7 +655,7 @@ internal fun DetailPanel(
                                         },
                                         onRetry = { onRetryDownload("$localId#${ch.id}") },
                                         menu = {
-                                            // 项目统一的右键菜单（2026-10-27 第五轮用户：
+                                            // 项目统一的右键菜单（用户：
                                             // 「详情页右键还没修改为现在风格的右键菜单栏」）。
                                             // 之前是 Material3 的 `DropdownMenu`：圆角 4dp、无图标、
                                             // 无 hover 底色 —— 和书架卡的 `WindowMenu` 一眼能看出是两套东西。
@@ -712,7 +712,7 @@ internal fun DetailPanel(
                                                         )
                                                     }
                                                     MenuSeparator()
-                                                    // 2026-10-30 用户要求 3：「章节列表支持通过右键进入多选模式」。
+                                                    // 实测列表支持通过右键进入多选模式」。
                                                     // 进的是**同一个**勾选界面（下载用的那套），只是工具条多了
                                                     // 标记已读/未读；点中的这一章进来就是勾上的状态。
                                                     MenuItemRow(
@@ -763,7 +763,7 @@ internal fun DetailPanel(
 /**
  * 左上角返回钮（**36dp** 圆，hover 变强调色浅底）。
  *
- * 尺寸 26 → 36（2026-10-27 第四轮用户：「这种触碰出现蓝色范围的都做大，要大气点要符合规范」）：
+ * 尺寸 26 → 36（用户：「这种触碰出现蓝色范围的都做大，要大气点要符合规范」）：
  * 26dp 的热区只有半个指头宽，hover 出来的蓝圈也小得像装饰。36dp 是桌面端最小舒适热区，
  * 蓝圈的直径也跟着上来了，才读得出「这是个按钮」。
  */
@@ -867,7 +867,7 @@ private fun DetailCover(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
             )
-            // 项目统一的右键菜单（2026-10-27 第五轮）：与书架卡右键同一套观感
+            // 项目统一的右键菜单：与书架卡右键同一套观感
             if (menuOpen) {
                 WindowMenu(position = menuAnchor, onDismiss = { menuOpen = false }) {
                     MenuItemRow(
@@ -951,7 +951,7 @@ private fun CoverDropShadow(floatX: () -> Float, modifier: Modifier = Modifier) 
 /**
  * 操作区。
  *
- * **排布**（2026-10-27 用户第四轮：「下载按钮不应该在最右下角，应该跟阅读一排……
+ * **排布**（实测钮不应该在最右下角，应该跟阅读一排……
  * 上面是下载和添加到书架，下面是阅读按钮」「阅读按钮太大了」）：
  * 1. 第一行 —— 「下载」+「放入/移出书架」，两个同等分量的**次动作**各占一半；
  * 2. 第二行 —— 「阅读」独占一行，是唯一主按钮；
@@ -983,16 +983,16 @@ private fun DetailActions(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Tokens.Space.Sm)) {
         // **第一行：下载 + 放入书架**（两个同等分量的次动作，各占一半）
-        // 第四轮：「下载按钮不应该在最右下角，应该跟阅读一排……
+        // 「下载按钮不应该在最右下角，应该跟阅读一排……
         // 上面是下载和添加到书架，下面是阅读按钮」。
         //
-        // 2026-10-27 第五轮：「点击下载按钮不应该消失，而是再点一次下载按钮后取消下载界面」。
+        // 「点击下载按钮不应该消失，而是再点一次下载按钮后取消下载界面」。
         // 上一版进了下载模式就把这颗按钮整个拿掉，用户想退出只能去找网格上方那条工具栏的
         // 「取消」——按钮消失本身就是「我点错了？」的信号。现在它**常驻**：
         // 文案与图标随模式切换，点它就是在「进 / 出下载模式」之间切换。
         Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Space.Sm)) {
             DetailButton(
-                // 2026-10-30：文案从「取消下载」改成「取消多选」——右键也能进这个模式，
+                // 文案从「取消下载」改成「取消多选」——右键也能进这个模式，
                 // 那时并没有在下载，写「取消下载」会让人以为点它会停掉下载队列。
                 text = if (downloadMode) "取消多选" else "下载",
                 primary = false,
@@ -1234,7 +1234,7 @@ private fun ProgressRail(
  * 位置在章节标题行下方、网格上方：用户点「下载」后视线还在章节区，
  * 工具条出现在这里才不需要回头找。
  *
- * ## 2026-10-30 扩充（用户要求 2 + 3）
+ * ## 扩充（用户要求 2 + 3）
  *
  * - **要求 2**：加「全选」「取消全选」——原来的「全选未缓存」只能全选，想反选就得一个个点掉。
  * - **要求 3**：这一条工具条现在**同时**服务「下载」和「右键进多选」两种进入方式，
@@ -1360,10 +1360,10 @@ private fun ChapterKindText(text: String, selected: Boolean) {
 /**
  * 一个章节格。
  *
- * **层级**（2026-10-27 第四轮用户：「章节有边框但是没跟外面区分要改，章节小框也没有了要加，加悬浮感」）：
+ * **层级**（用户：「章节有边框但是没跟外面区分要改，章节小框也没有了要加，加悬浮感」）：
  * 外层是**凹陷容器**（`BgSunken` 浅灰，见章节区 `Box`），格子是**凸起白卡**
  * （`BgElevatedSolid` + `Radius.Control`）。凹 / 凸两层靠**底色差**读出来。
- * 第五轮（用户：「去掉详情页章节框的边框线」）把两侧的静态线都撤了：
+ * （用户：「去掉详情页章节框的边框线」）把两侧的静态线都撤了：
  * 容器的 `border` 删掉、格子默认态描边改透明 —— 线不参与层级，底色才参与。
  *
  * **悬浮感**（三件事叠起来才叫浮起来，只做一件都不像）：上移 1dp + 4dp 中性阴影 +
@@ -1398,7 +1398,7 @@ private fun ChapterCell(
     // 本格左上角的**窗口坐标**：右键落点是格内坐标，加它才是 WindowMenu 要的绝对坐标。
     // 用 `localToWindow(Offset.Zero)`（Compose 1.12 起没有 positionInWindow()）。
     var originInWindow by remember { mutableStateOf(IntOffset.Zero) }
-    // ---- 悬浮感（2026-10-27 第四轮用户要求）----
+    // ---- 悬浮感（用户要求）----
     // 三件事叠起来才叫「浮起来」：上移 1dp + 一层 4dp 中性阴影 + 描边转强调色。
     // 只做阴影会像「贴了张纸」；只做位移会像「抖一下」。
     val lift by animateDpAsState(
@@ -1538,7 +1538,7 @@ private fun ChapterCell(
                         color = Tokens.Color.TextSecondary,
                     )
                 }
-                // 多选勾选框挪到**右下角**、做成**圆形灰圈**（2026-10-27 第五轮用户：
+                // 多选勾选框挪到**右下角**、做成**圆形灰圈**（用户：
                 // 「下载框放在右下，用圆型灰色的框」）。
                 // 原来它是左上角的 Material3 方形 Checkbox：和章节名抢同一行的左端，
                 // 一眼看过去像「章节标题的图标」，而且方块在满屏圆角里是唯一的直角。
@@ -1555,7 +1555,7 @@ private fun ChapterCell(
 /**
  * 多选勾选框：16dp **圆形灰圈**，选中后填主色 + 白勾。
  *
- * 2026-10-27 第五轮用户：「下载框放在右下，用圆型灰色的框」（附截图红圈标在格子右下角）。
+ * 用户：「下载框放在右下，用圆型灰色的框」（附截图红圈标在格子右下角）。
  * 换掉 Material3 的方形 `Checkbox` 有两个理由：
  * 1. **位置**：原来在左上角，和章节名抢同一行左端，看着像标题前的图标；多选态下用户要扫的是
  *    「这一格勾没勾」，右下角是视觉动线的落点，不跟文字抢。
@@ -1597,7 +1597,7 @@ private fun SelectRing(checked: Boolean) {
 /**
  * 「已读」标记：14dp 深灰底圆 + 白色对勾。
  *
- * **为什么不用绿色**（2026-10-27 第四轮用户：「详情页色彩太多太杂，不要又是红又是绿又蓝」）：
+ * **为什么不用绿色**（用户：「详情页色彩太多太杂，不要又是红又是绿又蓝」）：
  * 整页只有「当前/可操作」用蓝、「真错误」用红，其余全是黑灰阶。已读是一个**已完成的过去时**，
  * 不是「成功状态」，用中性深灰既清楚又不引入第四种颜色。
  *

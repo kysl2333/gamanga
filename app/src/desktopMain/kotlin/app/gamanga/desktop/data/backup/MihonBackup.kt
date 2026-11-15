@@ -61,7 +61,7 @@ fun parseMihonBackup(gzipped: ByteArray): MihonBackupResult {
     val mangas = ArrayList<MihonManga>()
     val skipped = ArrayList<String>()
     for (m in top.messages(1)) { // Backup.backupManga
-        // 2026-10-29：字段号用「多候选」读——用户问「很早之前的备份还能用吗」，
+        // 字段号用「多候选」读——用户问「很早之前的备份还能用吗」，
         // 历代 mihon / Tachiyomi 把缩略图、章节列表的字段号挪过位，硬读单一字段号
         // 会把老备份读成「有书名没章节」。只要 url + title 还在，这一部就救得回来。
         val url = m.stringAny(2, 1) ?: continue

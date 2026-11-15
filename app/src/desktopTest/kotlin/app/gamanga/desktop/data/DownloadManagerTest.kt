@@ -47,7 +47,7 @@ class DownloadManagerTest {
     private var blockFirst = false
     private val release = CompletableDeferred<Unit>()
 
-    /** 每页前 N 次调用抛瞬时错误（测单页重试，第七轮 #3）。 */
+    /** 每页前 N 次调用抛瞬时错误（测单页重试）。 */
     private var failPageAttempts = 0
     private val pageAttempts = java.util.concurrent.ConcurrentHashMap<String, Int>()
 
@@ -77,7 +77,7 @@ class DownloadManagerTest {
 
     @BeforeTest
     fun setup() {
-        // 日志隔离：下载全链路会写 AppLog，别污染真实日志位置（第十轮收尾发现）
+        // 日志隔离：下载全链路会写 AppLog，别污染真实日志位置（收尾发现）
         logDir = Files.createTempDirectory("dlmgr-test")
         app.gamanga.desktop.core.AppLog.dirOverride = logDir
         val driver = JdbcSqliteDriver("jdbc:sqlite::memory:")
@@ -237,10 +237,10 @@ class DownloadManagerTest {
         // 等挂起页真的进了 fetchPage：此时前 3 页已完成（done=3），第 4 页在飞。
         // done 按「写完一页 +1」计数，p0 不落地前恒为 3，轮询必然等到。
         //
-        // 20s 超时的来历（2026-10-24）：原来 5s，机器负载高时（并行跑全量测试 + 编译）
+        // 20s 超时的来历：原来 5s，机器负载高时（并行跑全量测试 + 编译）
         // 4 页模拟下载跑不完，偶发 TimeoutCancellationException。
         //
-        // 2026-10-26 加固：原来写的是 `while (downloadedPages != 3)`——一旦 done 因为
+        // 加固：原来写的是 `while (downloadedPages != 3)`——一旦 done 因为
         // 任何原因跳过 3（比如挂起没生效、p0 被放行后直接冲到 4），循环就**永远等不到**，
         // 只能干耗满 20s 抛一句 TimeoutCancellationException，看不出真因。
         // 现在改成「等 >= 3」+ 每轮检查任务还在跑：任务提前结束（COMPLETED/FAILED）
@@ -464,7 +464,7 @@ class DownloadManagerTest {
         assertEquals(3, m.tasks.value.values.count { it.status == DownloadStatus.COMPLETED })
     }
 
-    // ---- 第七轮 #2：列表顺序稳定 / 并发可调 ----
+    // ---- 列表顺序稳定 / 并发可调 ----
 
     @Test
     fun `download list keeps enqueue order regardless of progress updates`() = runBlocking {
@@ -533,7 +533,7 @@ class DownloadManagerTest {
         assertEquals(3, m.tasks.value.values.count { it.status == DownloadStatus.COMPLETED })
     }
 
-    // ---- 第七轮 #3：单页重试 + 错误上下文 ----
+    // ---- 单页重试 + 错误上下文 ----
 
     @Test
     fun `transient page failure is retried instead of failing the chapter`() = runBlocking {
@@ -578,7 +578,7 @@ class DownloadManagerTest {
         assertTrue(task.error!!.contains("取图片列表失败"), "错误要带阶段：${task.error}")
     }
 
-    // ---- 第七轮 #7：缓存用量 / 清理 / 换位置 ----
+    // ---- 缓存用量 / 清理 / 换位置 ----
 
     @Test
     fun `relocate waits for cancelled download cleanup before copying`() = runBlocking {
@@ -694,7 +694,7 @@ class DownloadManagerTest {
 
         val newRoot = Files.createTempDirectory("gamanga-dl-test-new")
         try {
-            assertNull(m.relocate(newRoot)) // null = 成功（第八轮 #7 改为返回失败原因）
+            assertNull(m.relocate(newRoot)) // null = 成功（改为返回失败原因）
             assertEquals(newRoot.toAbsolutePath().normalize(), m.rootDir().toAbsolutePath().normalize())
             // 文件搬到新位置
             val moved = newRoot.resolve(DownloadManager.sanitizePathSegment("komiic:228"))
@@ -713,7 +713,7 @@ class DownloadManagerTest {
         }
     }
 
-    // ---- 缓存清理安全（第八轮 #7：用户明确要求「不要把系统或其他不相关文件删掉」）----
+    // ---- 缓存清理安全（用户明确要求「不要把系统或其他不相关文件删掉」）----
 
     @Test
     fun `clear all cache removes only whitelisted manga dirs`() = runBlocking {
@@ -807,7 +807,7 @@ class DownloadManagerTest {
         delay(300) // 让第一章开始（挂第一页）
         m.pauseAll()
         assertTrue(m.isPaused())
-        // 真停（第九轮 #11）：在飞协程被取消、状态回退，不能有 DOWNLOADING 残留
+        // 真停：在飞协程被取消、状态回退，不能有 DOWNLOADING 残留
         delay(300)
         var statuses = m.tasks.value.values.map { it.status }
         assertEquals(0, statuses.count { it == DownloadStatus.DOWNLOADING }, "暂停后不应有 DOWNLOADING（实际=$statuses）")
@@ -827,7 +827,7 @@ class DownloadManagerTest {
         assertTrue(m.tasks.value.values.all { it.status == DownloadStatus.COMPLETED })
     }
 
-    // ---- 断点续传（第十轮 #6：暂停/失败/重启后只补剩余页，不再从 0 重下）----
+    // ---- 断点续传（暂停/失败/重启后只补剩余页，不再从 0 重下）----
 
     @Test
     fun `resumed chapter only downloads missing pages`() = runBlocking {

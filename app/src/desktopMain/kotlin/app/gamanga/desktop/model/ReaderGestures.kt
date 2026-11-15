@@ -64,14 +64,14 @@ internal const val FLING_FRICTION_PER_SECOND = 0.08f
 
 /** 出手速度低于此值不触发惯性（px/s）——当一次普通拖动松手。
  *
- * 120 → 400（2026-10-25 日志实测）：鼠标松手速度普遍在 300~2000，
+ * 120 → 400（日志实测）：鼠标松手速度普遍在 300~2000，
  * 阈值 120 让每一次轻微松手都触发惯性，叠加 2400px 上限就变成「一碰就飞」。
  */
 internal const val FLING_MIN_VELOCITY = 400f
 
 /** 惯性衰减到此速度以下停止（px/s），避免永远停不掉的微小移动。
  *
- * 100 → 350（2026-10-25 日志实测）：100px/s 在 300fps 下每帧只走 1px，
+ * 100 → 350（日志实测）：100px/s 在 300fps 下每帧只走 1px，
  * 尾巴会拖几秒，用户体感是「卡住不动 / 被慢慢拉回」。
  */
 internal const val FLING_STOP_VELOCITY = 350f
@@ -130,7 +130,7 @@ internal fun wheelZoomStep(scrollY: Float, scrollX: Float, ctrl: Boolean, step: 
  * 返回 null = 纵向没有滚动。
  */
 internal fun wheelPageForward(scrollY: Float): Boolean? = when {
-    // **滚轮方向与阅读方向无关**（2026-10-25 用户实测修正）：
+    // **滚轮方向与阅读方向无关**（实测）：
     // 旧实现按 rtl 反转，导致「右往左」模式下往上滚变成下一页。
     // 滚轮是"内容推进"的隐喻：往下滚 = 看后面的内容 = 下一页，两个方向模式都一样；
     // 阅读方向只影响"页在屏幕上摆哪边"，不该影响滚轮。
@@ -227,7 +227,7 @@ internal fun edgeOverscroll(previous: Float, requested: Float, edge: ChapterEdge
 /**
  * 预加载窗口：从 [start] 起、最多 [ahead] 页，夹在 `[0, size)` 内。
  *
- * **为什么要有这个纯函数**（2026-10-24 线上崩溃的教训）：
+ * **为什么要有这个纯函数**（线上崩溃的教训）：
  * 旧写法 `start.coerceIn(0, pages.lastIndex)` 在 `size == 0` 时上界是 **-1**，
  * `coerceIn(0, -1)` 会抛 `IllegalArgumentException: Cannot coerce value to an
  * empty range`。而 `pages` 是 Compose 的 state，`collectLatest` 的 lambda 里读它

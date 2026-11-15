@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * 全局搜索的**活动状态**（2026-10-27 新增）。
+ * 全局搜索的**活动状态**（新增）。
  *
  * ## 为什么需要它
  *

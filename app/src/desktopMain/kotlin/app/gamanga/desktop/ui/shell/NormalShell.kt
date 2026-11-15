@@ -58,7 +58,7 @@ import app.gamanga.desktop.ui.theme.Tokens
 import kotlinx.coroutines.delay
 
 /**
- * 正常模式外壳（阶段 4，2026-10-26）。
+ * 正常模式外壳（阶段 4）。
  *
  * 取代 [AppNavRail] 的左侧竖栏：底部浮空纯图标菜单 + 右上角窗口关闭键 + 全宽页面区。
  * 视觉依据是 `docs/ui/prototype/bookshelf-3x2.html`，交互细节按实测反馈调整过。
@@ -142,7 +142,7 @@ internal fun NormalShell(
  * 无边框窗口没有标题栏可拖，`Main.kt` 会在这里铺一条拖拽手势区。壳里留同样高度的空白，
  * 避免拖拽条压住页面内容。
  *
- * 2026-10-26 用户实测：「拖动界面窗口的部分太窄，扩大能拖拽的范围」→ 18dp 提到 **32dp**。
+ * 实测窗口的部分太窄，扩大能拖拽的范围」→ 18dp 提到 **32dp**。
  * 代价是页面顶栏要一起加高（[app.gamanga.desktop.ui.library.BookshelfScreen] 的 TopBar 84dp），
  * 否则搜索框会被拖拽条压住一半。
  */
@@ -188,13 +188,13 @@ internal object DockMetrics {
 }
 
 /**
- * dock 的**视觉中心**相对窗口中心的横向偏移（2026-10-27 第六轮）。
+ * dock 的**视觉中心**相对窗口中心的横向偏移。
  *
  * 底部那排是 `Row { 推荐按钮(52) · 间距(12) · dock(260) }`，整排居中的结果就是
  * **dock 本身右移了 (52+12)/2 = 32dp**。推荐按钮在 dock 框外左侧，用户眼里「菜单栏」是那个
  * 白色胶囊，所以任何「和菜单栏对齐」的浮层都得跟着右移 32dp。
  *
- * ⚠️ **2026-10-29 起浮层不要再用这个常量**：改用 [DockMetrics.centerOffsetX]（实测值）。
+ * ⚠️ **起浮层不要再用这个常量**改用 [DockMetrics.centerOffsetX]（实测值）。
  * 这个常量只留给「dock 还没测量出来」的第一帧兜底。
  */
 internal val DockCenterOffsetX = 32.dp
@@ -428,7 +428,7 @@ private fun BottomDock(
 private val DockItems = NavItem.entries.filter { it != NavItem.RECOMMEND }
 
 /**
- * 推荐按钮（2026-10-26 用户口述规格）。
+ * 推荐按钮（实测）。
  *
  * | 状态 | 表现 |
  * |---|---|
@@ -536,7 +536,7 @@ private fun DockButton(
             hovered -> 0.42f
             else -> 0f
         },
-        // 2026-10-26 用户：dock 波浪上涨降速 25%（320 → 400）
+        // 实测上涨降速 25%（320 → 400）
         animationSpec = tween(400, easing = Tokens.Motion.DrawerEasing),
         label = "dockLevel",
     )

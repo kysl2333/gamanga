@@ -62,7 +62,7 @@ import java.io.File
 import java.util.Locale
 
 /**
- * 自定义封面的选图弹窗（2026-10-27 第五轮）。
+ * 自定义封面的选图弹窗。
  *
  * 用户原话：「自定义封面 2 种方式，一种是网络链接下载图片，一种是直接从本地文件中选择，
  * 现在只有本地图片选择，本地选择框使用现代的框」。
@@ -107,13 +107,13 @@ fun CoverPickerDialog(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        // **尺寸跟着窗口走**（2026-10-27 第六轮修）：原来写死 880×520，
+        // **尺寸跟着窗口走**（修）：原来写死 880×520，
         // 窗口小于这个尺寸时卡片会被窗口边缘裁掉——用户看到的是「三栏只剩半截、点不到文件」。
         val dialogWidth = minOf(880.dp, maxWidth - Tokens.Space.Xxl * 2)
         val dialogHeight = minOf(520.dp, maxHeight - Tokens.Space.Xxl * 2)
         Box(
             Modifier
-                // **必须 enabled = true**（第六轮修）：上一版写的是 enabled = false，
+                // **必须 enabled = true**（修）：上一版写的是 enabled = false，
                 // 那个 clickable 完全不参与事件分发 → 点在卡片空白处（预览区、路径栏、栏间留白）
                 // 会穿透到遮罩层，把整个弹窗关掉。用户看到的就是「刚点两下就没了，根本没法浏览」。
                 // 现在卡片自己吃掉所有点击（onClick 空实现），只有遮罩区域才关窗。
@@ -164,7 +164,7 @@ private fun PickerBody(
     val locations = remember { quickLocations() }
 
     // 记住这次浏览到哪了：下次打开直接回到同一个目录。
-    // 第六轮反馈「本地文件并不能浏览图片」——一半原因是每次打开都回到
+    // 反馈「本地文件并不能浏览图片」——一半原因是每次打开都回到
     // 「图片」目录，而他的图在别的盘，每次都得从头点一遍，体感就是「根本不能浏览」。
     LaunchedEffect(dir.absolutePath) {
         AppGraph.libraryRepository.setPrefAsync(CoverLastDirKey, dir.absolutePath)
@@ -766,7 +766,7 @@ private fun initialCoverDir(): File {
 }
 
 /**
- * 系统文件框兜底（2026-10-27 第六轮）：自绘列表列不出来的位置（特殊盘符、网络位置、
+ * 系统文件框兜底：自绘列表列不出来的位置（特殊盘符、网络位置、
  * 权限受限目录），用户至少还能用熟悉的系统框选到图。
  *
  * 只放图片扩展名过滤器，并且**不阻塞**主线程太久——`JFileChooser` 是模态的，

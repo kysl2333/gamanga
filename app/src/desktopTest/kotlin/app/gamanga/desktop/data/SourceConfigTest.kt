@@ -216,7 +216,7 @@ class SourceConfigTest {
             to = file,
         )
         assertEquals("https://godamh.com", normalized[SourceType.GODA]?.baseUrl)
-        // 2026-10-25 用户要求：保存即生效，不重启。生效值 / cookie 域 / 适配器实例三处同时切
+        // 实测，不重启。生效值 / cookie 域 / 适配器实例三处同时切
         assertEquals("https://godamh.com", SourceConfig.baseUrl(SourceType.GODA))
         assertEquals("godamh.com", SourceConfig.domain(SourceType.GODA))
         assertNotSame(before, Sources.of(SourceType.GODA), "保存后必须重建适配器，否则请求还打旧地址")

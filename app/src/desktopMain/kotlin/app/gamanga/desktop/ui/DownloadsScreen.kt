@@ -89,7 +89,7 @@ import kotlinx.coroutines.delay
  * 下载管理页。
  *
  * 按漫画分组的任务列表：进行中（进度条）/ 等待中 / 失败（重试）/ 已完成（阅读 + 删除）。
- * 顶部一行总览：缓存占用、已缓存话数、进行中任务数；并发数设置行（第七轮 #2）。
+ * 顶部一行总览：缓存占用、已缓存话数、进行中任务数；并发数设置行。
  *
  * 「阅读」从书架章节表重建 ReaderTarget（下载的书必然在书架——downloadChapter
  * 有 manga 外键），落到本章第一页；阅读器对已下载章节直接读本地文件。
@@ -103,7 +103,7 @@ fun DownloadsScreen(
     onOpenBrowser: (url: String, domain: String) -> Unit,
 ) {
     /**
-     * 详情二级页宿主（2026-10-27 第六批用户口径）。
+     * 详情二级页宿主（第六批用户口径）。
      *
      * 原话：「历史页面和下载页面都要在自己页面打开二级详情页，点击漫画卡片就会跳转到
      * 二级详情，点击阅读进入阅读器」。本页的「卡片」就是一本漫画的分组标题行。
@@ -148,7 +148,7 @@ fun DownloadsScreen(
 /**
  * 下载页的一级内容（列表本体）。
  *
- * 2026-10-27 第六批从 [DownloadsScreen] 拆出来：外层要变成 `Box { 内容 + DetailHost }`，
+ * 第六批从 [DownloadsScreen] 拆出来：外层要变成 `Box { 内容 + DetailHost }`，
  * 详情面板才能**盖在列表上**——直接塞进原来的 `Column` 会被排到列表下面（永远看不见）。
  */
 @Composable
@@ -162,7 +162,7 @@ private fun DownloadsContent(
     val tasks by downloadManager.tasks.collectAsState()
     // 分组按漫画标题排序；组内按 createdAt（入队时间）**稳定**排序——旧实现按
     // updatedAt 排，每页进度都改 updatedAt，正在下载的任务在列表里来回跳
-    // （用户实测「正在下载的两个任务在列表中来回跳动」，第七轮 #2）。
+    // （用户实测「正在下载的两个任务在列表中来回跳动」）。
     val groups = remember(tasks) {
         tasks.values
             .groupBy { it.mangaId }
@@ -174,7 +174,7 @@ private fun DownloadsContent(
     val activeCount = tasks.values.count {
         it.status == DownloadStatus.QUEUED || it.status == DownloadStatus.DOWNLOADING
     }
-    // 实时下载速度（第八轮 #5）：每 500ms 采样一次 DownloadManager 的速率窗。
+    // 实时下载速度：每 500ms 采样一次 DownloadManager 的速率窗。
     // produceState 的 while(true) 在页面离开时自动取消。
     val speedBps by produceState(0L) {
         while (true) {
@@ -283,7 +283,7 @@ private fun DownloadsContent(
 }
 
 /**
- * 并发数设置行（第七轮 #2）：同时下载几章。
+ * 并发数设置行：同时下载几章。
  *
  * 推荐 2：Komiic 每章取图烧一份每日配额、G社 每章拉一次隐藏浏览器，章节级
  * 并发再高也只是让取图阶段互相排队；真正能并行加速的只有章内图片字节下载
@@ -472,7 +472,7 @@ private fun DownloadGroup(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(Modifier.weight(1f)) {
-                    // 章节名 + 下载源标签（第七轮 #4：每个任务都要能看出从哪来）。
+                    // 章节名 + 下载源标签（每个任务都要能看出从哪来）。
                     // 源按 mangaId 反解（"komiic:228" → Komiic），解析不了显示「未知源」。
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
@@ -503,7 +503,7 @@ private fun DownloadGroup(
                             )
                         }
                         DownloadStatus.QUEUED -> {
-                            // 暂停中保留已下载进度（第十二轮 #9）：下载过的页
+                            // 暂停中保留已下载进度：下载过的页
                             // 仍在磁盘上，进度条按 downloadedPages/pageCount 停住，
                             // 文案区分「已暂停」（用户手动暂停）与「等待中」（排队）。
                             val pausedNow = paused
@@ -586,7 +586,7 @@ private fun readDownloaded(
         )
     }
     if (chapters.isEmpty()) return // 漫画已不在书架（孤儿任务，等清理）
-    // **两边都是源站 id，直接比**（2026-10-25 修正）：
+    // **两边都是源站 id，直接比**（修正）：
     // `enqueue()` 存进 DownloadTask 的 `chapterId` 就是**源站 id**（`guimiezhiren#<uuid>`），
     // 而上面 `chapters` 也已经用 `sourceChapterIdOf` 反解成源站 id 了。
     // 上一版又对它调了一次 `sourceChapterIdOf` → 拷贝漫画的 `guimiezhiren#` 前缀被二次切掉

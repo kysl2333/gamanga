@@ -49,7 +49,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * 水位波浪填充（2026-10-26，用户要求的三处动效共用一份实现）。
+ * 水位波浪填充（用户要求的三处动效共用一份实现）。
  *
  * 模型很简单：一个「水位」[level]（0 = 空、1 = 满）加一个「相位」[phase]（弧度，驱动波动）。
  * 三种用法只是参数不同：
@@ -172,7 +172,7 @@ internal val SoftFillPalette = listOf(
 )
 
 /**
- * 在柔和色板之间**循环流动**的颜色（2026-10-26 用户要求）。
+ * 在柔和色板之间**循环流动**的颜色（实测）。
  *
  * 用户原话：「颜色只有一个且这个颜色并不会变换成颜色流动的感觉」「需要像搜索键被按住一样在那变色」。
  * 上一版是「随机挑一色然后固定」，观感是死的一个色块。这里改成：
@@ -324,7 +324,7 @@ internal fun WaveIconButton(
     val fill by animateColorAsState(
         targetValue = targetFill,
         // 过渡放慢到 520/620ms（上一版 420/520 且扫过整个色相环，观感就是「闪」）
-        // 2026-10-26 用户：点击注满/回落也各降 25%（520→650 / 620→775）
+        // 实测也各降 25%（520→650 / 620→775）
         animationSpec = tween(if (pressed) 650 else 775, easing = Tokens.Motion.DrawerEasing),
         label = "waveBtnFill",
     )

@@ -113,7 +113,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
- * 书架页（正常模式，2026-10-26 Compose 化）。
+ * 书架页（正常模式，Compose 化）。
  *
  * 视觉与交互依据 `docs/ui/prototype/bookshelf-3x2.html`（用户已验收原型），
  * 壳层（无边框窗口 / 底部 dock / 右上关窗键）由 `NormalShell` 提供，本文件只管页面内容。
@@ -147,7 +147,7 @@ fun BookshelfScreen(
     /** 顶栏搜索键：把词带去浏览页做全网搜索（书架内过滤是输入框实时做的）。 */
     onSearch: (String) -> Unit,
     /**
-     * 右键「开始阅读」→ 直接进阅读器（2026-10-26 用户要求：左键进详情、右键进阅读器）。
+     * 右键「开始阅读」→ 直接进阅读器（实测、右键进阅读器）。
      * 章节列表由调用方从库里取（本地优先，不要等网络）。
      */
     onResume: (LibraryRepository.ShelfItem) -> Unit,
@@ -180,7 +180,7 @@ fun BookshelfScreen(
     /**
      * 自定义封面弹窗的目标 manga id（null = 关着）。
      *
-     * 2026-10-27 第五轮：不再直接弹系统 `JFileChooser`，改成项目自己的选图弹窗
+     * 不再直接弹系统 `JFileChooser`，改成项目自己的选图弹窗
      * （本地文件 / 网络链接两种来源，见 `CoverPickerDialog`）。
      */
     var coverPickerFor by remember { mutableStateOf<String?>(null) }
@@ -193,7 +193,7 @@ fun BookshelfScreen(
     /**
      * 详情二级页宿主。
      *
-     * 第二轮口径：「在书架页点击漫画封面时，在**该书架页内**展示二级详情页」。
+     * 口径：「在书架页点击漫画封面时，在**该书架页内**展示二级详情页」。
      * 上一版是跳到浏览页再弹，等于把用户从书架拽走，回来还要重新找位置。
      */
     val detail = rememberDetailHostState(repository, downloadManager)
@@ -261,7 +261,7 @@ fun BookshelfScreen(
     }
 
     /**
-     * 从网络链接设置封面（2026-10-27 第五轮用户：「一种是网络链接下载图片」）。
+     * 从网络链接设置封面（用户：「一种是网络链接下载图片」）。
      *
      * 下载在 IO 线程、**存的是字节不是链接**：原站删图 / 防盗链 / 改域名都不影响已设好的封面。
      * 失败原因原样带到弹窗里（用户要能判断是链接写错还是站点挡了）。
@@ -380,9 +380,9 @@ fun BookshelfScreen(
 
         // 多选操作组：浮在内容之上、**dock 之上**。
         //
-        // 2026-10-27 第五轮用户（严重问题）：「多选开启后 删除和返回按键被菜单栏挡住了，
-        // 把多选的这两按键抬高」；第六轮：「多选没对齐菜单栏中心」。
-        // 2026-10-29 第三次报同一个问题 → **不再手算常量**：位置改由 [DockMetrics]
+        // 用户（严重问题）：「多选开启后 删除和返回按键被菜单栏挡住了，
+        // 把多选的这两按键抬高」；「多选没对齐菜单栏中心」。
+        // 第三次报同一个问题 → **不再手算常量**位置改由 [DockMetrics]
         // 里 dock 的实测矩形决定（纵向 = dock 顶边 + 20dp，横向 = dock 中心线）。
         // dock 尺寸以后怎么改，这两个圆钮都不会再被盖住或偏一边。
         MultiActions(
@@ -414,7 +414,7 @@ fun BookshelfScreen(
                 .offset(x = DockMetrics.centerOffsetX),
         )
 
-        // 自定义封面弹窗（2026-10-27 第五轮）：本地文件 / 网络链接两种来源
+        // 自定义封面弹窗：本地文件 / 网络链接两种来源
         coverPickerFor?.let { id ->
             CoverPickerDialog(
                 busy = coverBusy,
@@ -542,7 +542,7 @@ private fun TopBar(query: String, onQueryChange: (String) -> Unit, onSearch: () 
     Row(
         Modifier
             .fillMaxWidth()
-            // 拖拽条 2026-10-26 提到 45dp（用户「改为 45dp 或规范」），
+            // 拖拽条 提到 45dp（用户「改为 45dp 或规范」），
             // 顶栏只留「42dp 搜索框 + 上下各 13dp」= 68dp。
             // 上一版 84dp 时搜索框下面空太多（用户：「搜索栏和下面的间距有点宽了」）。
             .height(60.dp)
@@ -601,7 +601,7 @@ private fun TopBarOverlay(
             .fillMaxWidth()
             // 内容落在拖拽带（壳层最上层 36dp）下面，否则搜索框点不到。
             // **不加任何背景**：加了就是那条白带。封面从这里穿过去。
-            // 2026-10-29 用户第三次报「搜索栏没对齐」：顶距改读三页共用的
+            // 实测没对齐」：顶距改读三页共用的
             // [SearchBarTopInset]（= 拖拽带 + 20dp），与浏览页 / 推荐页落在同一条线上。
             .padding(top = SearchBarTopInset)
     ) {
@@ -894,7 +894,7 @@ private fun SectionHeader(
         }
         if (action != null && onAction != null) {
             Spacer(Modifier.weight(1f))
-            // 2026-10-27 用户：「查看全部文字按键添加触碰和点击的自然动效」——
+            // 实测按键添加触碰和点击的自然动效」——
             // 与浏览历史「清除全部」共用同一个 TextAction（触碰变强调色 + 浮浅底，按下缩 0.94）
             TextAction(text = action, onClick = onAction, idleColor = Tokens.Color.Accent)
         }

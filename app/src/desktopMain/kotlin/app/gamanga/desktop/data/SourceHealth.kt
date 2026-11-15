@@ -65,7 +65,7 @@ object SourceHealth {
     private val timeFmt = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
     /**
-     * 拷贝漫画搜索要走**隐藏浏览器**，实测 9.7s 才出结果（2026-10-25 日志），
+     * 拷贝漫画搜索要走**隐藏浏览器**，实测 9.7s 才出结果（日志），
      * 原来 10s 会稳定误报红灯 —— 放宽到 20s。其余源 3s 足够。
      */
     private fun timeoutFor(type: SourceType): Long =
@@ -73,7 +73,7 @@ object SourceHealth {
 
     /**
      * 应用级作用域：**不能挂在 composition 上**。
-     * 2026-10-25 日志实测启动自检被取消过一次：
+     * 日志实测启动自检被取消过一次：
      * `红灯 COPYMANGA（4248ms）：The coroutine scope left the composition` ——
      * 界面一重组（切页/换窗口）就把自检掐了，结果被误判成红灯。
      */

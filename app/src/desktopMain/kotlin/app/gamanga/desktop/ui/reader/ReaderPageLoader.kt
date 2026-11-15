@@ -200,7 +200,7 @@ internal fun ReaderPrefetch(
             // 往回预热的页数不用多（3 页 ≈ 1.5 屏），够覆盖一次回翻即可。
             val backCandidates = ((start - 1) downTo (start - PREFETCH_BACK))
                 .filter { it in list.indices }
-            // **并行烘 3 张**（2026-10-25 用户要求「单页/双页也同时加载 2-3 页」）：
+            // **并行烘 3 张**（实测也同时加载 2-3 页」）：
             // 原来一张一张串行，用户翻一屏要等两轮 RTT；条漫之所以显得"同时加载"，
             // 是因为同一屏里多个 RemoteImage 各自并发。这里补上同样的并发度。
             // 先往回（近的优先），再往后
@@ -214,7 +214,7 @@ internal fun ReaderPrefetch(
                 continue
             }
             // 可见页在下载/解码时让路：单页/双页每次翻页都要现下两张，
-            // 预加载占着连接会让用户觉得「翻页卡、像在等图」（2026-10-24 反馈）。
+            // 预加载占着连接会让用户觉得「翻页卡、像在等图」（反馈）。
             if (ImageCache.isForegroundBusy()) {
                 delay(40)
                 continue

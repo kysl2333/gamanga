@@ -31,7 +31,7 @@ import app.gamanga.desktop.ui.theme.Tokens
 import java.awt.Dimension
 
 /**
- * 阅读器**独立窗口**管理（2026-10-30 用户要求 4）。
+ * 阅读器**独立窗口**管理（实测）。
  *
  * ## 为什么从「覆盖层」改成「独立窗口」
  *
@@ -116,7 +116,7 @@ fun ReaderWindowHost(entry: ReaderWindowEntry, repository: LibraryRepository) {
         title = "${entry.target.title} · Gaaa漫画",
         undecorated = true,
         transparent = true,
-        // 任务栏/Alt+Tab 的窗口图标（2026-10-30 用户：阅读器没有图标）。
+        // 任务栏/Alt+Tab 的窗口图标（实测）。
         // 与主窗口同一张 512 方图；不设的话 Windows 会给一个空白图标。
         icon = brandPainter("brand/logo-mark-512.png"),
     ) {
@@ -157,7 +157,7 @@ private fun ReaderWindowSurface(
     // 全屏时窗口矩形就是屏幕矩形，圆角/阴影边距必须收成 0——否则屏幕四角会露出桌面，
     // 看起来像"窗口没铺满"。
     //
-    // **这里刻意不做过渡**（2026-10-30 第三轮）：`padding` 逐帧变化等于逐帧重新布局，
+    // **这里刻意不做过渡**：`padding` 逐帧变化等于逐帧重新布局，
     // 内容区那张 3000×4000 的扫描图会跟着逐帧重新 Fit 一次——和"全屏动画"是同一个病。
     // 用户要的是「一下就变成全屏」，所以圆角跟着矩形一起瞬间收掉。
     val fullscreen = ReaderFullscreen.isFullscreen(window)

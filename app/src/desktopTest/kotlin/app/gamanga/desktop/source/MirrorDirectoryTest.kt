@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 /**
  * 镜像目录（bangumi.wiki/api/v1/mirrors）解析与清单持久化。
  *
- * 2026-10-28 用户指出：bangumi.wiki 不是镜像站，而是「哪些镜像现在能用」的目录站，
+ * 实测mi.wiki 不是镜像站，而是「哪些镜像现在能用」的目录站，
  * 线路清单必须从这个公开 JSON 接口拿，不能写死在程序里。这里锁住解析规则：
  * `services` 里的 `api` / `lain` 主机名成对取出，缺了就按 `api.<base>` / `lain.<base>` 兜底。
  */

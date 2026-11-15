@@ -10,7 +10,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * HTTP 代理的参数校验与配置测试（第九轮 #8/#9）。
+ * HTTP 代理的参数校验与配置测试（/）。
  *
  * 只测**不发网络请求**的部分：参数校验（空地址/坏端口）、协议归一化、
  * 开关语义、per-source 策略。真实连通性由设置页「测试连接」按钮在用户

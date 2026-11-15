@@ -7,7 +7,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * 拷贝漫画源解析纯函数测试（第八轮 #9）。
+ * 拷贝漫画源解析纯函数测试。
  *
  * fixture 用社区逆向文档里的真实响应样本（51CTO 实战文的抓包结果）——
  * 字段名/层级以那份样本为准。站点本身当前网络不可达（未实测），
@@ -384,7 +384,7 @@ class CopymangaSourceTest {
 
     @Test
     fun `search dom fallback parses browser scraped cards`() {
-        // 隐藏浏览器里 COPYMANGA_SEARCH_DOM_JS 的返回形态（2026-10-24 兜底路径）
+        // 隐藏浏览器里 COPYMANGA_SEARCH_DOM_JS 的返回形态（兜底路径）
         val json = """
             [{"sourceId":"qiankezhe","title":"潜科者","coverUrl":"https://s3/x.jpg"},
              {"sourceId":"haizeiwang","title":"海贼王","coverUrl":null},
@@ -420,7 +420,7 @@ class CopymangaSourceTest {
 
     @Test
     fun `detail dom sorts chapters by number not by dom order`() {
-        // 站点真实顺序（2026-10-24 用户截图实测）：最新话置顶 + 特别短篇置顶 + 其余正序，
+        // 站点真实顺序（实测）：最新话置顶 + 特别短篇置顶 + 其余正序，
         // 例如 [第206話, 第206話特別短篇, 第2話, 第3話…]。旧实现比首末编号判不出方向，
         // 详情页显示成 206 → 短篇 → 2 → 3…，中间还插一条「缺失 3-205」的假提示。
         val json = """
@@ -467,7 +467,7 @@ class CopymangaSourceTest {
 
     @Test
     fun `detail dom drops nav button name and keeps the real chapter`() {
-        // 2026-10-24 用户截图：「開始閱讀」混进章节列表，而「第1話」不见了。
+        // 实测」混进章节列表，而「第1話」不见了。
         // 两者指向同一个 uuid（按钮 = 第1话的快捷入口），旧实现按 DOM 顺序 distinctBy
         // 保留了按钮那条。
         val json = """

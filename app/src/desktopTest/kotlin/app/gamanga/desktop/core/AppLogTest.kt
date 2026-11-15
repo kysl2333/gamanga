@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * 应用日志测试（第八轮 #11）。
+ * 应用日志测试。
  *
  * 用 dirOverride 把日志指到临时目录，不碰真实的
  * `%LOCALAPPDATA%\Gamanga\logs`。

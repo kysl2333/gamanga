@@ -57,7 +57,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * 详情二级页的**宿主**（第二轮用户口径）。
+ * 详情二级页的**宿主**（用户口径）。
  *
  * ## 为什么要有这一层
  *
@@ -286,7 +286,7 @@ class DetailHostState internal constructor(
     }
 
     /**
-     * 从章节右键菜单进入**多选模式**（2026-10-30 用户要求 3）。
+     * 从章节右键菜单进入**多选模式**（实测）。
      *
      * 和「下载」按钮进的是同一套勾选界面（用户原话「复用现有下载勾选界面」），
      * 区别只在于进来之后工具条多了「标记已读 / 标记未读」两个批量动作。
@@ -334,7 +334,7 @@ class DetailHostState internal constructor(
             .toSet()
     }
 
-    /** 全选**全部**章节（2026-10-30 用户要求 2）。 */
+    /** 全选**全部**章节（实测）。 */
     fun selectAll() {
         downloadSelected = chapters.map { it.id }.toSet()
     }
@@ -345,7 +345,7 @@ class DetailHostState internal constructor(
     }
 
     /**
-     * 批量标记已读 / 未读（2026-10-30 用户要求 3）。
+     * 批量标记已读 / 未读（实测）。
      *
      * 逐章调 [LibraryRepository.setChapterRead]：它自己会补幽灵行、推进
      * `progressVersion`，详情页的章节状态随之重读（颜色立刻变），不需要额外刷新。
@@ -401,7 +401,7 @@ class DetailHostState internal constructor(
     /**
      * 移出书架 = **软移出**（只把 `inLibrary` 置 0）。
      *
-     * 2026-10-27 第五轮用户：「移除书架后会把记录都消除掉，要求保留记录防止误点被删」。
+     * 用户：「移除书架后会把记录都消除掉，要求保留记录防止误点被删」。
      * 根因就在这里：上一版调的是 `removeFromLibrary` —— 那是**硬删**，
      * 一个事务里把 `readingProgress` → `chapter` → `manga` 三张表按顺序删光，
      * 阅读位置、已读标记、历史记录全部消失，误点一下不可恢复。
@@ -604,10 +604,10 @@ fun DetailHost(
                     onExitDownloadMode = { state.exitDownloadMode() },
                     onToggleSelected = { state.toggleSelected(it) },
                     onSelectAllUncached = { state.selectAllUncached() },
-                    // 2026-10-30 用户要求 2：全选 / 取消全选
+                    // 实测/ 取消全选
                     onSelectAll = { state.selectAll() },
                     onClearSelection = { state.clearSelection() },
-                    // 2026-10-30 用户要求 3：右键进多选 + 批量标记
+                    // 实测多选 + 批量标记
                     onEnterMultiSelect = { state.enterMultiSelect(it) },
                     onMarkSelectedRead = { state.markSelectedRead(it) },
                     onStartDownload = { state.startDownload() },
@@ -694,7 +694,7 @@ private fun DetailPanelSlide(
 /**
  * 详情面板外面的**透明点击层**（没有底色）。
  *
- * 2026-10-27 第四轮用户：「在浏览页打开的二级详情页不要再有遮盖一级菜单的灰色阴影背景」。
+ * 用户：「在浏览页打开的二级详情页不要再有遮盖一级菜单的灰色阴影背景」。
  * 上一版铺了一层 8% 黑，目的是「提示这里浮了一层」——但面板自己已经有 28dp 阴影，
  * 再压一层灰只会让一级菜单（dock、封面墙）发闷，看起来像整页被停用了。
  *

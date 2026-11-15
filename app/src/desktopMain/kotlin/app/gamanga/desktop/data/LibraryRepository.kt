@@ -145,7 +145,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
             .stateIn(scope, SharingStarted.Eagerly, null)
 
     /**
-     * 新书架页的条目：在 [LibraryItem] 基础上带**阅读进度**（2026-10-26）。
+     * 新书架页的条目：在 [LibraryItem] 基础上带**阅读进度**。
      *
      * 为什么要新模型而不是给 [LibraryItem] 加字段：老书架页（旧 `LibraryScreen`）
      * 和浏览页都在用 [LibraryItem]，改它会牵动三处。新页用新模型，等旧页退役再合并。
@@ -256,7 +256,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
      * 为什么不是一条 UPSERT：SQLDelight 方言是 `sqlite_3_18`，`ON CONFLICT(id) DO UPDATE`
      * 要 SQLite 3.24+，生成阶段会直接报语法错。两条语句的组合语义完全等价，而且都不产生
      * DELETE —— 这是关键：`INSERT OR REPLACE` 的 DELETE 会顺着 `ON DELETE CASCADE` 把
-     * 阅读进度 / 已读标记 / 下载记录一起删掉（第五轮 的根因）。
+     * 阅读进度 / 已读标记 / 下载记录一起删掉（根因）。
      *
      * 两条都在**同一个事务**里：中途失败不会留下「有 manga 没元信息」的半行。
      */
@@ -321,7 +321,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
     }
 
     /**
-     * 批量移出书架（新书架页多选删除，2026-10-26）。
+     * 批量移出书架（新书架页多选删除）。
      *
      * 与逐条调 [removeFromLibrary] 的区别：**一个事务删完**。
      * 多选 20 本时逐条调用会开 20 个事务、并且每本都写一次 prefs；
@@ -345,7 +345,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
     }
 
     /**
-     * 整本标记已读（书架右键菜单「标记已读」，2026-10-26）。
+     * 整本标记已读（书架右键菜单「标记已读」）。
      *
      * 只改 `isRead`，**不清 `lastOpenedAt`**——读过必然点过，清了章节会重新变黑
      * （与 「灰 ≠ 已读」的口径一致：变灰看 lastOpenedAt，打勾看 isRead）。
@@ -357,7 +357,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
     }
 
     /**
-     * 整本标记未读（2026-10-26 用户要求：右键菜单在整本已读时切换成「标记未读」）。
+     * 整本标记未读（实测整本已读时切换成「标记未读」）。
      *
      * 连 `lastOpenedAt` 一起清——与单章「标记未读」同一口径：
      * 只清 isRead 的话章节还是灰的，用户会以为点了没反应。
@@ -368,7 +368,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
     }
 
     /**
-     * 移出书架但**保留数据**（新书架页删除用，2026-10-26）。
+     * 移出书架但**保留数据**（新书架页删除用）。
      *
      * 与 [removeFromLibrary] 的区别：那个是**硬删**（manga + chapter + progress 全没），
      * 这个是置 `inLibrary = 0`。新书架页的删除带 6 秒撤销条，硬删之后无法恢复进度，
@@ -443,11 +443,11 @@ class LibraryRepository(private val db: GamangaDatabase) {
         addedAt: Long = System.currentTimeMillis()
     ): String {
         val mangaId = "${type.name.lowercase()}:${manga.sourceId}"
-        // **重新入架必须保留已读 / 点过 / 页数**（第五轮 ）：
+        // **重新入架必须保留已读 / 点过 / 页数**：
         // 这张表走 INSERT OR REPLACE（整行替换），不带上旧值就会把读过 200 话的书
         // 全部重置成「未读 + 没点过」，用户看到的就是「加入书架把记录清了」。
         //
-        // 2026-10-29进一步改成「先补不存在的行、再原地刷新元信息」：
+        // 进一步改成「先补不存在的行、再原地刷新元信息」：
         // 状态列不再参与写回，所以**不存在「读快照 → 写回」把刚标的已读冲掉**的竞态。
         db.transaction {
             // 入架两步走（INSERT OR IGNORE + UPDATE），**不能**用 INSERT OR REPLACE：
@@ -491,12 +491,12 @@ class LibraryRepository(private val db: GamangaDatabase) {
     }
 
     /**
-     * 把**详情页刚拉到的章节列表**同步进库（2026-10-25 用户实测：拷贝漫画联网看过 206 话，
+     * 把**详情页刚拉到的章节列表**同步进库（实测网看过 206 话，
      * 断网后只剩 1 条——因为章节只在「加入书架」那一刻落库，之后列表更新不会回写）。
      *
      * 只在**已在书架**的书上写（没入架不落库，避免脏数据）。
      *
-     * **2026-10-29 ：不再「读快照 → INSERT OR REPLACE 写回」**。
+     * **不再「读快照 → INSERT OR REPLACE 写回」**。
      * 旧写法在详情页打开时的后台刷新里跑，与用户点「标记已读」撞车时会把刚标好的
      * 已读冲成未读（用户看到的就是「一开始标记不生效，过一会儿再标又好了」）。
      * 现在：不存在的行用 `insertGhostChapter` 补，存在的行用 `updateChapterMeta`
@@ -507,7 +507,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
         val existing = queries.selectChaptersByManga(localMangaId).executeAsList()
         // 不在书架：不落库。
         //
-        // **2026-10-30（缓存体检）改判据**：原来只看「章节表空不空」——
+        // **（缓存体检）改判据**原来只看「章节表空不空」——
         // 章节表空但书**在书架**时（导入中途失败 / 手动清过章节），章节就永远进不了库，
         // 于是每次打开详情都得重新联网拉一遍，断网时章节区永远是空的（本地缓存等于没有）。
         // 现在按 manga 行的 `inLibrary` 判断，书架里的书一定会被缓存下来。
@@ -630,7 +630,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
      * **标记未读要连「点过」一起清**（用户明确）：否则章节还是灰的，
      * 用户会以为「点了没反应」。已读只改 isRead，不动 lastOpenedAt（读过必然点过）。
      *
-     * **2026-10-29 ：行不存在时补一行**。旧实现是纯 UPDATE，碰上「书架里有这本、
+     * **行不存在时补一行**。旧实现是纯 UPDATE，碰上「书架里有这本、
      * 但该章的行还没落库」（换源迁移 / 备份导入 / 源站重建了章节 id）就静默无事发生，
      * 用户看到的就是「右键标记已读完全没反应」。现在先查一次，缺行就补幽灵行再写状态。
      *
@@ -693,10 +693,10 @@ class LibraryRepository(private val db: GamangaDatabase) {
     }
 
     /**
-     * **清除所有数据**（设置页「恢复初始安装状态」，2026-10-27 第五轮用户要求，
-     * 第六轮按「保留下载缓存」重做）。
+     * **清除所有数据**（设置页「恢复初始安装状态」，用户要求，
+     * 按「保留下载缓存」重做）。
      *
-     * ## 用户口径（2026-10-27 第六轮原话）
+     * ## 用户口径（原话）
      *
      * 「清除所有数据应该清除所有除了下载缓存以外的，让其恢复到刚开始安装的初始状态，
      *   注意数据安全不要把其他软件的数据给清理掉」。
@@ -877,7 +877,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
     }
 
     /**
-     * 阅读进度变更计数（2026-10-24 用户反馈「从阅读器返回详情页没有实时同步记录」）。
+     * 阅读进度变更计数（实测回详情页没有实时同步记录」）。
      *
      * 详情页的「继续阅读 · 第 N 话」是 `remember(...) { progressOf(localId) }` 算出来的，
      * 只在 key 变化时重读——从阅读器返回时 key 没变，于是永远显示进阅读器之前的旧进度。
@@ -887,7 +887,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
     val progressVersion: StateFlow<Int> = _progressVersion
 
     /**
-     * 单本漫画的封面地址（2026-10-30：阅读器顶栏那张 26×36 的小封面要用）。
+     * 单本漫画的封面地址（阅读器顶栏那张 26×36 的小封面要用）。
      *
      * 阅读器的入口有多种（详情页 / 历史 / 下载页 / 书架），不是每条都带着封面地址；
      * 有 `localMangaId` 时回库查一次是最省事、也最不会漏的做法——DB 里的 `coverUrl`
@@ -905,7 +905,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
         }
 
     /**
-     * 删掉一本书的阅读进度 = 从「历史」里移除这条记录（2026-10-24 用户要求）。
+     * 删掉一本书的阅读进度 = 从「历史」里移除这条记录（实测）。
      *
      * 只删 progress 行，不动书架/章节/已下载文件——用户要的是「别再出现在历史里」，
      * 不是把书移出书架。
@@ -916,7 +916,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
     }
 
     /**
-     * 把一条被删掉的历史记录写回去（历史页「从历史移除」的 6 秒回撤，2026-10-27 第五轮）。
+     * 把一条被删掉的历史记录写回去（历史页「从历史移除」的 6 秒回撤）。
      *
      * **和 [saveProgress] 的唯一区别是 `updatedAt` 用原始值。**
      * 用 saveProgress 回撤会把时间改成「现在」，那条记录立刻跳到历史列表最前面——
@@ -985,7 +985,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
          */
         const val PREF_BROWSE_HISTORY = "browse.history"
 
-        // ---- HTTP 代理（第八轮 #8）----
+        // ---- HTTP 代理----
 
         /** 全局代理开关（"1" 开 / 其他关）。 */
         const val PREF_PROXY_ENABLED = "proxy.enabled"
@@ -1002,10 +1002,10 @@ class LibraryRepository(private val db: GamangaDatabase) {
         /** 单源代理开关（"0" = 该源直连，不跟全局；缺省/"1" = 跟随全局）。 */
         fun proxySourcePrefKey(type: app.gamanga.desktop.model.SourceType) = "proxy.source.${type.name}"
 
-        /** 下载缓存根目录（空 = 默认 `%LOCALAPPDATA%\Gamanga\downloads`）。第七轮 #7。 */
+        /** 下载缓存根目录（空 = 默认 `%LOCALAPPDATA%\Gamanga\downloads`）。。 */
         const val PREF_DOWNLOAD_ROOT = "download.root"
 
-        /** 下载章节间并发数（1~8，默认 2）。第七轮 #2。 */
+        /** 下载章节间并发数（1~8，默认 2）。。 */
         const val PREF_DOWNLOAD_CONCURRENCY = "download.concurrency"
 
         /** 源站导出的 cookie 持久化 key（M3/M4 原生适配器读取）。 */
@@ -1017,7 +1017,7 @@ class LibraryRepository(private val db: GamangaDatabase) {
         /**
          * 本地章节 id → 源站章节 id（`komiic:228#3276` → `3276`）。
          *
-         * **必须按第一个 `#` 切**（2026-10-25 线上 BUG）：拷贝漫画的**源站章节 id 自己就带 `#`**
+         * **必须按第一个 `#` 切**（线上 BUG）：拷贝漫画的**源站章节 id 自己就带 `#`**
          * （`guimiezhiren#<uuid>`），本地 id 于是长这样：
          * `copymanga:guimiezhiren#guimiezhiren#<uuid>`。
          * 用 `substringAfterLast('#')` 会把 `guimiezhiren#` 前缀一起切掉，

@@ -69,7 +69,7 @@ object SearchAll {
     /**
      * 搜一次；原词没结果且「看起来会被装饰符坑到」时按 [SearchKeywords.fallbacks] 再退一到两步。
      *
-     * 2026-10-29 用户报：「长标题搜不到，只搜 9999 才搜到」。源站按整串子串匹配，
+     * 实测到，只搜 9999 才搜到」。源站按整串子串匹配，
      * 标题里的 `『』！` 会把命中率打到 0；退让方案见 [SearchKeywords]。
      *
      * 只在 [SearchKeywords.needsFallback] 为真时才多跑——普通短词空就是真空，

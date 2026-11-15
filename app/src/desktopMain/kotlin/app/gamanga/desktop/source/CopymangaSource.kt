@@ -17,7 +17,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.jsonObject
 
 /**
- * 拷贝漫画源适配（第八轮 #9，第十轮域名修正）。
+ * 拷贝漫画源适配（域名修正）。
  *
  * **域名**：
  * - 官方地址：`api.mangacopy.com`（**主**，用户要求用这个，不再用 copy4000）
@@ -25,7 +25,7 @@ import kotlinx.serialization.json.jsonObject
  * - 旧 `api.copymanga.com`：大陆 DNS 污染不可达，弃用
  * 连接类失败（超时/拒连/DNS）自动切备用域名重试一次；两个都挂才报错。
  *
- * ⚠️ **2026-10-24 实测：接口可达但数据为空**（不是代码问题）：
+ * ⚠️ **实测：接口可达但数据为空**（不是代码问题）：
  * `search/comic` 与 `comics?ordering=-popular` 都返回 `{code:200, results:{total:0, list:[]}}`，
      * 换 Dart/浏览器 UA、加 region/version/platform/Referer 均无效；网页搜索页同样显示
  * 「漫畫（0）」。这些历史响应不能确定IP/账号绑定或解除时长；当前失败回落网页，
@@ -199,7 +199,7 @@ class CopymangaSource(
     /**
      * 详情+章节一次拿全的缓存（详情页 DOM 同时含两者，避免起两次隐藏浏览器）。
      *
-     * **LRU 40 本**（2026-10-24 加）：原来是无界 ConcurrentHashMap，浏览越多书内存越大
+     * **LRU 40 本**（加）：原来是无界 ConcurrentHashMap，浏览越多书内存越大
      * （每本几百条章节对象）。40 本足够覆盖一次连续浏览，超出按最近最少使用淘汰。
      */
     private val detailCache: MutableMap<String, Pair<SourceManga, List<SourceChapter>>> =
@@ -380,7 +380,7 @@ class CopymangaSource(
     override suspend fun pages(chapterId: String): List<PageImage> {
         // 安全拆解「path_word#uuid」复合 id：畸形 id（不含 # / 多段）时返回空，
         // 不让解构抛 IndexOutOfBounds 把整章下载拖成 FAILED（mp-diagnosing-bugs
-        // 第九轮自查发现）。正常 id 的契约见类注释。
+        // 自查发现）。正常 id 的契约见类注释。
         val parts = chapterId.split("#")
         if (parts.size != 2 || parts[0].isBlank() || parts[1].isBlank()) return emptyList()
         val (pathWord, uuid) = parts
@@ -423,7 +423,7 @@ class CopymangaSource(
                 evaluateOnce = false, // 反复求值：脚本会滚动触发懒加载，图片逐批插入
                 expectHost = webHost,
                 // 图片是**逐张解密插入**的：只连续两次相同就收工会停在 3 张
-                // （2026-10-24 用户实测「阅读器只能加载 3 张漫画页」）。给 5 轮稳定期。
+                // （实测加载 3 张漫画页」）。给 5 轮稳定期。
                 stableRoundsRequired = 5,
                 settleMs = 3_000,
                 lane = 1, // 后台通道
@@ -459,7 +459,7 @@ class CopymangaSource(
                 // 反复求值直到结果长度稳定：搜索结果是 JS 异步渲染的
                 evaluateOnce = false,
                 expectHost = webHost,
-                // 2026-10-29 用户报「长标题搜不到」：日志里出现 `search via DOM ok hits=0`
+                // 实测」：日志里出现 `search via DOM ok hits=0`
                 // 而页面明明已经渲染出结果卡 —— 根因是 600ms 的 settle 太短，
                 // 首两次求值都还是空数组（长度一样 → 判「稳定」→ 提前返回 []）。
                 // 现在等 1.2s 起评、并且要连续 3 轮一样才收工。
@@ -486,7 +486,7 @@ class CopymangaSource(
  *
  * 用 `a[href*="/comic/"]` 通用选择器，不依赖站点 class 名。
  *
- * **标题提取顺序很关键**（2026-10-24 用户实测「搜索结果名字是拼音」）：卡片里的
+ * **标题提取顺序很关键**（实测字是拼音」）：卡片里的
  * `<a>` 只包封面图、书名在 `<h6 title="鬼滅之刃">` 里，`a.textContent` 是空串，
  * 旧实现就退化成 path_word（拼音）。现在按 title 属性 → img.alt → 上级容器里的
  * 标题元素 → 容器文本 依次取，最后才用 path_word。
@@ -551,7 +551,7 @@ private const val COPYMANGA_SEARCH_DOM_JS = """
 private const val COPYMANGA_DETAIL_DOM_JS = """
 (function(){
   // **先滚到底**：章节列表在详情页下方且懒加载，不滚动时 DOM 里只有「開始閱讀」
-  // 这一个 chapter 链接（2026-10-24 用户实测「详情页章节还是不对，显示的开始阅读」）。
+  // 这一个 chapter 链接（实测还是不对，显示的开始阅读」）。
   try { window.scrollTo(0, document.body.scrollHeight); } catch (e) {}
   // 有些模板默认只渲染最近几话，需要点「全部章节 / 展开」才出全量
   try {
@@ -595,7 +595,7 @@ private const val COPYMANGA_DETAIL_DOM_JS = """
     var name = (as[j].getAttribute('title') || textOf(as[j]) || '').replace(/\s+/g, ' ').trim();
     out.push({id: uuid, name: name});
   }
-  // **不要因为章节少就 return null**（2026-10-24 第十七轮的教训）：
+  // **不要因为章节少就 return null**（教训）：
   // 那样会把「站点只给 1 条」误判成「还没加载完」，一直轮询到 40 秒超时，
   // 结果整页空白（日志：detail via DOM failed (38680ms)）。
   // 现在改成「有多少给多少」：拿不到章节也要让标题/封面显示出来，
@@ -605,7 +605,7 @@ private const val COPYMANGA_DETAIL_DOM_JS = """
 """
 
 /**
- * **直接解密图片列表**（2026-10-24 逆向所得，用户要求「破解这套系统」）。
+ * **直接解密图片列表**（逆向所得，用户要求「破解这套系统」）。
  *
  * 从 `comic_content_pass202508141534.js`（base62 packer，已解包）得到的真实逻辑：
  *
@@ -626,7 +626,7 @@ private const val COPYMANGA_DETAIL_DOM_JS = """
  */
 private const val COPYMANGA_DECRYPT_JS = """
 (async function(){
-  // **自动发现密文与密钥，不写死变量名**（2026-10-24）：
+  // **自动发现密文与密钥，不写死变量名**：
   // 站点一旦把 contentKey/cct 改名，写死名字的版本就会失效、又得逆向一遍。
   // 这里改成：已知名优先 → 扫描 window 上所有符合「16 字符 + 长 hex」的字符串当密文、
   // 「16/24/32 字符」的字符串当密钥 → 组合试解密，成功即用。
@@ -726,7 +726,7 @@ private const val COPYMANGA_PAGES_DOM_JS = """
     var m = /url\(['"]?([^'")]+)['"]?\)/.exec(bg[k].getAttribute('style') || '');
     if (m) add(out, m[1]);
   }
-  // **滚动位置必须「按当前 scrollY 推进」，不能按已抓图片数算**（2026-10-24 修）：
+  // **滚动位置必须「按当前 scrollY 推进」，不能按已抓图片数算**（修）：
   // 上一版写的是 `y = out.length * vh`——图片数卡在 3 时每次都滚到同一位置（3 屏），
   // 页面再也不动，图片自然永远是 3 张（用户实测「还是只能抓 3 张，但在内嵌浏览器里
   // 随便拖动就能看全」）。站点脚本监听 window 的 scroll（混淆脚本里有 `onscroll`/
@@ -815,7 +815,7 @@ internal fun parseCopymangaDetailDom(
     val o = Json.parseToJsonElement(json).jsonObject
     val title = o.str("title")?.takeIf { it.isNotBlank() } ?: return null
     val raw = o.arr("chapters") ?: return SourceManga(sourceId = mangaId, title = title) to emptyList()
-    // **「開始閱讀」是导航按钮，不是章节**（2026-10-24 用户截图实测）：
+    // **「開始閱讀」是导航按钮，不是章节**（实测）：
     // 它和「第1話」指向同一个 uuid，旧实现按 DOM 顺序 distinctBy 后保留了按钮那条，
     // 于是列表底部多出一个「開始閱讀」、而「第1話」不见了（点按钮确实进第1话）。
     // 按 uuid 分组优先保留真实目录名；只有按钮时标记阅读入口，不猜卷/话编号。
@@ -833,7 +833,7 @@ internal fun parseCopymangaDetailDom(
             kind = real?.let { chapterKindOf(it) } ?: ChapterKind.UNKNOWN,
         )
     }
-    // **按章节号排序，而不是靠 DOM 顺序/整体反转**（2026-10-24 用户截图实测）：
+    // **按章节号排序，而不是靠 DOM 顺序/整体反转**（实测）：
     // 站点返回的顺序是「最新话置顶 + 特别短篇置顶 + 其余正序」——
     // 例如 [第206話, 第206話特別短篇, 第2話, 第3話, …]，首末编号比较根本判不出来，
     // 结果详情页显示成 206 → 短篇 → 2 → 3…，中间还插一条「缺失 3-205」的假提示。

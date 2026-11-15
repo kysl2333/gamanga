@@ -42,7 +42,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
     /** 主窗口句柄：阅读器窗口要「用浏览器查看」时把主窗口提到前面。 */
     val mainWindow = app.gamanga.desktop.ui.shell.LocalComposeWindow.current
     /**
-     * 打开阅读器（2026-10-30 用户要求 4）：**独立窗口，可多开**。
+     * 打开阅读器（实测）：**独立窗口，可多开**。
      *
      * 原来这里是 `readerTarget` 状态 + 一个覆盖整个主窗口的 `ReaderScreen`——同一时刻
      * 只能看一本，换一本就把上一本挤掉。现在改成往 [ReaderWindows.open] 里加一条，
@@ -61,7 +61,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
     }
     /** 书架点进来的漫画：切到「浏览」并直接打开它的详细页。 */
     var browsePrefill by remember { mutableStateOf<Pair<app.gamanga.desktop.model.SourceType, SourceManga>?>(null) }
-    /** 书架顶栏搜索键带过来的词：切到「浏览」并自动搜一次（2026-10-26）。 */
+    /** 书架顶栏搜索键带过来的词：切到「浏览」并自动搜一次。 */
     var browseKeyword by remember { mutableStateOf<String?>(null) }
     var browseAutoSearch by remember { mutableStateOf(false) }
     /**
@@ -115,10 +115,10 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
             // 书架和浏览页都是**沉浸式**（页面铺到窗口顶，顶栏自己加 padding 让出拖拽带）；
             // 其余页面是普通列表，由这里统一让位。
             //
-            // 2026-10-27 用户截图对比发现两边搜索框差了约 11dp：根因就是**两套让位机制**——
+            // 实测搜索框差了约 11dp：根因就是**两套让位机制**——
             // 书架在 `TopBarOverlay` 内部 padding、浏览页在 GamangaApp 外层 padding，
             // 一旦某一层调整（比如取消白带那次），两者就错开。现在两边走同一套。
-            // 2026-10-29：推荐页也加入沉浸式——它的搜索栏改由自己让位（SearchBarTopInset），
+            // 推荐页也加入沉浸式——它的搜索栏改由自己让位（SearchBarTopInset），
             // 外层再让一次拖拽带就叠成两份，和浏览页 / 书架页永远差 20dp。
             val immersive = selected == NavItem.LIBRARY || selected == NavItem.BROWSE ||
                 selected == NavItem.RECOMMEND
@@ -127,7 +127,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
                 Modifier.fillMaxSize().padding(top = pageTop)
             ) {
             when (selected) {
-                    // 推荐页（2026-10-26）：Bangumi 书籍排行，点一本 → 带着书名去全局搜索
+                    // 推荐页：Bangumi 书籍排行，点一本 → 带着书名去全局搜索
                     NavItem.RECOMMEND -> RecommendScreen(
                         state = recommendState,
                         onPick = { title ->
@@ -137,7 +137,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
                             selected = NavItem.BROWSE
                         }
                     )
-                    // 2026-10-26：换成新书架页（原型 bookshelf-3x2 落地）。
+                    // 换成新书架页（原型 bookshelf-3x2 落地）。
                     // 旧 LibraryScreen 保留不删——简洁模式还要用它那套卡片，
                     // 且它的右键菜单/置顶逻辑是回滚参照。
                     NavItem.LIBRARY -> BookshelfScreen(
@@ -160,7 +160,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
                             browsePrefill = null
                             selected = NavItem.BROWSE
                         },
-                        // 右键「开始阅读」→ 直接进阅读器（2026-10-26 用户要求）。
+                        // 右键「开始阅读」→ 直接进阅读器（实测）。
                         // 章节**从库里取**（本地优先）：书架里的书入架时就落库了，
                         // 走网络要等 8~10 秒（拷贝漫画），用户会以为点了没反应。
                         onResume = { item ->
@@ -208,7 +208,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
                         autoSubmitInitialKeyword = browseAutoSearch,
                         navClickSeq = browseNavClick,
                         // 消费后必须置空：否则切页回来（BrowseScreen 新建实例）会再弹一次详情。
-                        // 2026-10-27 第五轮用户实测 bug：「菜单栏点浏览按钮进入的是个漫画的二级菜单」。
+                        // 用户实测 bug：「菜单栏点浏览按钮进入的是个漫画的二级菜单」。
                         onInitialConsumed = {
                             browsePrefill = null
                             browseKeyword = null
@@ -216,7 +216,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
                         },
                     )
                     // 下载管理页（任务进度 / 重试 / 删除 / 直接阅读已缓存章节）
-                    // 2026-10-27 第六批：点书名在本页弹出二级详情
+                    // 第六批：点书名在本页弹出二级详情
                     NavItem.DOWNLOADS -> DownloadsScreen(
                         repository = repository,
                         onRead = openReader,
@@ -228,7 +228,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
                         backupManager = AppGraph.backupManager
                     )
                     // 排期第 4 项：历史页（续读入口 + 删除单条 + 页内二级详情）
-                    // 2026-10-27 第六批：详情**在本页弹出**，不再跳浏览页
+                    // 第六批：详情**在本页弹出**，不再跳浏览页
                     NavItem.HISTORY -> HistoryScreen(
                         repository = repository,
                         onRead = openReader,
@@ -238,7 +238,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
             }
             }
         }
-        // 阅读器**不再是覆盖层**（2026-10-30 用户要求 4）：它现在是独立窗口，
+        // 阅读器**不再是覆盖层**（实测）：它现在是独立窗口，
         // 由 `main()` 里的 `ReaderWindowLayer` 渲染，主界面可以同时开多个。
         // 内嵌浏览器覆盖层仍然留在主窗口里，阅读器里的「用浏览器查看」通过
         // `openReader` 传下去的回调把地址送回这里。

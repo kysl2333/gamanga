@@ -3,7 +3,7 @@ package app.gamanga.desktop.data
 import app.gamanga.desktop.core.AppLog
 
 /**
- * 中文搜索归一化（简繁互转）—— 2026-10-26 用户要求。
+ * 中文搜索归一化（简繁互转）—— 实测。
  *
  * 用户原话：「搜索书架内漫画的时候，自动简体繁体相互转换，只命中一个字也能搜索到」。
  *
@@ -12,7 +12,7 @@ import app.gamanga.desktop.core.AppLog
  * 把「书名」和「查询词」都过一遍 [normalize]（繁体 → 简体），再做包含匹配。
  * 这样两个方向都通：简体输入命中繁体书名、繁体输入命中简体书名。
  *
- * ## 另外支持「拼音首字母」（2026-10-27 用户要求）
+ * ## 另外支持「拼音首字母」（实测）
  *
  * 用户原话：「搜索栏搜索不光简繁转换，还要首拼音查找，比如 g 就能找到鬼灭之刃，
  * zbwzq 就能找到装备我最强，这些服务于查找书架漫画」。
@@ -95,7 +95,7 @@ object ZhSearch {
         // ② 拼音首字母匹配：查询词全是字母时才试（避免「第1话」这种混排走错分支）
         if (hanziInitial.isNotEmpty() && q.all { it in 'a'..'z' || it in 'A'..'Z' }) {
             // 用**原始标题**算首字母，不用 normalize 后的：拼音与简繁无关，
-            // 而且归一化过程本身可能有损（2026-10-27 的字典错位事故就是教训）
+            // 而且归一化过程本身可能有损（字典错位事故就是教训）
             val initials = initialsOf(title.lowercase())
             if (initials.contains(q.lowercase())) return true
         }
@@ -142,7 +142,7 @@ object ZhSearch {
             ?.getResourceAsStream("zh/ts-characters.txt")
             ?: return@runCatching emptyMap()
         val body = stream.use { it.readBytes().toString(Charsets.UTF_8) }
-        // **按行解析，每行 `<繁体><简体>`**（2026-10-27 修）。
+        // **按行解析，每行 `<繁体><简体>`**（修）。
         // 旧写法是「每 2 个 char 一对」的等距解析 —— 字典里只要混进一个非 BMP 字符
         // （扩展 B 区生僻字，Python 算 1 字符、Kotlin 的 String 占 2 个 char），
         // 后面全部错位，实测把「装」映射成了「裡」，简体搜索直接失效。

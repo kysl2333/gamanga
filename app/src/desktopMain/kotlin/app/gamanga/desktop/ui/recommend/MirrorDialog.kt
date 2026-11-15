@@ -92,7 +92,7 @@ private val BoltIcon = mirrorSymbol("检测") {
 }
 
 /**
- * 换源窗口（2026-10-28 第八批）。
+ * 换源窗口（第八批）。
  *
  * 用户原话：「换镜像源窗口改成现在程序 UI 审美的现代窗口」「点击换源按钮后会给于危险提示
  * 【每次打开程序生效一次】」「获取最新镜像源然后填入最新镜像源」。
@@ -118,7 +118,7 @@ internal fun MirrorDialog(state: RecommendState, onDismiss: () -> Unit) {
     }
 
     // 检测完成后只在「当前选中的线路不可用」时填入最快的可用线路。
-    // 2026-10-28 用户反馈：以前每次打开都无条件挑最快，导致明明在用官方、勾却跑到 ANIBT 上。
+    // 实测开都无条件挑最快，导致明明在用官方、勾却跑到 ANIBT 上。
     LaunchedEffect(state.probes) {
         if (state.probes.isEmpty()) return@LaunchedEffect
         if (state.probes[pending.id]?.isUsable == true) return@LaunchedEffect

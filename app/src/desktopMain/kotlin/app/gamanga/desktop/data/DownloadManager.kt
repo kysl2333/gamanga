@@ -65,7 +65,7 @@ private const val PAGE_RETRY_BACKOFF_MS = 400L
 private const val SPEED_WINDOW_MS = 3_000L
 
 /**
- * 下载缓存目录的「归属标记」文件名（第八轮 #7）。
+ * 下载缓存目录的「归属标记」文件名。
  *
  * 批量清理（[DownloadManager.clearAllCache] / 孤儿清理）动手前先查这个文件：
  * 有 = 这个目录确实是 Gamanga 的下载缓存；没有 = 用户 pref 指错了地方，
@@ -167,7 +167,7 @@ class DownloadManager(
     private val queue = ArrayDeque<String>()
 
     /**
-     * 全局暂停标志（第八轮 #5「全部暂停」）。
+     * 全局暂停标志（「全部暂停」）。
      *
      * 只停「启动新章节」：在飞任务照常跑完（取消在飞任务会丢半章进度，
      * 与暂停语义不符——暂停是为了限流/让网速，不是放弃进度）。
@@ -177,7 +177,7 @@ class DownloadManager(
     private var paused = false
 
     /**
-     * 下载速率采样窗（第八轮 #5「每秒下载速度」）。
+     * 下载速率采样窗（「每秒下载速度」）。
      * 每写完一页记一条 (时间戳 ms, 字节)；speedBps 按最近 3 秒平均。
      */
     private val rateWindow = ArrayDeque<Pair<Long, Long>>()
@@ -222,7 +222,7 @@ class DownloadManager(
     }
 
     /**
-     * 确保缓存根目录有归属标记（第八轮 #7）。
+     * 确保缓存根目录有归属标记。
      *
      * 批量清理（全部清理 / 孤儿清理）动手前先查这个文件——没有标记的目录
      * 「不是我们的缓存目录」，拒绝删除。默认位置和 relocate 的新位置都会建。
@@ -270,7 +270,7 @@ class DownloadManager(
     fun enqueue(mangaId: String, chapters: List<SourceChapter>, mangaTitle: String = "") {
         // 入队序号：取「当前时间」与「库里最大值」的较大者再递增——保证严格
         // 递增。同一次 enqueue 的多章若共用同一毫秒时间戳，ORDER BY createdAt
-        // 会并列，并列行顺序不定，列表又会抖（第七轮 #2 要的是"永不稳定"）。
+        // 会并列，并列行顺序不定，列表又会抖（要的是"永不稳定"）。
         var seq = maxOf(
             System.currentTimeMillis(),
             queries.selectAllDownloads().executeAsList().maxOfOrNull { it.createdAt } ?: 0L
@@ -362,7 +362,7 @@ class DownloadManager(
         pump()
     }
 
-    // ---- 并发数设置（下载管理页，第七轮 #2）----
+    // ---- 并发数设置（下载管理页）----
 
     /**
      * 调整章节间并发数（1~8）。其余章节继续排队，不打断在飞任务。
@@ -379,7 +379,7 @@ class DownloadManager(
 
     fun maxParallelChapters(): Int = synchronized(queue) { maxParallelChapters }
 
-    // ---- 下载缓存管理（设置页，第七轮 #7）----
+    // ---- 下载缓存管理（设置页）----
 
     /**
      * 每本漫画占用的缓存字节（按磁盘实际大小算，不等 DB 的 totalBytes——
@@ -400,8 +400,7 @@ class DownloadManager(
     /**
      * 清空全部下载缓存（行 + 磁盘文件 + 在飞任务）。
      *
-     * **安全边界（第八轮 #7，用户明确要求「不要把系统或其他不相关文件删掉」）**：
-     * 旧实现 `rootDir.listFiles().forEach { deleteRecursively() }` 会删掉缓存根目录下的
+     * **安全边界（用户明确要求「不要把系统或其他不相关文件删掉」）**     * 旧实现 `rootDir.listFiles().forEach { deleteRecursively() }` 会删掉缓存根目录下的
      * **一切**——用户把缓存位置指到自己的某个目录（里面还有文档/照片）时就遭殃。
      * 现在双保险：①根目录必须带归属标记（[MARKER_NAME]），否则拒绝执行；
      * ②只删「DB 里登记过的漫画目录」白名单，根目录下的其他文件/目录一律不碰。
@@ -421,7 +420,7 @@ class DownloadManager(
         rows.forEach { queries.deleteDownload(it.id) }
         // 白名单删除：只删 DB 登记过的漫画目录（sanitize 规则与建目录时一致）。
         // 并发删（一部一协程）：几千个小文件在 Windows 上串行删很慢——
-        // 用户实测「全部清理转圈挺久」（第九轮 #7）。
+        // 用户实测「全部清理转圈挺久」。
         val names = rows.map { sanitizePathSegment(it.mangaId) }.toSet()
         runBlocking {
             names.map { name ->
@@ -436,8 +435,7 @@ class DownloadManager(
     /**
      * 更换下载缓存位置：把现有文件搬到新目录再切换 [rootDir]。
      *
-     * **安全边界（第八轮 #7）**：
-     * 1. 拒绝危险目标（系统盘根 / Windows / Program Files / 用户主目录及其
+     * **安全边界**     * 1. 拒绝危险目标（系统盘根 / Windows / Program Files / 用户主目录及其
      *    Desktop·Documents·Downloads 等 shell 文件夹 / Gamanga 数据根本身）——
      *    选这些位置等于让下载缓存和系统/个人文件混住，拒绝并提示。
      * 2. 只复制 DB 登记过的漫画目录（白名单），不把目标目录里的其他文件卷进来；
@@ -570,7 +568,7 @@ class DownloadManager(
     }
 
     /**
-     * 全部暂停（第八轮 #5，第九轮 #11 改为「真停」）。
+     * 全部暂停（改为「真停」）。
      *
      * **旧实现只停「启动新章节」**：在飞任务跑完当前章——用户实测「点全部暂停
      * 还在继续下载」（日志铁证：19:41:40 pauseAll → 19:41:48 completed）。
@@ -587,7 +585,7 @@ class DownloadManager(
         synchronized(queue) { queue.clear() }
         queries.selectUnfinishedDownloads().executeAsList().forEach { row ->
             if (row.status == DownloadStatus.DOWNLOADING.name) {
-                // 保留已下载进度（第十二轮 #9）：磁盘页数写回 DB——下载页显示
+                // 保留已下载进度：磁盘页数写回 DB——下载页显示
                 // 「已暂停 N/M 页」+ 停住的进度条，而不是归零显示「等待中」。
                 val onDisk = chapterDir(row.mangaId, row.chapterId).toFile()
                     .listFiles()?.count { it.isFile && it.length() > 0 } ?: 0
@@ -603,7 +601,7 @@ class DownloadManager(
         AppLog.i("Download", "pauseAll: in-flight cancelled, unfinished reverted to QUEUED (disk pages kept)")
     }
 
-    /** 全部下载（第八轮 #5）：解除暂停，所有未完成任务重新排队并补位启动。 */
+    /** 全部下载：解除暂停，所有未完成任务重新排队并补位启动。 */
     fun resumeAll() {
         paused = false
         val unfinished = queries.selectUnfinishedDownloads().executeAsList().map { it.id }
@@ -624,7 +622,7 @@ class DownloadManager(
                 ?: throw IllegalStateException("无法识别来源：${task.mangaId}")
             // 1) 取图片列表：这一步决定 pageCount，也是配额/浏览器开销所在。
             // 失败信息带上阶段——用户看到「取图片列表失败：HTTP 502」知道卡在
-            // 哪一步，而不是一句没头没尾的裸异常（第七轮 #3）。
+            // 哪一步，而不是一句没头没尾的裸异常。
             val pages = try {
                 withContext(Dispatchers.IO) { pagesOf(type, task.chapterId) }
             } catch (e: CancellationException) {
@@ -634,7 +632,7 @@ class DownloadManager(
             }
             if (pages.isEmpty()) throw DownloadException("该话没有图片（源站返回空列表）")
             update(task.copy(status = DownloadStatus.DOWNLOADING, pageCount = pages.size))
-            // 2) 断点续传（第十轮 #6，用户实测「暂停后继续从 0 重新下载」）：
+            // 2) 断点续传（用户实测「暂停后继续从 0 重新下载」）：
             // **不清空目录**——扫已有完整页文件（页序零填充名），跳过已下的页，
             // 只补缺失的。暂停/失败/重试/重启后续跑都只补剩余页。
             // 旧实现 deleteRecursively 清空重下，半章进度全废。
@@ -757,7 +755,7 @@ class DownloadManager(
      * 其余（网络抖动、5xx）退避重试 [PAGE_FETCH_ATTEMPTS] 次。
      *
      * 为什么值得重试：旧实现任一页 fetch 抛错就取消全章——用户下了 90% 也
-     * 整体失败、进度全废。第七轮 #3 实测「下载接近完成时却提示失败」的真因：
+     * 整体失败、进度全废。实测「下载接近完成时却提示失败」的真因：
      * 单页瞬时失败被放大成整章失败，且错误信息是裸异常消息，不带页码/阶段。
      */
     private suspend fun fetchPageWithRetry(
@@ -800,7 +798,7 @@ class DownloadManager(
      * **不是**书架条目 —— 移出书架是软移出（只翻 `inLibrary`），下载缓存必须留着。
      */
     private fun cleanupOrphans(liveMangaIds: Set<String>) {
-        // 归属标记检查（第八轮 #7）：没有标记的目录不是我们的缓存目录
+        // 归属标记检查：没有标记的目录不是我们的缓存目录
         // （用户 pref 指错地方时），只清 DB 行/镜像，绝不动磁盘上的其他文件。
         val marked = rootDir.resolve(MARKER_NAME).toFile().exists()
         // 目录名是 sanitize 过的，比对时用同一套规则（防止"komiic:228"与

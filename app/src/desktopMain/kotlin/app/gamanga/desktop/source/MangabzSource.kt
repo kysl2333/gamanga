@@ -13,7 +13,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 /**
- * MangaBZ（mangabz.com）源适配（第八轮 #9）。
+ * MangaBZ（mangabz.com）源适配。
  *
  * **站点形态**（社区爬虫实现一致，见 CSDN 2023 实战文等）：
  * - 搜索：`GET /search?title=KW`（HTML 结果页）
@@ -65,7 +65,7 @@ class MangabzSource(
         }
 
     /**
-     * 统一失败记日志（第十轮收尾）：用户报「搜索有问题/没有结果」时，
+     * 统一失败记日志（收尾）：用户报「搜索有问题/没有结果」时，
      * logs/gamanga.log 里有失败阶段与原因可查（此前搜索失败无任何记录）。
      */
     private suspend fun <T> logged(op: String, block: suspend () -> T): T =
@@ -107,7 +107,7 @@ class MangabzSource(
     /**
      * 章节图片列表。
      *
-     * **2026-10-24 实测推翻旧实现**（用户第十二轮反馈「阅读器一直转圈、只有 1 页」）：
+     * **实测推翻旧实现**（用户反馈「阅读器一直转圈、只有 1 页」）：
      * asHx 返回的**不是** `12_abc.jpg|` 这种单页 key，而是一段 **JS packer 混淆代码**：
      *
      * ```
@@ -179,7 +179,7 @@ class MangabzSource(
             next = maxPage + 1
         }
         // **必须带 Referer**：image.mangabz.com 是防盗链的，不带
-        // `Referer: https://www.mangabz.com/m<cid>/` 直接 403（2026-10-24 实测，
+        // `Referer: https://www.mangabz.com/m<cid>/` 直接 403（实测，
         // 日志铁证「HTTP 403 @ .../1_3345.jpg」）。浏览器里能看图正是因为它自动带了。
         val referer = "$base/m${pathEncode(chapterId)}/"
         found.values.map { PageImage(url = it, referer = referer) }
@@ -205,7 +205,7 @@ class MangabzSource(
      * 翻页器 HTML 里的视图签名（cid/mid/dt/sign）。
      *
      * 404 = 页数边界（该话没有这一页，如 16P 的话探到 p17）——返回 null
-     * 让探测自然停止，不当错误抛出（第十二轮 #5：用户实测阅读器
+     * 让探测自然停止，不当错误抛出（用户实测阅读器
      * 「取图失败 HTTP 404 @ /m528110-p17」，其实就是探测超界）。
      */
     private suspend fun chapterViewSign(chapterCode: String, page: Int): MangabzViewSign? {
@@ -252,12 +252,12 @@ data class MangabzViewSign(val cid: String, val mid: String, val dt: String, val
 /**
  * 搜索页 → 漫画列表。
  *
- * 真实结构（2026-10-23 实测 `www.mangabz.com/search?title=黑执事`）：
+ * 真实结构（实测 `www.mangabz.com/search?title=黑执事`）：
  * 每个结果一个 `<li>` 包一个 `class="mh-item"` 块——封面 a（内嵌
  * `img.mh-cover`）+ `div.mh-item-detali` 里的 `h2.title`（标题 a，
  * a 内是纯文本）+ 最新章节链接。
  *
- * 历史坑（第十一轮 #1）：旧实现按 `<a>` 粒度解析——封面 a 的尾部空白被
+ * 历史坑：旧实现按 `<a>` 粒度解析——封面 a 的尾部空白被
  * 误提成标题（先入列表），真标题 a 反而提取不到被丢弃，用户看到
  * 「有封面没文字」。现在按条目块解析：mid/封面/标题各取一次。
  */
@@ -283,10 +283,9 @@ internal fun parseMangabzSearch(html: String): List<SourceManga> {
 /**
  * 详情页 → 漫画信息 + 章节列表。
  *
- * 真实结构（2026-10-23 实测 `/157bz/`）：
+ * 真实结构（实测 `/157bz/`）：
  * - 标题：`class="detail-info-title"` 里是干净书名（`<title>` 是 SEO 串
- *   「黑執事漫畫_230已更新_黑執事漫畫在線閱讀」，不能直接用——第十二轮 #4
- *   用户实测「名字叫黑执事，详情页显示一堆无关文字」）
+ * 「黑執事漫畫_230已更新_黑執事漫畫在線閱讀」，不能直接用—— *   用户实测「名字叫黑执事，详情页显示一堆无关文字」）
  * - 封面：`img.detail-info-cover`（页面里第一个 img 是网站 logo，不能取首个）
  * - 章节：每话两个链接（「开始阅读」按钮区 `detail-info-btn-1` + 章节
  *   列表区 `detail-list-form-item`，232 话全量在 HTML）——限定列表区匹配
@@ -308,7 +307,7 @@ internal fun parseMangabzDetail(html: String, mangaId: String): Pair<SourceManga
         // 章节列表本体（class="detail-list-form-item"）优先：详情页里每话还会在
         // 「开始阅读」按钮区（detail-info-btn-1）出现一次——同一 cid 两个链接，
         // 不去重会让浏览页 LazyColumn 的 items(key) 直接崩
-        // （Key "122414" was already used → 闪退，第十一轮 #2 实测）。
+        // （Key "122414" was already used → 闪退，实测）。
         val listItems = Regex("""href="/m(\d+)/"[^>]*detail-list-form-item[^>]*>([^<]+)""")
             .findAll(html).toList()
             .ifEmpty { Regex("""href="/m(\d+)/"[^>]*>([^<]+)""").findAll(html).toList() }
@@ -317,7 +316,7 @@ internal fun parseMangabzDetail(html: String, mangaId: String): Pair<SourceManga
             SourceChapter(id = m.groupValues[1], name = name, index = i, kind = chapterKindOf(name))
         }.distinctBy { it.id } // 双保险：同 cid 只留第一个（列表区新话在前）
             .reversed()          // 站点新话在前 → 翻转为阅读顺序（第 1 话在前）
-            // **reversed 之后必须重算 index**（2026-10-24 用户实测「第 1 卷打开是第 230 话」）：
+            // **reversed 之后必须重算 index**（实测打开是第 230 话」）：
             // 上面的 index 是「倒序前」的序号，倒序后数组位置全变了而 index 没变，
             // 于是 chapters[0].index == 231 → 点第 1 项跳到最后一话。
             // index 的契约是「在本列表中的下标」（ReaderScreen 拿它当数组下标用）。
@@ -335,7 +334,7 @@ internal fun parseMangabzDetail(html: String, mangaId: String): Pair<SourceManga
 /**
  * 翻页器 HTML → 视图签名四件套（MANGABZ_CID / MANGABZ_MID / VIEWSIGN_DT / VIEWSIGN）。
  *
- * 形态：`MANGABZ_CID=12345;` / `MANGABZ_VIEWSIGN_DT="2024-01-01 00:00:00"` /
+ * 形态：`MANGABZ_CID=12345;` / `MANGABZ_VIEWSIGN_DT="00:00:00"` /
  * `MANGABZ_VIEWSIGN="abcdef"`。缺任一 → null（页面没加载出来/结构变了）。
  */
 internal fun parseMangabzViewSign(html: String): MangabzViewSign? {

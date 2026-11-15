@@ -7,7 +7,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * MangaBZ 源解析纯函数测试（第八轮 #9）。
+ * MangaBZ 源解析纯函数测试。
  *
  * 站点当前网络不可达（未实测）。fixture 按社区爬虫文档（CSDN 2023 实战文）
  * 的页面形态构造：翻页器内嵌 MANGABZ_CID/MID/VIEWSIGN 四件套、
@@ -89,7 +89,7 @@ class MangabzSourceTest {
 
     @Test
     fun `search parses result entries and dedupes`() {
-        // 真实结构（2026-10-23 实测）：每个结果两个 <a>——封面 a（inner 是 img，
+        // 真实结构（实测）：每个结果两个 <a>——封面 a（inner 是 img，
         // 尾部空白）+ 标题 a（a 内是纯文本）。旧实现把封面的空白当标题、真标题
         // 反而丢弃（用户实测「有封面没文字」）。
         val html = """
@@ -136,7 +136,7 @@ class MangabzSourceTest {
     }
 
     /**
-     * asHx 真实响应（2026-10-24 curl 实测 `/m528110/chapterimage.ashx?page=1`，636 字节）。
+     * asHx 真实响应（curl 实测 `/m528110/chapterimage.ashx?page=1`，636 字节）。
      *
      * **这是「阅读器一直转圈、只有 1 页」的直接证据**：站点返回的不是 `12_abc.jpg|`
      * 单页 key，而是 JS packer 混淆的整批清单（pix + key + pvalue，一次 2 页）。
@@ -193,7 +193,7 @@ class MangabzSourceTest {
         assertEquals("漫画甲", manga.title)
         assertEquals("1864", manga.sourceId)
         assertEquals(3, chapters.size)
-        // 真实结构（第十二轮 #4）：detail-info-title 是干净书名、
+        // 真实结构：detail-info-title 是干净书名、
         // detail-info-cover 是封面（页面第一个 img 是网站 logo）
         val real = """
             <html><head><title>漫画甲漫畫_230已更新_漫畫甲漫畫在線閱讀</title></head><body>
@@ -212,7 +212,7 @@ class MangabzSourceTest {
         assertEquals("第一话", chapters[0].name)
         assertEquals("91436", chapters[0].id)
         assertEquals("第三话", chapters[2].name)
-        // **index 必须等于数组下标**（2026-10-24 用户实测「第 1 卷打开是第 230 话」）：
+        // **index 必须等于数组下标**（实测打开是第 230 话」）：
         // reversed 之后 index 若还是倒序前的序号，点第 1 项会跳到最后一话。
         chapters.forEachIndexed { i, ch ->
             assertEquals(i, ch.index, "第 $i 项的 index 应等于数组下标（实际 ${ch.index}）")
@@ -221,7 +221,7 @@ class MangabzSourceTest {
 
     @Test
     fun `image request headers carry referer for hotlink protection`() {
-        // image.mangabz.com 不带 Referer 直接 403（2026-10-24 实测，下载日志铁证）
+        // image.mangabz.com 不带 Referer 直接 403（实测，下载日志铁证）
         val page = PageImage(url = "https://image.mangabz.com/1/157/1/1_1.jpg", referer = "https://www.mangabz.com/m1/")
         assertEquals("https://www.mangabz.com/m1/", page.requestHeaders()["Referer"])
         // Komiic 的票据与 MangaBZ 的 Referer 互不干扰
@@ -233,7 +233,7 @@ class MangabzSourceTest {
 
     @Test
     fun `detail dedupes chapter ids from button zone and list zone`() {
-        // 真实结构（2026-10-23 实测）：每话出现两次——「开始阅读」按钮区
+        // 真实结构（实测）：每话出现两次——「开始阅读」按钮区
         // （detail-info-btn-1，最新话）+ 章节列表区（detail-list-form-item）。
         // 旧实现两份都抓 → 重复 id → LazyColumn items(key) 崩
         // （Key "122414" was already used → 闪退，用户实测 #2）。

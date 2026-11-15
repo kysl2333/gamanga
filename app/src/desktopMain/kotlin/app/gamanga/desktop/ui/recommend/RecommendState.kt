@@ -100,7 +100,7 @@ class RecommendState(
     /** 官方线路已确认不可达。用户要求：只有不通时才在界面上露出换源入口。 */
     var officialUnreachable by mutableStateOf(false)
         private set
-    /** 官方不通时探到的可用镜像。**不直接生效**，等用户二次确认（2026-10-28 用户要求）。 */
+    /** 官方不通时探到的可用镜像。**不直接生效**，等用户二次确认（实测）。 */
     var suggestedMirror by mutableStateOf<BangumiMirror?>(null)
         private set
     var probing by mutableStateOf(false)
@@ -364,7 +364,7 @@ class RecommendState(
     /**
      * 官方线路失败后的自愈：从镜像目录拉清单 → 并发探测 → 把最快可用线路**推荐**给用户。
      *
-     * 只推荐不生效（2026-10-28 用户明确要求）：界面弹二次确认，用户点「使用该线路」才真正
+     * 只推荐不生效（实测）：界面弹二次确认，用户点「使用该线路」才真正
      * 换源；拒绝则保持官方，把换源入口留给用户自己点。
      */
     private fun autoFallback() {

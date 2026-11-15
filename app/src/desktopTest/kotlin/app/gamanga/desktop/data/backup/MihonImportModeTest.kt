@@ -17,7 +17,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * mihon 导入的行为回归（2026-10-30 用户实机反馈）。
+ * mihon 导入的行为回归（实测）。
  *
  * - ****：换源后书架里的名字/封面要用**新源**的（原来用备份里的旧名字 + 失效的 mihon CDN 图）；
  * - ****：备份里自带图片时原封不动用这张（解析层识别 `coverBytes`）；

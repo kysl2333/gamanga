@@ -66,7 +66,7 @@ import java.awt.Point
 import kotlin.math.roundToInt
 
 /**
- * 窗口外观（阶段 4，2026-10-26）。
+ * 窗口外观（阶段 4）。
  *
  * 无系统边框 + 自绘圆角。**没有外阴影**——实测反馈：「窗口边缘有一层不应该有的
  * 阴影，选中对齐的是那个阴影而不是倒角的边框」，所以把 `Modifier.shadow` 和它需要的透明边距
@@ -114,7 +114,7 @@ fun main() = application {
     // 上次进程被杀时停在一半的下载任务退回队列续跑（借登录态之后才能取图）
     AppGraph.downloadManager.resumeInterrupted()
 
-    // 第八轮 #8：恢复 HTTP 代理配置（全局开关 + 协议 + 每个源的独立开关）
+    // 恢复 HTTP 代理配置（全局开关 + 协议 + 每个源的独立开关）
     Http.configureProxy(
         enabled = repository.getPref(LibraryRepository.PREF_PROXY_ENABLED) == "1",
         host = repository.getPref(LibraryRepository.PREF_PROXY_HOST),
@@ -128,7 +128,7 @@ fun main() = application {
     // 后台预热浏览器内核：原生库已下载过就直接起 CEF，第一次开内嵌浏览器不再等那 2 秒
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
-            // 2026-11-13（A5b）：完整版把随包内核**启动就搬到纯 ASCII 目录**。
+            // 完整版把随包内核**启动就搬到纯 ASCII 目录**。
             // 用户口径「直接挪，下完整版就说明需要浏览器」——不等第一次点浏览器。
             // 开发环境下 `app/jcef-bundle` 是符号链接，函数内部会跳过，不会动开发环境。
             runCatching { CefRuntime.migrateBundledRuntimeOnStartup() }
@@ -158,7 +158,7 @@ fun main() = application {
                 "${windowState.size.width.value.toInt()},${windowState.size.height.value.toInt()}"
             )
         }
-        // 2026-10-30：阅读器现在是**独立窗口**（可多开）。退出应用前先把它们收干净，
+        // 阅读器现在是**独立窗口**（可多开）。退出应用前先把它们收干净，
         // 否则 AWT 会留下几个孤儿窗口，进程也不一定退得掉。
         app.gamanga.desktop.ui.reader.ReaderWindows.closeAll()
         exitApplication()
@@ -228,7 +228,7 @@ fun main() = application {
         }
     }
 
-    // ---- 阅读器窗口层（2026-10-30 用户要求 4）----
+    // ---- 阅读器窗口层（实测）----
     //
     // **必须在主 Window 之外**（同一层 `application` 作用域）：阅读器是独立窗口，
     // 主界面可以同时开多个，各窗口的阅读状态互不干扰。开关窗口 = 增删这个列表里的条目，
@@ -261,7 +261,7 @@ private fun brandBitmap(path: String): ImageBitmap? = decodeBrand(path)
 /** 揭幕缓动：ease-out-quint。起手果断、落点极慢，慢而不拖（与详情面板同一颗曲线）。 */
 private val SplashEasing: Easing = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
 
-/** 揭幕时长。原 420ms，2026-10-27 第五轮用户「再慢 50%」→ **630ms**。 */
+/** 揭幕时长。原 420ms，用户「再慢 50%」→ **630ms**。 */
 private const val SplashRevealMs = 630
 
 /**
@@ -269,7 +269,7 @@ private const val SplashRevealMs = 630
  *
  * **曲线与幅度完全沿用旧实现**：`tween(900, SplashEasing)` 跑 0→1，驱动
  * `sin(t·2π)` 的 4° 摆动与 `sin(t·π)` 的 6dp 浮动。
- * 2026-11-13 只改了一件事：**起点提前到与弹入同刻**（原来是等横幅落定才开始）。
+ * 只改了一件事：**起点提前到与弹入同刻**（原来是等横幅落定才开始）。
  * 这里由 900 放到 1100，是为了让整段摆动在闪屏消失前能完整看完一遍（不改变单次摆动的形状）。
  */
 private const val SplashWobbleMs = 1100
@@ -282,20 +282,20 @@ private const val SplashWobbleMs = 1100
  */
 private const val SplashSettlePauseMs = 120L
 
-/** logo 直径。原 136dp，2026-11-13 用户要求「放大到 160%」→ 217.6 ≈ **218dp**。 */
+/** logo 直径。原 136dp，实测60%」→ 217.6 ≈ **218dp**。 */
 private val SplashLogoSize = 218.dp
 
 /**
  * 启动闪屏（开源版简化）。
  *
- * ## 2026-11-13 用户口径（1.2.1）
+ * ## 实测）
  *
  * - 「移除万圣节的错峰进场」→ 横幅整段删掉，闪屏只剩一枚居中的 logo。
  * - 「要等主图标动画结束再进主菜单，应该会比带横幅的快」→ 删掉 1600ms 长停留。
  * - 「logo 动效不变，现在 logo 是 100% 的话 logo 大小要放大到 160%」→ 136dp → 218dp，曲线不动。
  * - 「logo 出现后开抖动，而不是像以前要等横幅出现才跟着一起抖」→ **只把抖动起点提前**，
  *   动效本身（30dp 升起 + spring 弹入 + 4° 摆动 + 6dp 浮动）一点不改。
- * - 2026-11-13 中途试过「从上方 200dp 弹簧掉落」，用户否决：「还是不对，就用以前的动效去掉横幅，
+ * - 中途试过「从上方 200dp 弹簧掉落」，用户否决：「还是不对，就用以前的动效去掉横幅，
  *   把 logo 抖动提前就行了」→ 已回滚到原动效。
  *
  * ## 节奏
@@ -364,7 +364,7 @@ private fun LaunchGate(content: @Composable () -> Unit) {
                     },
                 contentAlignment = Alignment.Center,
             ) {
-                // 2026-11-13：整块 Stage 的 -2° 倾斜与 badge 的 -86dp 横移一并去掉 —— 用户要「居中圆形 logo」
+                // 整块 Stage 的 -2° 倾斜与 badge 的 -86dp 横移一并去掉 —— 用户要「居中圆形 logo」
                 Box(contentAlignment = Alignment.Center) {
                     if (badge != null) {
                         Image(

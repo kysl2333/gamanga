@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * 匀速旋转的加载弧线（第十二轮 #1）。
+ * 匀速旋转的加载弧线。
  *
  * 替代 [androidx.compose.material3.CircularProgressIndicator]：后者的
  * indeterminate 动画是分段变速的，在主线程繁忙（滚动+解码同时进行）时
@@ -43,7 +43,7 @@ fun LoadingArc(
     )
     Canvas(modifier.size(size)) {
         val stroke = strokeWidth.toPx()
-        // **必须按短边画圆**（2026-10-24 用户反馈「加载圈是椭圆形」）：
+        // **必须按短边画圆**（实测圆形」）：
         // Canvas 的实际尺寸受父约束支配——调用方带 fillMaxWidth / 放在 Row 里被
         // 拉伸时，width ≠ height，直接拿 this.size 画弧就成了椭圆。取短边 + 居中，
         // 无论外面给什么约束都是正圆。

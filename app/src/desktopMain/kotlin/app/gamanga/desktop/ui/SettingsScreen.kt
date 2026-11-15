@@ -121,7 +121,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
- * 设置页（2026-10-28 重做）。
+ * 设置页（重做）。
  *
  * ## 版式
  *
@@ -961,7 +961,7 @@ private fun CacheSettings(
         }
     }
 
-    // 2026-11-13（A6）：浏览器内核管理 —— 用户要求"告知占多大、能二次确认移除、
+    // 浏览器内核管理 —— 用户要求"告知占多大、能二次确认移除、
     // 提醒卸载前自行清理配置与内核"。
     SettingsGroup("浏览器内核") {
         SettingsCard {
@@ -1243,7 +1243,7 @@ internal data class ProxySnapshot(
  *
  * 逐项比较 perSource 而不是 `map != map`：调用方传进来的可能是 `SnapshotStateMap`
  * （Compose 的 `mutableStateMapOf`），它**没有重写 equals**，直接比会退化成引用比较、
- * 永远返回「脏」——这正是 2026-10-29 用户看到「保存了还显示有未保存更改」的原因。
+ * 永远返回「脏」——这正是 实测示有未保存更改」的原因。
  */
 internal fun isProxyDirty(current: ProxySnapshot, saved: ProxySnapshot): Boolean {
     if (current.on != saved.on || current.host != saved.host ||
@@ -1269,7 +1269,7 @@ private fun ProxySettings(repository: LibraryRepository, say: (String, Boolean) 
             }
         }
     }
-    // 2026-10-29 修「保存后仍显示有未保存更改」：原来是拿 SnapshotStateMap 直接和 HashMap 比
+    // 修「保存后仍显示有未保存更改」：原来是拿 SnapshotStateMap 直接和 HashMap 比
     // `!=`，而 SnapshotStateMap 没有重写 equals（javap 实测），退化成**引用比较**永远为真。
     // 现在把「当前草稿」与「上次保存」都收进普通 Map 快照，用 [isProxyDirty] 逐项比较。
     val currentSnapshot = ProxySnapshot(

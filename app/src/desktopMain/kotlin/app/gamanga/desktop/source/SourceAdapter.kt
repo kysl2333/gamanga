@@ -50,7 +50,7 @@ data class SourceDetails(
  * [ticket] 是部分源站的防盗链票据（Komiic 走 `X-Image-Ticket` 请求头），
  * 下载时必须带上，否则 401/403。票据有时效，过期重新调 [SourceAdapter.pages]。
  *
- * [referer] 是**图片域自己的防盗链**（2026-10-24 实测 MangaBZ）：
+ * [referer] 是**图片域自己的防盗链**（实测 MangaBZ）：
  * `image.mangabz.com` 不带 `Referer: https://www.mangabz.com/m<cid>/` 直接 **403**，
  * 浏览器里能看图是因为浏览器自动带了 Referer。加载/下载图片一律用
  * [requestHeaders] 取头，不要各处自己拼。
@@ -112,7 +112,7 @@ interface SourceAdapter {
      *
      * **必须选一个「当前站点确实有结果」的词**：自检把「返回 0 条」判成黄灯
      * （路径/选择器配错的唯一信号），拿一个本来就没结果的词去探，会把好源误判成黄灯。
-     * 实测（2026-10-25）：Komiic 搜「测试」= 0 条、搜「漫画」= 2 条；G社搜「测试」= 30 条；
+     * 实测：Komiic 搜「测试」= 0 条、搜「漫画」= 2 条；G社搜「测试」= 30 条；
      * MangaBZ 搜「的」= 12 条。站点内容变化后这个词可能要跟着换。
      */
     val probeKeyword: String get() = "测试"
@@ -122,8 +122,7 @@ interface SourceAdapter {
      *
      * - `true`（默认）：0 条 = 黄灯。用于**搜索一定该有结果**的源（G社/MangaBZ/拷贝漫画），
      *   这样路径模板或选择器配错时能立刻看出来（那种错不抛异常，只是列表空）。
-     * - `false`：站点可达就算绿灯，0 条只是信息。Komiic 用这个——2026-10-25 用户口径
-     *   「只要能进登录页或者网站能通就算绿灯」，且它的搜索是按标题精确匹配，空结果很正常。
+     * - `false`：站点可达就算绿灯，0 条只是信息。Komiic 用这个——实测     *   「只要能进登录页或者网站能通就算绿灯」，且它的搜索是按标题精确匹配，空结果很正常。
      *
      * 注意：不管哪种，**抛异常永远是红灯**（连不上/4xx/接口报错）。
      */
@@ -158,7 +157,7 @@ internal suspend fun <T> sourceOrNull(block: suspend () -> T): T? = try {
  *
  * **地址来自 `sources.json`**：这里只做「取生效值 → 传进构造器」，
  * 适配器内部不再硬编码域名。设置页保存配置后调 [rebuild] 重建全部适配器，
- * **改地址不需要重启应用**（2026-10-25 用户要求）。
+ * **改地址不需要重启应用**（实测）。
  */
 object Sources {
 
@@ -224,7 +223,7 @@ object Sources {
                 cookies = { cookieProvider(SourceConfig.domain(SourceType.GODA)) },
             )
         ),
-        // 第八轮 #9：MangaBZ + 拷贝漫画。两个站当前开发网络不可达
+        // MangaBZ + 拷贝漫画。两个站当前开发网络不可达
         // （DNS 异常），接口按公开资料实现、未实测；用户在可访问
         // 环境（或配合设置页 HTTP 代理）下首次使用，异常会进
         // logs/gamanga.log，按日志修字段即可。

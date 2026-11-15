@@ -4,7 +4,7 @@ package app.gamanga.desktop.model
 enum class ReaderMode(val label: String) {
     /**
      * 竖向连续滚动（默认，适合条漫与常规页漫）。
-     * 2026-10-23 用户要求 UI 文案改叫「条漫模式」；2026-10-24 又要求去掉「模式」两字
+     * 实测改叫「条漫模式」；又要求去掉「模式」两字
      * （按钮上就写「条漫」）。内部枚举名保持 VERTICAL 不动（prefs 里存的是 name）。
      */
     VERTICAL("条漫"),

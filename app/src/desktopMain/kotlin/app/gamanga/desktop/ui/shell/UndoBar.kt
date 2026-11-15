@@ -78,7 +78,7 @@ import kotlinx.coroutines.launch
  * 动效：入场 `spring` 上浮 + 0.94→1 放大 + 淡入（阻尼 0.72，**不弹跳**，UI-SPEC 第 5 节禁止回弹）；
  * 退场 200ms 下沉淡出，比入场快，不拖手感。
  *
- * ## 尺寸与位置（2026-10-27 用户第二轮反馈）
+ * ## 尺寸与位置（实测）
  *
  * 宽度**固定** [UndoBarWidth]（比 260dp 的 dock 窄），位置也在这里定死
  * （[UndoBarBottomOffset] = dock 让位高度 + 12dp）——调用点只给 `align`，不给 bottom padding。
@@ -98,7 +98,7 @@ private val UndoBarWidth = 240.dp
 /**
  * 回撤条离窗口底部的距离。
  *
- * 2026-10-29起改为读 [DockMetrics.floatingBottom]（dock 的**实测**顶边 + 20dp），
+ * 起改为读 [DockMetrics.floatingBottom]（dock 的**实测**顶边 + 20dp），
  * 不再手算 `88 + 12`：常量与 dock 真实尺寸有一点偏差，条子就会压在 dock 上或飘到半空。
  * 调用点仍然只负责 `Modifier.align(Alignment.BottomCenter)`，**不要再给 bottom padding**。
  */
@@ -205,7 +205,7 @@ fun UndoBar(state: UndoState, modifier: Modifier = Modifier) {
             slideOutVertically(tween(200, easing = Tokens.Motion.DrawerEasing)) { it / 3 } +
             scaleOut(tween(200, easing = Tokens.Motion.DrawerEasing), targetScale = 0.96f),
         // 底部让位在组件内部加：四个调用点共用同一份位置，避免各页自己算（有人 18dp、有人漏写）。
-        // 2026-10-29 起横向也读 dock 实测中心线（[DockMetrics.centerOffsetX]），
+        // 起横向也读 dock 实测中心线（[DockMetrics.centerOffsetX]），
         // 不再用写死的 32dp —— dock 一旦改了推荐按钮尺寸，条子会自动跟着对齐。
         modifier = modifier
             .padding(bottom = UndoBarBottomOffset)

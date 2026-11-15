@@ -7,7 +7,7 @@ import androidx.compose.ui.text.platform.Font as platformFont
 import app.gamanga.desktop.core.AppLog
 
 /**
- * 界面字体（2026-10-26 用户拍板：**Inter + MiSans**）。
+ * 界面字体（实测er + MiSans**）。
  *
  * 用户口径：「2K-4K 先按你推荐的来适配，用 Inter + MiSans 来看整体效果」。
  *

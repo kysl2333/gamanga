@@ -208,7 +208,7 @@ fun ReaderScreen(
      */
     val detail = rememberDetailHostState(repository, downloadManager)
     var index by remember { mutableIntStateOf(target.startIndex.coerceIn(0, target.chapters.lastIndex)) }
-    // 继续阅读恢复到上次页码（第十二轮 #3；2026-10-24 修正「任何一话都从第 20 页开始」）。
+    // 继续阅读恢复到上次页码（修正「任何一话都从第 20 页开始」）。
     //
     // **必须校验 chapterId**：`progressOf(mangaId)` 返回的是「这本书最后一次读的那一话 +
     // 那一话的第几页」。旧实现只取 `.page`，于是从详情页点开任何一话都会跳到「上次那话的
@@ -226,7 +226,7 @@ fun ReaderScreen(
     var error by remember { mutableStateOf<String?>(null) }
     var currentPage by remember { mutableIntStateOf(if (index == initialIndex) savedPage else 0) }
 
-    // ---- 滑动诊断日志（2026-10-25）----
+    // ---- 滑动诊断日志----
     // **默认关闭**：排查期间它是把回弹钉死的关键证据，但平时刷日志只会撑大文件。
     // 需要排查时用 `-Dgamanga.scrolllog=1` 启动，tag = Scroll。
     val sSeq = remember { intArrayOf(0) }
@@ -239,7 +239,7 @@ fun ReaderScreen(
     // **列表状态必须在整个阅读器生命周期里唯一**（用户实测
     // 「条漫滚动翻页失效、换话后一滚就提示下一话，切模式才好」）。
     //
-    // 历史：2026-10-25 为了修「切上一话不回第一页」，这里写成了 `remember(index)`，
+    // 历史：为了修「切上一话不回第一页」，这里写成了 `remember(index)`，
     // 换话就 new 一个 LazyListState。**代价是灾难性的**——滚轮消费者是
     // `LaunchedEffect(Unit)`、拖拽手势是 `pointerInput(Unit)`，两者都只在首次组合时
     // 捕获 `listState`。换话后它们继续滚那个**已经脱离 UI 的旧 state**：
@@ -267,7 +267,7 @@ fun ReaderScreen(
         )
     }
     /**
-     * 缩放 prefs 的**延迟写**任务（2026-10-30：用户报「放大缩小卡顿」）。
+     * 缩放 prefs 的**延迟写**任务（用户报「放大缩小卡顿」）。
      *
      * 旧实现每改一格缩放就同步派发 3 条 `setPrefAsync`（模式 / 缩放 / 方向各一条）。
      * 鼠标滚轮连滚、触控板一次滑动会连发十几格 → 十几×3 条 SQLite 写，全部挤在
@@ -304,7 +304,7 @@ fun ReaderScreen(
     }
 
     /**
-     * 缩放增量的合并通道（2026-10-30）。
+     * 缩放增量的合并通道。
      *
      * 触控板一次双指滑动会连发几十个 scroll 事件，每格都改一次 `settings` 就是几十次
      * 重组 + 几十次布局。这里把增量汇进通道，消费端**先把排队的增量取干再改一次状态**：
@@ -345,7 +345,7 @@ fun ReaderScreen(
     var chromeVisible by remember { mutableStateOf(true) }
 
     /**
-     * 阅读设置二级面板（2026-10-30 用户要求 6）：条漫 / 单页 / 双页 + 左→右 / 右→左
+     * 阅读设置二级面板（实测）：条漫 / 单页 / 双页 + 左→右 / 右→左
      * 全部收进底部悬浮组的一颗按钮，点开**从底部向上弹**一块小面板。
      *
      * 原来这些是底部常驻控件栏里的一排文字按钮（`ReaderControls`），一直占着 34dp 高度；
@@ -358,15 +358,15 @@ fun ReaderScreen(
     val chromeExitMs = if (reducedMotion) 0 else ReaderChromeExitMs
 
     /**
-     * 全屏 / 还原窗口（2026-10-30 用户要求 5；第三轮**去动画**）。
+     * 全屏 / 还原窗口（实测；**去动画**）。
      *
      * 用户纠正：「之前说的**缩放**是指**全屏和窗口**的意思」——所以"卡顿/闪退"真正出在
      * 这颗全屏键上。旧实现用 `GraphicsDevice.fullScreenWindow`（独占全屏）：切换显示模式
      * + 重建窗口与 GL 上下文，Skia 交换链跟着重建，机器上留下的 NVIDIA「GPU 已断开」与
      * `awt.dll` 访问违例就是这么来的；退出时窗口又跳回 AWT 记忆的旧尺寸，所以"很不自然"。
      *
-     * 第二轮改成 190ms 逐帧插值 `bounds`，**还是卡**——12 次窗口矩形变化 = 12 次交换链 resize
-     * + 整窗重新布局 + 漫画页按新视口重新 Fit。第三轮明确：
+     * 改成 190ms 逐帧插值 `bounds`，**还是卡**——12 次窗口矩形变化 = 12 次交换链 resize
+     * + 整窗重新布局 + 漫画页按新视口重新 Fit。明确：
      * 「把窗口和全屏的动画移除，让它能一下就变成全屏」。所以现在 [ReaderFullscreen.toggle]
      * 是**同步、一次赋值**，这里不再需要 `scope.launch`。
      */
@@ -386,7 +386,7 @@ fun ReaderScreen(
     }
 
     /**
-     * 顶栏小封面用的地址（2026-10-30 用户：「阅读器左上角的小漫画封面没有出来，这个封面本地缓存」）。
+     * 顶栏小封面用的地址（实测的小漫画封面没有出来，这个封面本地缓存」）。
      *
      * 两个原因叠加：①详情页「开始阅读」那条路径构造 [ReaderTarget] 时**没带 coverUrl**；
      * ②就算带了远端地址，源站有防盗链/要 Referer，顶栏这张 28×38 的小图经常直接 403。
@@ -401,7 +401,7 @@ fun ReaderScreen(
     }
 
     /**
-     * 条漫模式松手后的惯性滚动任务（2026-10-23「像手机一样滑动」）。
+     * 条漫模式松手后的惯性滚动任务（「像手机一样滑动」）。
      * 新手势开始 / 退出阅读器时取消；null = 没在滑。
      */
     var flingJob by remember { mutableStateOf<Job?>(null) }
@@ -410,7 +410,7 @@ fun ReaderScreen(
     }
 
     /**
-     * 条漫滚轮增量通道（第九轮 #4）。
+     * 条漫滚轮增量通道。
      *
      * 滚轮增量汇入这里、由常驻协程顺序 `scrollBy`——与拖拽同一套
      * Channel 串行模式。旧实现每格滚轮 `scope.launch` 一个新协程，
@@ -448,7 +448,7 @@ fun ReaderScreen(
     }
 
     // 换话时页模式的页码归零，收起结束面板，边界蓄力作废（新话从零开始攒）。
-    // 例外：首次进入的初始话恢复到 savedPage（继续阅读，第十二轮 #3）。
+    // 例外：首次进入的初始话恢复到 savedPage（继续阅读）。
     LaunchedEffect(index) {
         pageIndex = if (index == initialIndex) savedPage else 0
         showEndPanel = false
@@ -491,7 +491,7 @@ fun ReaderScreen(
                 val localId = target.localMangaId
                 val chId = chapter?.id
                 val localKey = if (localId != null && chId != null) "$localId#$chId" else null
-                // **本地文件优先，不看 isCompleted**（2026-10-25）：DB 说"已完成"但文件被
+                // **本地文件优先，不看 isCompleted**：DB 说"已完成"但文件被
                 // 外部删掉、或状态没来得及写，都会让旧逻辑去回源——断网时就是「该话无图片」。
                 // 现在只要本地真有页就直接用，本地没有才联网。
                 val local = if (localKey != null) {
@@ -509,7 +509,7 @@ fun ReaderScreen(
                 if (list.isNotEmpty()) {
                     val probe = (if (index == initialIndex) savedPage else 0)
                         .coerceIn(0, list.lastIndex)
-                    // **必须限时**（2026-10-25 用户实测「进阅读器后上方进度条一直在转」）：
+                    // **必须限时**（实测上方进度条一直在转」）：
                     // 这段在 `loading = true` 期间执行，一旦这张图卡在网络上，进度条就永远不消失。
                     // 1.5s 拿不到就放弃，退回猜的比例——宁可第一页跳一次，也不能让阅读器像卡死。
                     val bmp = kotlinx.coroutines.withTimeoutOrNull(1500) {
@@ -519,7 +519,7 @@ fun ReaderScreen(
                         val real = bmp.width.toFloat() / bmp.height
                         // **每次进章都用实测值覆盖**（差 3% 以上才写）：
                         // 只在 `learnedRatio <= 0` 时学，会把历史遗留的错值永久固化——
-                        // 之前几轮学到过 0.7 附近的错值，之后无论怎么修都照样回弹（2026-10-25 实测）。
+                        // 之前几轮学到过 0.7 附近的错值，之后无论怎么修都照样回弹（实测）。
                         val stale = learnedRatio <= 0f || kotlin.math.abs(real - learnedRatio) > real * 0.03f
                         if (real in 0.2f..3.0f && stale) {
                             AppLog.i(
@@ -549,7 +549,7 @@ fun ReaderScreen(
             onError = { msg -> error = msg },
         )
         loading = false
-        // 继续阅读（第十二轮 #3）：初始话恢复到 savedPage，换话仍从第 0 页起。
+        // 继续阅读：初始话恢复到 savedPage，换话仍从第 0 页起。
         // savedPage 可能超过新取的页数（源站删过页），coerce 防越界。
         val restoreTo = if (index == initialIndex) savedPage else 0
         sLog("chapter RESTORE to=$restoreTo pages=${pages.size} mode=${settings.mode} ratio=%.3f".format(learnedRatio))
@@ -701,7 +701,7 @@ fun ReaderScreen(
         scope.launch { listState.animateScrollToItem(target) }
     }
 
-    // 滚轮增量的常驻消费协程（第九轮 #4，与拖拽同一套 Channel 串行模式：
+    // 滚轮增量的常驻消费协程（与拖拽同一套 Channel 串行模式：
     // 消除每格 launch 的 MutatorMutex 互取消——用户实测「往上滚回弹」的真凶）。
     // 声明在 jumpChapter 之后：局部函数要先声明后使用。
     LaunchedEffect(Unit) {
@@ -812,7 +812,7 @@ fun ReaderScreen(
     fun wheelPageTurn(forward: Boolean) {
         // 空页守卫：取图中/取图失败时 pages 为空，旧逻辑会把 lastPage=0 当成
         // "已在边界"，每格滚轮都攒蓄力——两格就跳话。用户体感就是
-        // 「滚轮不翻页，只会切话」（2026-10-23 实测反馈）。没内容可翻时
+        // 「滚轮不翻页，只会切话」（实测反馈）。没内容可翻时
         // 滚轮什么都不做，等图到了再说。
         if (pages.isEmpty()) return
         val edge = pageChapterEdge(pageIndex, lastStartNow(), forward)
@@ -862,7 +862,7 @@ fun ReaderScreen(
                         // 用户接管：滚轮一来就取消还在滑的惯性。此前滚轮路径不取消，
                         // 惯性作业按原方向继续滚，和滚轮增量互相抵消——用户实测
                         // 「像上滚轮，滚两下就会回到滚轮前的位置，等于没滚动」
-                        // （2026-10-23 反馈，与拖拽起手时的取消逻辑对齐）。
+                        // （反馈，与拖拽起手时的取消逻辑对齐）。
                         flingJob?.cancel()
                         val s = currentSettings
                         // Ctrl+滚轮 / 鼠标侧滚轮 = 缩放（上滚/右滚放大，用户指定手势）
@@ -877,7 +877,7 @@ fun ReaderScreen(
                             zoomStep != null -> zoomDeltas.trySend(zoomStep)
                             s.mode == ReaderMode.VERTICAL -> {
                                 if (dy < 0f) showEndPanel = false // 往上滚先收起结束面板
-                                // 增量汇入通道、由常驻协程顺序滚（第九轮 #4）：
+                                // 增量汇入通道、由常驻协程顺序滚：
                                 // 旧实现每格滚轮 scope.launch 一个新协程——连续滚轮
                                 // （尤其快速连滚）时多协程并发抢 LazyListState 的
                                 // MutatorMutex 互相取消：增量被吞，用户实测
@@ -1023,7 +1023,7 @@ fun ReaderScreen(
                     // 比视口还宽的超宽图则锁到视口宽（等价适应宽度）。
                     // 列宽 ≤ 视口时列**居中**——旧版恒挂 horizontalScroll，内容左对齐，
                     // zoom<1 时漫画整个靠左；超出视口才启用横向滚动看细节。
-                    // **列宽必须和 item 高度用同一个比例**（2026-10-25）：
+                    // **列宽必须和 item 高度用同一个比例**：
                     // 旧代码这里只看 `pages.first()` 的宽高，源站不下发时恒用 0.7；
                     // 而 item 高度已经用 learnedRatio（跨页扫描常 1.3~1.5）。
                     // 两个值打架时列宽偏窄、`needsHScroll` 判定也跟着错，
@@ -1046,7 +1046,7 @@ fun ReaderScreen(
                             .then(if (needsHScroll) Modifier.pointerHoverIcon(PointerIcon.Hand) else Modifier)
                             // 左键拖拽滑动（条漫基础操作，用户实测要求）。
                             //
-                            // 第八轮 #2 重构（用户实测「左键往下拖滑不动，像到顶
+                            // 重构（用户实测「左键往下拖滑不动，像到顶
                             // 卡在这一页」），两个病因一次修：
                             // ①旧实现每个 drag 帧 scope.launch 一个新协程去
                             //   scrollBy——多个协程并发抢 LazyListState 的
@@ -1073,7 +1073,7 @@ fun ReaderScreen(
                                     var totalDx = 0f // 累积位移：慢拖时单帧 delta 可能
                                     var lastDy = 0f // 最后一帧的位移方向，用于校验惯性方向
                                     var totalDy = 0f // 永远小于 touchSlop（判定永远
-                                    // 不触发），按总位移判才对（第九轮 #3 加固）
+                                    // 不触发），按总位移判才对（加固）
                                     val touchSlop = viewConfiguration.touchSlop
                                     val hScrollNow = needsHScrollState
                                     // 出手速度跟踪：松手时按最后几帧的移动速度决定惯性滑多远
@@ -1099,13 +1099,13 @@ fun ReaderScreen(
                                                 if (hScrollNow) hScroll.scroll { scrollBy(-delta.x) }
                                                 // 拖到边界同样"蓄力"：同向拖满 EDGE_JUMP_ACCUM_PX
                                                 // 才跳话（和滚轮一套判定，防误触）
-                                                // **边界判定要看真实边界状态，不能只看 consumed**（2026-10-25）：
+                                                // **边界判定要看真实边界状态，不能只看 consumed**：
                                                 // `chapterEdge` 只要「消费量 < 请求量」就判成到了边界，
                                                 // 而拖拽通道被惯性作业插队时 `scrollBy` 也可能只消费一半 ——
                                                 // 于是中途每一帧都往 edgeAccum 里加满额位移，攒够 600px 就跳话，
                                                 // 用户看到的就是「往上滑着滑着突然弹走」。
                                                 val requested = -delta.y
-                                                // **方向映射不能反**（2026-10-25 用户实测「到顶不切上一话」）：
+                                                // **方向映射不能反**（实测一话」）：
                                                 // requested > 0 = 内容往前滚（看后面的页）→ 只有滚到底才是 NEXT；
                                                 // requested < 0 = 往回滚 → 只有滚到顶才是 PREV。
                                                 // 六轮写反了，导致到顶永远不触发上一话。
@@ -1189,7 +1189,7 @@ fun ReaderScreen(
                                     // 出手速度超过阈值就按指数衰减继续滚，撞到章节边界即停
                                     // （边界跳话交给滚轮/拖拽的蓄力，惯性不跳）。
                                     if (dragged) {
-                                        // **速度必须夹紧**（2026-10-25 日志实测）：
+                                        // **速度必须夹紧**（日志实测）：
                                         // 92 次松手里 83 次 |vy|>2000、21 次 >10000、最高 20684 px/s，
                                         // 50 次惯性直接跑到 2400px 上限 = 甩一下飞 2~3 屏，
                                         // 用户体感就是「滑一下突然跳走 / 往回弹」。
@@ -1209,8 +1209,7 @@ fun ReaderScreen(
                                         // 兜底开关：`-Dgamanga.fling=0` 彻底关掉惯性（排查用）。
                                         val flingEnabled = System.getProperty("gamanga.fling") != "0"
                                         if (flingEnabled && sameDir && abs(vy) >= FLING_MIN_VELOCITY) {
-                                            // **惯性距离按松手速度算**（2026-10-24 用户要求
-                                            // 「像手机滑动那样丝滑」）：
+                                            // **惯性距离按松手速度算**（实测                                            // 「像手机滑动那样丝滑」）：
                                             // 旧实现用「拖拽距离 × 50%」，与速度无关——快速
                                             // 轻扫（位移小、速度大）也只滑半屏，手感很「粘」。
                                             // 手机的 fling 距离 ≈ 松手速度 × 0.35 秒；
@@ -1230,7 +1229,7 @@ fun ReaderScreen(
                                                     var lastFrameNanos = flingStartedAt
                                                     while (isActive && abs(v) > FLING_STOP_VELOCITY) {
                                                         val now = withFrameNanos { it }
-                                                        // **时间上限**（2026-10-25 日志实测）：高刷新率下 dt 只有 3ms，
+                                                        // **时间上限**（日志实测）：高刷新率下 dt 只有 3ms，
                                                         // 速度衰减到 100px/s 后每帧只走 1px，而退出条件是「累计距离达上限」，
                                                         // 于是以 1px/帧 爬了 247+ 帧（4~8 秒）—— 用户体感就是「卡住/被拉回」。
                                                         // 惯性不该超过 450ms，到点就停。
@@ -1246,7 +1245,7 @@ fun ReaderScreen(
                             // （手指上移 delta.y<0 → 内容向下滚=看后者），
                             // 松手时 vy<0 也要继续向下滚 → step 取 -v*dt。
                             // 此前写成 v*dt，上滑松手内容反而回滑——用户实测
-                            // 「会回弹，越滑越反方向滑动」（2026-10-23 反馈）。
+                            // 「会回弹，越滑越反方向滑动」（反馈）。
                             val stepPx = -v * dt
                                                         var consumed = 0f
                                                         listState.scroll { consumed = scrollBy(stepPx) }
@@ -1275,7 +1274,7 @@ fun ReaderScreen(
                                                 } catch (e: Throwable) {
                                                     // 惯性协程裸奔会在 EDT 上留无堆栈异常
                                                     // （logs/app-run.log 的 "Exception in thread
-                                                    // AWT-EventQueue-0" 30 连缀疑凶之一，第十轮）
+                                                    // AWT-EventQueue-0" 30 连缀疑凶之一）
                                                     AppLog.w("Reader", "fling failed", e)
                                                 }
                                             }
@@ -1318,7 +1317,7 @@ fun ReaderScreen(
                                 RemoteImage(
                                     url = page.url,
                                     contentDescription = "第 ${i + 1} 页",
-                                    // 锚点补偿已撤销（2026-10-25 01:45）：日志里 `anchor` 事件 **0 次**，
+                                    // 锚点补偿已撤销（01:45）：日志里 `anchor` 事件 **0 次**，
                                     // 说明阅读过程中 item 高度根本没变——高度不是回弹的原因。
                                     modifier = Modifier.fillMaxWidth(),
                                     contentScale = ContentScale.FillWidth,
@@ -1425,7 +1424,7 @@ fun ReaderScreen(
         }
     }
 
-        // ---- 底部悬浮控件层（2026-10-30 用户要求 5 / 6 / 7）----
+        // ---- 底部悬浮控件层（实测 / 7）----
         //
         // 三件事，都随沉浸模式（[chromeVisible]）一起显隐：
         //  ① 正中：上一话 / 下一话 / 阅读设置入口（一个胶囊，[ReaderBottomGroup]）；
@@ -1456,7 +1455,7 @@ fun ReaderScreen(
                     )
                 }
                 // 底部整组（上一话/下一话/设置 + 弹出的面板）**从下方滑上来**，
-                // 收起时滑回去（2026-10-30 第二轮：用户「之前的动效没有了重新加上」）。
+                // 收起时滑回去（用户「之前的动效没有了重新加上」）。
                 // 这一层是浮层、不占布局，所以滑动位移不会让漫画重新 Fit——纯绘制位移，代价为零。
                 AnimatedVisibility(
                     visible = chromeVisible,
@@ -1545,7 +1544,7 @@ private const val FLING_MAX_VELOCITY = 3200f
 
 /** 惯性最长持续时间（ms）。超过就停——防止低速度尾巴以 1px/帧 爬好几秒。
  *
- * 450 → 800（2026-10-25 用户「滑动距离太短」）：这个上限是惯性的**真实刹车**，
+ * 450 → 800（实测）：这个上限是惯性的**真实刹车**，
  * 距离主要由它决定（约 `v0 × (1 - 0.08^t) / 2.53`）。800ms 下 v0=3200 约滑 1100px（≈1 屏）。 */
 private const val FLING_MAX_MS = 800L
 

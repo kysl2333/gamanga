@@ -150,7 +150,7 @@ fun RecommendScreen(state: RecommendState, onPick: (String) -> Unit) {
                             { state.keyword = it },
                             { if (state.tab == "发现") state.search() },
                             accent = RecommendTokens.Pink,
-                            // 与浏览页 / 书架页同一个顶距常量（2026-10-29 三页对齐）
+                            // 与浏览页 / 书架页同一个顶距常量（三页对齐）
                             modifier = Modifier.padding(top = SearchBarTopInset),
                         )
                         Box(Modifier.align(Alignment.CenterEnd).padding(end = RecommendTokens.Pad)) {

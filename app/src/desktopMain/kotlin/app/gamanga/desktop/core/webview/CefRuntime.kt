@@ -25,7 +25,7 @@ object CefRuntime {
     private var pump: Timer? = null
 
     /**
-     * 启动互斥（2026-10-24 修「点浏览器卡在准备中、无法操作」）。
+     * 启动互斥（修「点浏览器卡在准备中、无法操作」）。
      *
      * 旧实现只用 `started` 一个 CAS 标志：第一个线程进入后立刻把它置 true，
      * **在 `builder.build()` 还没返回时**，第二个调用者就认为「已经启动」直接返回，
@@ -37,7 +37,7 @@ object CefRuntime {
     private val readyLatch = java.util.concurrent.CountDownLatch(1)
 
     /**
-     * 内核搬迁状态（2026-11-13，A5b）。
+     * 内核搬迁状态（A5b）。
      *
      * `migrateBundledRuntimeOnStartup()` 在启动的后台线程里搬 372MB，而用户可能几秒内就点开浏览器。
      * 如果不让 [ensureStarted] 等搬迁结束，CEF 会拿**旧的（中文）路径**去初始化原生库，
@@ -56,7 +56,7 @@ object CefRuntime {
     fun ensureStarted(progress: (String) -> Unit = {}) {
         if (started.get()) return
         // 启动时的内核搬迁还没结束就先等它（最多 60s）：否则会用旧的中文路径初始化原生库，
-        // 触发只有 hs_err_pid 的原生崩溃（2026-11-13 审查发现的竞态）。
+        // 触发只有 hs_err_pid 的原生崩溃（审查发现的竞态）。
         if (migrationStarted.get()) {
             runCatching { migrationDone.await(60, java.util.concurrent.TimeUnit.SECONDS) }
         }
@@ -70,17 +70,17 @@ object CefRuntime {
             startupStage = "启动中"
             val builder = CefAppBuilder()
             builder.setProgressHandler { stage, _ -> progress(stage.name) }
-            // **只在显式指定时覆盖 CEF 运行时目录**（2026-10-24）。
+            // **只在显式指定时覆盖 CEF 运行时目录**。
             // 不能无条件调 setInstallDir：它会走「创建安装目录」逻辑，遇到已存在的
             // jcef-bundle（预置的或 junction）就抛
             // `IOException: Could not create installation directory`（6 个 WebView 测试全挂）。
             // 默认（无属性）保持 jcefmaven 原生行为：installDir = cwd，找 cwd/jcef-bundle。
-            // **2026-11-13（A5）改为统一走 [cefRootDir]**，不再只在显式属性时覆盖：
+            // **改为统一走 [cefRootDir]**，不再只在显式属性时覆盖：
             //   · 程序目录是纯 ASCII 且已有内核  → 用它（完整版随包分发，零拷贝）
             //   · 程序目录含中文 / 没有内核      → 回退 LOCALAPPDATA → ProgramData 的纯 ASCII 目录
             //   · 轻量版该目录为空               → jcefmaven 首次点击时自行下载到那里
             // 仍然用 runCatching：`setInstallDir` 遇到已存在的目录会抛
-            // `IOException: Could not create installation directory`（2026-10-24 实测 6 个 WebView
+            // `IOException: Could not create installation directory`（实测 6 个 WebView
             // 测试全挂）。真抛了就退回 jcefmaven 默认行为，不至于起不来。
             val cefDir = cefRootDir()
             AppLog.i("Cef", "CEF 目录=${cefDir.absolutePath}（存在=${cefDir.isDirectory}，非ASCII=${containsNonAscii(cefDir.absolutePath)}）")
@@ -145,7 +145,7 @@ object CefRuntime {
                 builder.addJcefArgs("--disable-gpu-compositing")
                 startupStage = "兼容模式"
             }
-            // HTTP 代理（第九轮 #5）：代理开启时内嵌浏览器也走——CEF 的网络栈
+            // HTTP 代理：代理开启时内嵌浏览器也走——CEF 的网络栈
             // 独立于原生 HttpClient，只在启动参数里能注（CefApp 是进程级单例，
             // 运行中改协议/地址要重启应用生效，设置页有文案说明）。
             val proxy = app.gamanga.desktop.source.Http.currentProxy()
@@ -163,7 +163,7 @@ object CefRuntime {
             startMessagePump()
         } catch (t: Throwable) {
             startupStage = "失败：${t.message ?: t::class.simpleName}"
-            // **必须落日志**（2026-11-11 用户实测「浏览器创建失败」却查不到原因）：
+            // **必须落日志**（实测失败」却查不到原因）：
             // 这条失败原来只在界面上显示一行红字，日志里一片空白，
             // 只能靠 cef.log 里 libcef 自己的 `ContentMainRun failed with exit code 21`
             // 反推是「cache_path 被另一个进程占用」。
@@ -179,7 +179,7 @@ object CefRuntime {
         val start = Runnable {
             var timer: Timer? = null
             timer = Timer(8) {
-                // **CefApp 可能在退出时先被终止**（2026-10-25 日志：`E/Uncaught:
+                // **CefApp 可能在退出时先被终止**（日志：`E/Uncaught:
                 // IllegalStateException: CefApp was terminated` 在 EDT 上刷屏）。
                 // 这里自己兜住：终止就把表停掉，不再每秒 125 次往 EDT 抛异常。
                 try {
@@ -210,7 +210,7 @@ object CefRuntime {
      * Windows 实现对非 ASCII 路径支持很差——用户实测「点拷贝漫画源过几秒闪退」，
      * 且崩溃只有 `hs_err_pid*.log`（native crash，无 Java 堆栈），首要嫌疑就是路径。
      *
-     * **不要用 `CefAppBuilder.setInstallDir()` 来做这件事**（2026-10-24 实测）：
+     * **不要用 `CefAppBuilder.setInstallDir()` 来做这件事**（实测）：
      * 它会走「创建安装目录」逻辑，和预置好的 `jcef-bundle` 冲突，
      * 直接抛 `IOException: Could not create installation directory`（6 个 WebView 集成测试全挂）。
      * 正确做法是**改 cwd**：启动脚本先 `cd` 到纯英文目录（里面有 `jcef-bundle` 的目录联结），
@@ -219,7 +219,7 @@ object CefRuntime {
     /**
      * 程序根目录。
      *
-     * **不能用 `user.dir` 当程序目录**（2026-11-13 打包冒烟抓到的真 bug）：
+     * **不能用 `user.dir` 当程序目录**（打包冒烟抓到的真 bug）：
      * jpackage 的 exe 双击启动时，`user.dir` 是启动器继承来的当前目录，**不是 exe 所在目录**。
      * 实测完整版解压到 `D:\我的软件\Gamanga` 后双击，搬迁逻辑找不到 `jcef-bundle`，
      * 包里的 372MB 内核白带，程序回退去联网重下。
@@ -244,7 +244,7 @@ object CefRuntime {
         val bundled = java.io.File(appHomeDir(), "jcef-bundle")
         if (bundled.isDirectory && !containsNonAscii(bundled.absolutePath)) return bundled
 
-        // ③ 回退到纯 ASCII 的用户目录 / 公共目录（2026-11-13 新增）
+        // ③ 回退到纯 ASCII 的用户目录 / 公共目录（新增）
         //
         // 为什么必须回退：CEF 的 Windows 实现在**非 ASCII 路径**下会原生崩溃（无 Java 堆栈，
         // 只有 hs_err_pid）。中文用户常见的 `C:\Users\张三\`、`D:\我的软件\` 全部中招。
@@ -263,7 +263,7 @@ object CefRuntime {
      * CEF 运行时实际所在目录。
      *
      * 注意 `CefAppBuilder.setInstallDir(x)` 的语义是 **x 本身就是 bundle 目录**
-     * （2026-10-24 实测：setInstallDir(cefRoot) 之后文件直接落在 cefRoot/ 下，
+     * （实测：setInstallDir(cefRoot) 之后文件直接落在 cefRoot/ 下，
      * 不是 cefRoot/jcef-bundle/）。所以这里返回的是「含 libcef.dll 的那个目录」。
      */
     fun bundleDir(): java.io.File = cefRootDir()
@@ -277,7 +277,7 @@ object CefRuntime {
     /**
      * 完整版启动时把**随包的内核**搬到纯 ASCII 目录。
      *
-     * 2026-11-13 用户口径（Q13 修订）：「直接挪，下完整版就说明需要浏览器，看本地的用另一个不带浏览器的。」
+     * 实测订）：「直接挪，下完整版就说明需要浏览器，看本地的用另一个不带浏览器的。」
      * 所以不等到第一次点浏览器，**启动就搬**。
      *
      * 只在以下条件全部成立时才动手，任何一条不满足都直接返回：
@@ -379,7 +379,7 @@ object CefRuntime {
         }
         if (!hasNativeLib) return
         println("[cef] 预热：${dir.absolutePath} 内核已存在，后台启动")
-        // 预热失败不能吞掉（2026-11-11）：原来 `runCatching` 把异常丢掉，日志里连一行
+        // 预热失败不能吞掉：原来 `runCatching` 把异常丢掉，日志里连一行
         // 都没有，用户点开浏览器只看到「创建失败」，事后完全查不到根因。
         runCatching { ensureStarted() }
             .onFailure { AppLog.w("Cef", "预热失败（点开浏览器时会重试一次）", it) }

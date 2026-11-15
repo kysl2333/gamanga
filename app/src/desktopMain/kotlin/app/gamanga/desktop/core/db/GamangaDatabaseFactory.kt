@@ -141,7 +141,7 @@ object GamangaDatabaseFactory {
                 0
             )
         },
-        // v4（第七轮 #2）：downloadChapter 加入队时间列。下载列表改按 createdAt
+        // v4：downloadChapter 加入队时间列。下载列表改按 createdAt
         // 稳定排序——旧排序用 updatedAt，每页进度都改它，任务行在列表里来回跳
         // （用户实测「正在下载的两个任务在列表中来回跳动」）。老行回填
         // updatedAt（入队先后 ≈ 最后更新先后，保序不洗牌）。

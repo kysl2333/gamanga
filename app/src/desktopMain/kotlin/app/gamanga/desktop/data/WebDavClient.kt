@@ -136,7 +136,7 @@ class WebDavClient(
         if (dir.isBlank()) return false // 留空 = 用根地址，不建子目录
         // **结尾斜杠必须带**：Apache-WebDAV 对 `/dir` 的 MKCOL 会回 301 → `/dir/`，
         // 而反代后面生成的 Location 常是 `http://`（方案丢失）→ JDK 拒绝 https→http 降级，
-        // 于是永远建不成目录（2026-10-24 用户实测：`MKCOL 被重定向（HTTP 301）→ http://webdav.kysl.top/Gamanga/`）。
+        // 于是永远建不成目录（实测L 被重定向（HTTP 301）→ http://webdav.kysl.top/Gamanga/`）。
         val (code, _) = send("MKCOL", joinUrl(baseUrl, dir) + "/", null)
         if (code in 200..299) return true
         if (code == 405) return false // 已存在
@@ -201,7 +201,7 @@ class WebDavClient(
                     ?.textContent?.trim() ?: ""
                 // **目录要跳过**：Depth 1 会把目录自身也返回，其 href 以 "/" 结尾。
                 // 旧实现 trimEnd('/') 后把目录名当成文件 → 列表里多出一条 0KB 的 `Gamanga`，
-                // 点「删除」还会变成 `DELETE /Gamanga/Gamanga` 报 301（2026-10-25 用户实测）。
+                // 点「删除」还会变成 `DELETE /Gamanga/Gamanga` 报 301（实测）。
                 if (href.endsWith("/")) continue
                 // href 是 URL 编码过的路径，取最后一段并解码
                 val raw = href.substringAfterLast('/')

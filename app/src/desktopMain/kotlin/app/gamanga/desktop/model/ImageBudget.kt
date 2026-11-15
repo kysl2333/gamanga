@@ -3,7 +3,7 @@ package app.gamanga.desktop.model
 import kotlin.math.sqrt
 
 /**
- * 图片解码的**内存预算**（2026-10-30，用户报「放大缩小会闪退」）。
+ * 图片解码的**内存预算**（用户报「放大缩小会闪退」）。
  *
  * ## 为什么需要它
  *

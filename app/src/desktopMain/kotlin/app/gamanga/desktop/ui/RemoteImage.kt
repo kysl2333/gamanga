@@ -77,7 +77,7 @@ fun RemoteImage(
 ) {
     // 已预热好的图：首帧直接给出，且比例一次到位（不产生"布局后再变高"）
     val cached = remember(url, headers) { ImageCache.peek(url, headers) }
-    // **state 必须按 url 重建**（2026-10-25 线上 BUG 的教训）：
+    // **state 必须按 url 重建**（线上 BUG 的教训）：
     // `produceState` 内部的 state 是 `remember { mutableStateOf(initialValue) }`，
     // **不随 key 重建**——换页后 value 还是上一页的位图，若再配 `if (value == null)` 守卫，
     // 就永远不加载新图（现象：页码在动、画面不动）。
@@ -142,7 +142,7 @@ fun RemoteImage(
                 onClick = { retryKey++ },
                 modifier = Modifier.align(Alignment.Center),
             )
-            // 匀速弧线 spinner（第十二轮 #1：默认 CircularProgressIndicator 的
+            // 匀速弧线 spinner（默认 CircularProgressIndicator 的
             // 分段变速在主线程繁忙时「转得很奇怪」）
             else -> LoadingArc(
                 Modifier.align(Alignment.Center).fillMaxSize(0.2f),
@@ -155,7 +155,7 @@ fun RemoteImage(
 /**
  * 简易 LRU 图片缓存（按 URL + 请求头区分，按**字节预算**淘汰）。
  *
- * ## 2026-10-30 加固（用户报「放大缩小卡顿、会闪退」）
+ * ## 加固（用户报「放大缩小卡顿、会闪退」）
  *
  * | 问题 | 现象 | 修法 |
  * |---|---|---|
@@ -233,7 +233,7 @@ object ImageCache {
      * 正在加载的「前台」请求数（可见页 / 当前屏）。
      *
      * 单页、双页模式每次翻页都要现下两张图；如果预加载 worker 正占着连接下 3MB 的扫描图，
-     * 可见页就得排队——用户体感是「翻页卡、像在等图加载完才能动」（2026-10-24 反馈）。
+     * 可见页就得排队——用户体感是「翻页卡、像在等图加载完才能动」（反馈）。
      * 所以：可见页标记 foreground，预加载在**有前台请求在飞时主动让路**。
      */
     private val foregroundLoads = java.util.concurrent.atomic.AtomicInteger(0)
@@ -319,7 +319,7 @@ object ImageCache {
         key: String
     ): ImageBitmap? {
         return try {
-            // **下载与解码都放 IO**（2026-10-24）：旧实现只把下载放 IO，
+            // **下载与解码都放 IO**：旧实现只把下载放 IO，
             // `Image.makeFromEncoded` 仍在调用方线程（Compose 主线程）解码——
             // 大图解码几十毫秒，快速滚动时连续触发就会卡帧（用户实测
             // 「滚动太快图片没加载出来时卡了几秒，以为程序卡死了」）。

@@ -7,7 +7,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * 代理设置页的「有未保存更改」判据（2026-10-29 用户反馈：保存了还一直显示）。
+ * 代理设置页的「有未保存更改」判据（实测直显示）。
  *
  * 根因是 `SnapshotStateMap` 没有重写 `equals`，直接和普通 Map 比会退化成引用比较。
  * 这两条测试把这个坑钉住：一条记录 Compose 的行为，一条验证真正的判据函数。

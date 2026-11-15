@@ -116,7 +116,7 @@ fun StatsButton(
     Box(modifier) {
         Box(
             Modifier
-                // **微长方形**（44×30，宽 > 高）：第四轮
+                // **微长方形**（44×30，宽 > 高）：
                 // 「统计页图标按钮用微长方形的，风格像推荐页按钮的风格的还有大小」。
                 // 圆形在搜索栏左边像一个「头像」，长方形才读得出「一个按钮」。
                 .size(width = StatsButtonWidth, height = StatsButtonHeight)

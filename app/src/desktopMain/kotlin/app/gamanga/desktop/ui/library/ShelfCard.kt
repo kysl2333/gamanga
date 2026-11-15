@@ -55,7 +55,7 @@ import app.gamanga.desktop.ui.theme.Tokens
 import kotlin.math.roundToInt
 
 /**
- * 书架卡片（新书架页，2026-10-26）。
+ * 书架卡片（新书架页）。
  *
  * 视觉依据 `docs/ui/prototype/bookshelf-3x2.html` 的 `.card`：
  * 封面 3:4 + 底部进度条 + 书名一行 + 「第 N 话　68%」一行。

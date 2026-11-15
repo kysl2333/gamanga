@@ -32,7 +32,7 @@ object BrowserProbe {
 
     /** 轮询间隔。太密会给渲染进程添无谓的 eval 负担。 */
     /**
-     * 反复求值的间隔（2026-10-24 从 600 降到 400）：搜索结果在 400~800ms 内就渲染完，
+     * 反复求值的间隔（从 600 降到 400）：搜索结果在 400~800ms 内就渲染完，
      * 600ms 的粒度会白等半拍。降太快会给渲染进程添无谓的 eval 负担，400 是折中。
      */
     private const val POLL_MS = 400L
@@ -47,7 +47,7 @@ object BrowserProbe {
     /**
      * 探针通道数：**0 = 交互（搜索/详情）**，**1 = 后台（取图/下载）**。
      *
-     * 2026-10-24 加：原来只有一把锁，下载 4 章（每章 ~8 秒）时用户去搜索要排队 30 秒，
+     * 加：原来只有一把锁，下载 4 章（每章 ~8 秒）时用户去搜索要排队 30 秒，
      * 体感就是「程序卡了」。分两条通道后，交互请求不再被后台任务堵住。
      * 每条通道各自持有一个隐藏浏览器（CEF 的 browser 实例很轻，共享同一进程）。
      */
@@ -57,7 +57,7 @@ object BrowserProbe {
     private val laneLocks = Array(LANES) { Mutex() }
 
     /**
-     * **隐藏浏览器复用**（2026-10-24，用户要求「减少搜索速度」）。
+     * **隐藏浏览器复用**（用户要求「减少搜索速度」）。
      *
      * 每次新建 `JcefWebViewHost` 要 3~4 秒（CEF browser 创建 + 首屏），而一次搜索
      * 全程只有 7 秒左右——一半时间花在建浏览器上。这里把上一个 host 留着，
@@ -115,7 +115,7 @@ object BrowserProbe {
         /**
          * 期望落地的域名（如 `mangacopy.com`）。
          *
-         * **必须校验**（2026-10-24 用户实测「拷贝漫画搜索失败，浏览器显示网页加载失败
+         * **必须校验**（实测索失败，浏览器显示网页加载失败
          * 然后过几秒恢复」）：CEF 首次加载失败时 `isLoading` 会先变 false、url 变成
          * `chrome-error://...` 或空——旧的 `awaitLoaded` 只看 isLoading，于是在**错误页**
          * 上下文里执行 fetch，必然失败。给了 [expectHost] 就一直等到真正落在目标站点上。
@@ -133,7 +133,7 @@ object BrowserProbe {
          *
          * 默认 1（两次求值一样就收工）——对「一屏渲染完就不变」的页面够用。
          * 但**懒加载/逐张解密的页面**（拷贝漫画章节页：图片由前端脚本逐张解密后插入）
-         * 需要更大值，否则抓到前 3 张就提前返回（2026-10-24 用户实测「阅读器只能加载
+         * 需要更大值，否则抓到前 3 张就提前返回（实测加载
          * 3 张漫画页」）。
          */
         stableRoundsRequired: Int = 1,
@@ -184,7 +184,7 @@ object BrowserProbe {
                     // document.title 有长度上限（实测 >4KB 就被截断），章节图片列表动辄几十上百条，
                     // 走标题必然断在半路 → JSON 解析失败 → 表现为"取不到图"。
                     //
-                    // **支持 Promise**（2026-10-24 加，给拷贝漫画的 fetch 兜底用）：
+                    // **支持 Promise**（加，给拷贝漫画的 fetch 兜底用）：
                     // expression 返回 Promise 时先占位 null，等 resolve 后再写入 __gaP；
                     // 上面的轮询看到长度从 -1 变成非 0 会继续等稳定。同步表达式行为不变。
                     val store = """
@@ -288,7 +288,7 @@ object BrowserProbe {
             val hostOk = expectHost == null || u.contains(expectHost, ignoreCase = true)
             val urlOk = expectUrlPrefix == null || u.startsWith(expectUrlPrefix)
             if (!s.isLoading && landed && hostOk && urlOk) return true
-            delay(50) // 2026-10-24：100 → 50，页面就绪能早半拍发现
+            delay(50) // 100 → 50，页面就绪能早半拍发现
         }
         return false
     }

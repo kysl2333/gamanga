@@ -6,7 +6,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 /**
- * 应用主题（阶段 3.1 建，2026-10-26 接入字体与排版角色）。
+ * 应用主题（阶段 3.1 建，接入字体与排版角色）。
  *
  * **只有亮色**：UI-SPEC 第 6 节写明「暗色（后补）」，也确认
  * 「亮色为主」。旧实现跟系统切暗色，会让同一份令牌在两套底色上算出不同对比度——

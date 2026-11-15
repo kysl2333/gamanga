@@ -93,7 +93,7 @@ internal fun TextAction(
                 scaleX = scale
                 scaleY = scale
             }
-            // 2026-10-27 第四轮用户：「这种触碰出现蓝色范围的都做大，要大气点要符合规范的」。
+            // 用户：「这种触碰出现蓝色范围的都做大，要大气点要符合规范的」。
             // 原来 10×5 的内边距 + 8dp 圆角 + Caption 字号，hover 出来的蓝底只有一小块，
             // 像给一个词加了底色；现在是 14×8 + 10dp 圆角 + Body 字号，蓝底是一颗**按钮**。
             .clip(RoundedCornerShape(Tokens.Radius.Control))

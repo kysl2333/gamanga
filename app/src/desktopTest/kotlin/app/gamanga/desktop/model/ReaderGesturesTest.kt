@@ -57,7 +57,7 @@ class ReaderGesturesTest {
 
     @Test
     fun `wheel direction is independent of reading direction`() {
-        // 2026-10-25 用户实测修正：旧实现按 rtl 反转，右往左模式下「往上滚」变成下一页。
+        // 实测按 rtl 反转，右往左模式下「往上滚」变成下一页。
         assertEquals(true, wheelPageForward(1f), "下滚 = 下一页")
         assertEquals(false, wheelPageForward(-1f), "上滚 = 上一页")
         assertNull(wheelPageForward(0f), "没有纵向滚动就没有翻页")
@@ -94,7 +94,7 @@ class ReaderGesturesTest {
         assertEquals(ChapterEdge.NONE, pageChapterEdge(currentIndex = 0, lastIndex = -1, forward = true), "空列表不跳（否则连环跳）")
     }
 
-    // ---- wheelPageTurnTarget：滚轮翻一"步"停在哪（2026-10-23 滚轮只能切话的真因修复）----
+    // ---- wheelPageTurnTarget：滚轮翻一"步"停在哪（滚轮只能切话的真因修复）----
 
     @Test
     fun `single page wheel steps one page at a time`() {
@@ -140,7 +140,7 @@ class ReaderGesturesTest {
         assertEquals(0, wheelPageTurnTarget(current = 0, pageCount = 0, spread = 2, forward = false))
     }
 
-    // ---- panLimit / clampPan：页模式放大后拖着看（2026-10-23）----
+    // ---- panLimit / clampPan：页模式放大后拖着看----
 
     @Test
     fun `pan limit is half of the overflow`() {
@@ -163,7 +163,7 @@ class ReaderGesturesTest {
         assertEquals(0f, clampPan(500f, zoom = 1f, contentSize = 700f, viewportSize = 800f), "没放大时归零、露不出背景")
     }
 
-    // ---- edgeOverscroll：边界跳话要蓄力，防单格滚轮误跳（2026-10-23）----
+    // ---- edgeOverscroll：边界跳话要蓄力，防单格滚轮误跳----
 
     @Test
     fun `single notch at edge only charges the jump`() {
@@ -214,7 +214,7 @@ class ReaderGesturesTest {
 /**
  * 预加载窗口（回归）。
  *
- * 2026-10-24 线上崩溃：换话时 `pages` 变空，`coerceIn(0, -1)` 抛
+ * 线上崩溃：换话时 `pages` 变空，`coerceIn(0, -1)` 抛
  * `Cannot coerce value to an empty range`，炸在 AWT 事件线程上。
  * 这组断言锁住「任何尺寸都不许抛」。
  */

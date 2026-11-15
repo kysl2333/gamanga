@@ -73,7 +73,7 @@ class BackupManager(
         val prefRows = queries.selectAllPrefs().executeAsList()
         // **只带「进度用得到」的章节**（每本漫画当前在读的那一话）。
         // 旧实现把每本漫画的全部章节都塞进备份：一本 200+ 话、几十本 → 文件里绝大多数
-        // 是永远不会用到的章节行（2026-10-25 用户反馈「备份里包含了每一部漫画的章节，感觉不需要」）。
+        // 是永远不会用到的章节行（实测了每一部漫画的章节，感觉不需要」）。
         // 进度行只需要 chapterId + 章节名能显示，所以保留这一话就够恢复「读到第几话第几页」。
         val neededChapterIds = progressRows.map { it.chapterId }.toSet()
         val chapterRows = if (neededChapterIds.isEmpty()) emptyList()
@@ -401,7 +401,7 @@ class BackupManager(
      * 每条选择：[MihonImportChoice.source] 有值就直接用那一本；为空则拿别称去搜，
      * 取打分最高的候选（用户在界面里没手动挑时才走这条）。
      *
-     * 2026-10-30 三条返工（/ / ）：
+     * 三条返工（/ / ）：
      * - **名字与封面以新源为准**（[MihonImportChoice.pickedTitle] / [pickedCover]）——
      *   用户报「换源后名字还是原来的名字，书架封面出不来」；
      * - **导入范围可选**（[mode]）：只恢复书架 / 书架 + 观看历史。范围只决定**列哪些书**，

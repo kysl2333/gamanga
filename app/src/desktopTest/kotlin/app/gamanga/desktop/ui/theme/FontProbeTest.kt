@@ -24,7 +24,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * 字体落地自检（2026-10-26）。
+ * 字体落地自检。
  *
  * ## 这个测试存在的理由
  *

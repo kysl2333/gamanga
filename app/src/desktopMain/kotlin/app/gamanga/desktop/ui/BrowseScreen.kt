@@ -74,7 +74,7 @@ fun BrowseScreen(
     onRead: (ReaderTarget) -> Unit,
     /** 从书架点进来时直接落到这本漫画的详细页（源类型 + 源站条目）。 */
     initialDetail: Pair<SourceType, SourceManga>? = null,
-    /** 从书架顶栏搜索键带过来的词：进页面后自动搜一次（2026-10-26）。 */
+    /** 从书架顶栏搜索键带过来的词：进页面后自动搜一次。 */
     initialKeyword: String? = null,
     autoSubmitInitialKeyword: Boolean = false,
     /** 下载管理器（详情页选章下载 / 「已缓存」标记的数据源）。 */
@@ -101,7 +101,7 @@ fun BrowseScreen(
     var keyword by remember { mutableStateOf(initialKeyword.orEmpty()) }
     var results by remember { mutableStateOf<List<SourceManga>>(emptyList()) }
 
-    // ---- 全局搜索状态（2026-10-26 用户重定义）----
+    // ---- 全局搜索状态（实测）----
     /** 书架条目（简繁归一化后过滤，命中显示在第一排）。 */
     val shelfItems by repository.shelfItems.collectAsState()
     /** 浏览历史：只在浏览页点过的封面，与阅读进度历史无关。 */
@@ -130,7 +130,7 @@ fun BrowseScreen(
     val scope = rememberCoroutineScope()
 
     /**
-     * 搜索（2026-10-26 改为**全局多源并发**）。
+     * 搜索（改为**全局多源并发**）。
      *
      * 用户口径：「只有在用户点击了搜索键或者回车键后开始进行漫画源的搜索」——
      * 所以这个方法只由「点搜索键 / 回车」触发，输入文字本身不搜源
@@ -258,7 +258,7 @@ fun BrowseScreen(
 
     // 书架 / 历史页点进来：直接打开详细页（而不是像以前那样直接进阅读器）。
     //
-    // 2026-10-27 第五轮修 bug（用户：「菜单栏点浏览按钮进入的是个漫画的二级菜单，
+    // 修 bug（用户：「菜单栏点浏览按钮进入的是个漫画的二级菜单，
     // 书柜页和浏览页来回切换复现 1 次」）：
     // 根因是 `initialDetail` 由 `GamangaApp` 持有、**消费之后从不清空**。
     // 切页时 BrowseScreen 离开组合，再切回来是**新建实例**，`LaunchedEffect(initialDetail)`
@@ -278,9 +278,9 @@ fun BrowseScreen(
             .fillMaxSize()
             .dismissSearchFocusOnOutsidePress(searchBounds)
             // 顶部不再由根 padding 出一份：顶距统一交给搜索栏的 [SearchBarTopInset]
-            // （2026-10-29 三页对齐，见 GlobalSearchPane 里那个常量的注释）
+            // （三页对齐，见 GlobalSearchPane 里那个常量的注释）
             //
-            // ⚠️ **底部不要给根 padding**（/ ，2026-10-30 用户）：
+            // ⚠️ **底部不要给根 padding**（/ ，实测）：
             // 「搜索页多选的两图标比书架页的两图标高度高了」「撤销窗口也要对齐菜单栏」。
             // 根上那 20dp 会把整块内容区抬高 → 挂在 `Alignment.BottomCenter` 上的
             // 多选条 / 回撤条都跟着高 20dp，而它们的位置是按 **窗口底部** 算的
@@ -289,7 +289,7 @@ fun BrowseScreen(
             // （详情二级面板），浮层因此和书架页落在同一条线上。
             .padding(start = 20.dp, end = 20.dp)
     ) {
-        // 2026-10-26 用户重定义：这里是**全局搜索**，不再是「选一个源再搜」。
+        // 实测*全局搜索**，不再是「选一个源再搜」。
         // 输入即显示书架命中（纯内存），点搜索键/回车才真正去各源搜（拷贝漫画要 8~10 秒）。
         // **和书架页一样：页面从窗口顶开始，顶栏自己让出拖拽带**
         // （截图对比：两边搜索框差约 11dp，根因是两套让位机制）

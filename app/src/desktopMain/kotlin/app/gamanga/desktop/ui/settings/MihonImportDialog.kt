@@ -83,7 +83,7 @@ import kotlinx.coroutines.launch
  *
  * 视觉：白卡 + 遮罩，与换源窗口 / 选图弹窗同一档（`Radius.Drawer`、26dp 柔化阴影）。
  *
- * **2026-10-29 返工（/ ）**：上一版 `RowState` 的 `selected` / `alias` / `picked`
+ * **返工（/ ）**上一版 `RowState` 的 `selected` / `alias` / `picked`
  * 写成了普通 `var`，不是 Compose 状态 → 点了不重组，表现为「勾选点不动、全选全不选没反应、
  * 滚一下才出现勾」「别称删不掉」。现在三个字段全部 `mutableStateOf`。
  * 搜索也从「串行等五个源」改成流式（`Flow`，谁先回来先显示），按钮里带转圈。

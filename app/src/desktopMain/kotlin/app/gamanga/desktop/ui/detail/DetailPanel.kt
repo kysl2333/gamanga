@@ -108,7 +108,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-/** 封面「漂浮」的最大位移（用户口径「轻微跟随」，幅度必须小）。 */
+/** 封面「漂浮」的最大位移。 */
 private val CoverFloatDistance = 6.dp
 
 /** 封面跟随的倾角（度）。1.2° 刚好能看出「有生命」，再多就是廉价动效。 */
@@ -179,9 +179,9 @@ internal fun DetailPanel(
     onSelectAll: () -> Unit = {},
     /** 取消全选（清空勾选）。 */
     onClearSelection: () -> Unit = {},
-    /** 右键「多选章节」：带着点中的那一章进多选（用户要求 3）。 */
+    /** 右键「多选章节」：带着点中的那一章进多选。 */
     onEnterMultiSelect: (chapterId: String) -> Unit = {},
-    /** 批量标记已读（true）/ 未读（false）（用户要求 3）。 */
+    /** 批量标记已读（true）/ 未读（false）。 */
     onMarkSelectedRead: (Boolean) -> Unit = {},
     onStartDownload: () -> Unit,
     onEnqueueChapter: (SourceChapter) -> Unit,
@@ -894,7 +894,7 @@ private fun DetailCover(
  * 为什么不用 `Modifier.shadow`：elevation 阴影是**矩形轮廓**的高斯模糊，铺在这张圆角封面上
  * 会从两侧漏出直线，看起来像一张贴纸；这里要的是「书压在桌上」那种没有边界的软阴影。
  *
- * 参数全部取保守值（峰值 11% 黑、微点 4.5% 黑）：用户明确要「不明显」，
+ * 参数全部取保守值（峰值 11% 黑、微点 4.5% 黑）：需要「不明显」，
  * 一旦能看出这是个什么形状，就从质感变成了廉价特效。
  */
 @Composable
@@ -1234,7 +1234,7 @@ private fun ProgressRail(
  * 位置在章节标题行下方、网格上方：用户点「下载」后视线还在章节区，
  * 工具条出现在这里才不需要回头找。
  *
- * ## 扩充（用户要求 2 + 3）
+ * ## 扩充
  *
  * - **要求 2**：加「全选」「取消全选」——原来的「全选未缓存」只能全选，想反选就得一个个点掉。
  * - **要求 3**：这一条工具条现在**同时**服务「下载」和「右键进多选」两种进入方式，
@@ -1398,7 +1398,7 @@ private fun ChapterCell(
     // 本格左上角的**窗口坐标**：右键落点是格内坐标，加它才是 WindowMenu 要的绝对坐标。
     // 用 `localToWindow(Offset.Zero)`（Compose 1.12 起没有 positionInWindow()）。
     var originInWindow by remember { mutableStateOf(IntOffset.Zero) }
-    // ---- 悬浮感（用户要求）----
+    // ---- 悬浮感----
     // 三件事叠起来才叫「浮起来」：上移 1dp + 一层 4dp 中性阴影 + 描边转强调色。
     // 只做阴影会像「贴了张纸」；只做位移会像「抖一下」。
     val lift by animateDpAsState(
@@ -1419,7 +1419,7 @@ private fun ChapterCell(
             current -> Tokens.Color.Accent.copy(alpha = 0.45f)
             hovered && !downloadMode -> Tokens.Color.Accent.copy(alpha = 0.28f)
             // 默认态保留一条 4% 黑的极淡描边：外层灰底撤掉后，纯靠阴影在白面板上
-            // 边界会发虚（用户反馈「跟背景没区分开」）。这条线只勾轮廓，不抢视觉。
+            // 边界会发虚。这条线只勾轮廓，不抢视觉。
             else -> Color(0x0A000000)
         },
         animationSpec = tween(Tokens.Motion.HoverMs),

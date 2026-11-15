@@ -47,7 +47,7 @@ class KomiicSource(
     override val probeKeyword: String = "漫画"
 
     /**
-     * 用户口径：「能进登录页或网站能通就算绿灯」。
+     * 「能进登录页或网站能通就算绿灯」。
      * Komiic 搜索是按标题匹配，0 条属正常结果，不该判黄灯；抛异常仍是红灯。
      */
     override val probeEmptyIsSuspicious: Boolean = false

@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
  * 折中——Komiic 图片按账号日限额，预加载了不看的页会白烧额度。 */
 private const val PREFETCH_AHEAD = 8
 
-/** 预加载并发度（用户要求「同时加载 2-3 页」）。 */
+/** 预加载并发度。 */
 private const val PREFETCH_PARALLEL = 3
 
 /** 往回预加载的页数（往上滑时要用的页）。 */
@@ -214,7 +214,7 @@ internal fun ReaderPrefetch(
                 continue
             }
             // 可见页在下载/解码时让路：单页/双页每次翻页都要现下两张，
-            // 预加载占着连接会让用户觉得「翻页卡、像在等图」（反馈）。
+            // 预加载占着连接会让「翻页卡、像在等图」（反馈）。
             if (ImageCache.isForegroundBusy()) {
                 delay(40)
                 continue
@@ -232,7 +232,7 @@ internal fun ReaderPrefetch(
     // PREFETCH_AHEAD 页提前烘进 ImageCache（已缓存的瞬间返回；LRU 256 张，
     // 翻远了自然淘汰）。窗口跟着阅读位置滑：页模式看 pageIndex，竖向看首个可见项。
     // 代价：预加载了不看的页会白烧源站配额（Komiic 图片按账号日限额）——
-    // 8 页是读流畅与配额间的折中，用户明确要过这个功能。
+    // 8 页是读流畅与配额间的折中，需要过这个功能。
     LaunchedEffect(pages, mode) {
         if (pages.isEmpty()) return@LaunchedEffect
         if (mode == ReaderMode.VERTICAL) {

@@ -125,7 +125,7 @@ class MihonImportModeTest {
         // 章节已读标记要保留（书架上的未读数才对）
         val chapters = db.mangaQueries.selectChaptersByManga("komiic:42").executeAsList()
         assertEquals(1, chapters.count { it.isRead == 1L })
-        // 用户明确「只选择书架的书恢复**同时恢复阅读记录**」→ 必须有进度行
+        // 「只选择书架的书恢复**同时恢复阅读记录**」→ 必须有进度行
         val progress = db.mangaQueries.selectAllProgress().executeAsList()
         assertEquals(1, progress.size, "只恢复书架也要写阅读进度")
         assertEquals(5L, progress.single().page)

@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /**
- * 应用日志（用户要求「能看到问题操作并进行修复」）。
+ * 应用日志。
  *
  * **为什么不是 println**：实测 `System.err` 被多线程并发写时，30 个 EDT 异常的
  * `printStackTrace` 互相覆盖，日志里只剩 30 句 `Exception in thread "AWT-EventQueue-0"`

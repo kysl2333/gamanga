@@ -20,8 +20,7 @@ data class MihonManga(
     /**
      * 备份里自带的封面图字节。
      *
-     * mihon 正典 `.tachibk` **不含**图片，但部分分支/魔改版会塞进去。用户口径：
-     * 「如果备份里面有图片可以原封不动的使用这张自定义图片」→ 有就用，没有就退回 `thumbnailUrl`。
+     * mihon 正典 `.tachibk` **不含**图片，但部分分支/魔改版会塞进去。     * 「如果备份里面有图片可以原封不动的使用这张自定义图片」→ 有就用，没有就退回 `thumbnailUrl`。
      * 判据不看字段号，只认文件头（[looksLikeImage]）。
      */
     val coverBytes: ByteArray? = null,

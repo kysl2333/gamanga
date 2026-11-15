@@ -11,7 +11,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
  * 淡入 220ms（延迟 90ms 让位移先起）、淡出 90ms。
  *
  * 之前两处各自写 tween：推荐页用默认曲线，源详情用 ease-out-quint；
- * 时长相同但观感不同，用户要求把推荐页的手感搬到源详情，故抽出来锁死。
+ * 时长相同但观感不同，把推荐页的手感搬到源详情，故抽出来锁死。
  */
 internal const val DetailEnterMs = 513
 internal const val DetailExitMs = 405

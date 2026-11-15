@@ -206,7 +206,7 @@ class DownloadManager(
         // 上一版订阅的是 `libraryItems`（只含 `inLibrary = 1`）→ 用户把漫画「移出书架」
         // （软移出，只翻标志位，行还在）之后，这本书立刻被判成孤儿：
         // 下载行删掉、磁盘目录 `deleteRecursively()`、内存镜像清空 —— 用户看到的就是
-        // 「移除书架后下载页这本漫画完全消失了」。而下载缓存按用户口径是**该留的**
+        // 「移除书架后下载页这本漫画完全消失了」。而下载缓存按是**该留的**
         // （「清除所有数据」都要保留下载缓存，更别说只是移出书架）。
         //
         // 换成 `allMangaIds` 后语义正确：
@@ -291,7 +291,7 @@ class DownloadManager(
                 status = DownloadStatus.QUEUED,
                 error = null,
                 // 入队时间：新任务取递增序号；FAILED 重试保留原值——任务在列表里
-                // 停在原地，不因为重试就跳到队尾（用户要求顺序稳定）。
+                // 停在原地，不因为重试就跳到队尾。
                 createdAt = existing?.createdAt?.takeIf { it > 0 } ?: (++seq),
             )
             val now = System.currentTimeMillis()
@@ -400,7 +400,7 @@ class DownloadManager(
     /**
      * 清空全部下载缓存（行 + 磁盘文件 + 在飞任务）。
      *
-     * **安全边界（用户明确要求「不要把系统或其他不相关文件删掉」）**     * 旧实现 `rootDir.listFiles().forEach { deleteRecursively() }` 会删掉缓存根目录下的
+     * **安全边界** * 旧实现 `rootDir.listFiles().forEach { deleteRecursively() }` 会删掉缓存根目录下的
      * **一切**——用户把缓存位置指到自己的某个目录（里面还有文档/照片）时就遭殃。
      * 现在双保险：①根目录必须带归属标记（[MARKER_NAME]），否则拒绝执行；
      * ②只删「DB 里登记过的漫画目录」白名单，根目录下的其他文件/目录一律不碰。

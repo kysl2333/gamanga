@@ -75,7 +75,7 @@ internal object RecommendImageRouting {
 internal object RecommendImageCache {
     const val MAX_SIDE = 384
     const val BUDGET = 64L * 1024 * 1024
-    /** 同一张图只发一次请求；不同图之间不再排队（用户要求取消并发限额）。 */
+    /** 同一张图只发一次请求；不同图之间不再排队。 */
     private val inFlight = HashMap<String, CompletableDeferred<ImageBitmap?>>()
     private val cache = LinkedHashMap<String, ImageBitmap>(64, .75f, true)
     private var bytes = 0L

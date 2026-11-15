@@ -107,8 +107,7 @@ class MangabzSource(
     /**
      * 章节图片列表。
      *
-     * **实测推翻旧实现**（用户反馈「阅读器一直转圈、只有 1 页」）：
-     * asHx 返回的**不是** `12_abc.jpg|` 这种单页 key，而是一段 **JS packer 混淆代码**：
+     * **实测推翻旧实现**     * asHx 返回的**不是** `12_abc.jpg|` 这种单页 key，而是一段 **JS packer 混淆代码**：
      *
      * ```
      * function dm5imagefun(){

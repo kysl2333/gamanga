@@ -190,7 +190,7 @@ private fun CoverCell(
                 .combinedClickable(
                     onClick = onClick,
                     // 长按 = 打开同一个菜单（与右键一致）。原来长按直接移出书架，
-                    // 手指一滑就误删，用户要求改成菜单。
+                    // 手指一滑就误删，改成菜单。
                     onLongClick = {
                         menuOpen = true
                         // pressInCell 是**格子内**坐标（菜单定位会再加 cellOriginInWindow），

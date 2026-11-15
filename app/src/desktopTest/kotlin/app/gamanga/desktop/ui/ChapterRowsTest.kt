@@ -55,7 +55,7 @@ class ChapterRowsTest {
             )
         )
         assertEquals(listOf("此处缺失 287-289（共 3 话）"), gapTexts(rows))
-        // 提示行必须插在 286 与 290 之间（用户要求的「那个缺失的位置」）
+        // 提示行必须插在 286 与 290 之间
         assertEquals(ChapterRow.Item(ch("b", "286 密码190000")), rows[1])
         assertEquals(ChapterRow.Gap("b", "c", "此处缺失 287-289（共 3 话）"), rows[2])
         assertEquals(ChapterRow.Item(ch("c", "290 力量之国")), rows[3])

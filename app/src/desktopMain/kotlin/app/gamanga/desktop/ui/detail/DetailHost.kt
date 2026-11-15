@@ -57,11 +57,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * 详情二级页的**宿主**（用户口径）。
+ * 详情二级页的**宿主**。
  *
  * ## 为什么要有这一层
  *
- * 用户要求：「在书架页点击漫画封面时，在**该书架页内**展示二级详情页；在阅览页点击
+ * 「在书架页点击漫画封面时，在**该书架页内**展示二级详情页；在阅览页点击
  * 漫画封面时，在**该阅览页内**展示二级详情页」。
  *
  * 上一轮的详情页只长在浏览页里——状态（选中的书 / 章节 / 多选下载 / 换源目标）和渲染
@@ -83,7 +83,7 @@ import kotlinx.coroutines.withContext
  * `openDetail` 里先读库再赋值，拷贝漫画那种 6~8 秒的源会让用户点完以为没反应。
  */
 
-/** 面板宽度占可用宽度的比例（用户口径：整体界面的二分之一至三分之二）。 */
+/** 面板宽度占可用宽度的比例。 */
 private const val PanelWidthFraction = 0.62f
 
 /** 面板顶部留的缝：看得见一级内容，面板才像「浮起来」而不是「整页被换掉」。 */
@@ -339,7 +339,7 @@ class DetailHostState internal constructor(
         downloadSelected = chapters.map { it.id }.toSet()
     }
 
-    /** 取消全选：清空勾选（用户要求 2）。 */
+    /** 取消全选：清空勾选。 */
     fun clearSelection() {
         downloadSelected = emptySet()
     }
@@ -564,7 +564,7 @@ fun DetailHost(
     }
 
     BoxWithConstraints(modifier.fillMaxSize()) {
-        // 宽度 62%，再夹到 [1/2, 2/3]（用户要求「二分之一至三分之二」）
+        // 宽度 62%，再夹到 [1/2, 2/3]
         val panelWidth = (maxWidth * PanelWidthFraction)
             .coerceIn(maxWidth / 2f, maxWidth * 2f / 3f)
         val panelHeight = maxHeight - PanelTopGap

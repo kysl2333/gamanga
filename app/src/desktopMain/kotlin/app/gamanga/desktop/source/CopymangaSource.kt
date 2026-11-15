@@ -20,7 +20,7 @@ import kotlinx.serialization.json.jsonObject
  * 拷贝漫画源适配（域名修正）。
  *
  * **域名**：
- * - 官方地址：`api.mangacopy.com`（**主**，用户要求用这个，不再用 copy4000）
+ * - 官方地址：`api.mangacopy.com`（**主**，用这个，不再用 copy4000）
  * - 备用：`api.copy4000.com`（大陆可达；仅在主域名连接失败时兜底）
  * - 旧 `api.copymanga.com`：大陆 DNS 污染不可达，弃用
  * 连接类失败（超时/拒连/DNS）自动切备用域名重试一次；两个都挂才报错。
@@ -605,7 +605,7 @@ private const val COPYMANGA_DETAIL_DOM_JS = """
 """
 
 /**
- * **直接解密图片列表**（逆向所得，用户要求「破解这套系统」）。
+ * **直接解密图片列表**（逆向所得，「破解这套系统」）。
  *
  * 从 `comic_content_pass202508141534.js`（base62 packer，已解包）得到的真实逻辑：
  *

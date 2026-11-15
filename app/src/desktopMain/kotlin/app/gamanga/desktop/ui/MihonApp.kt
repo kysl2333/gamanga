@@ -67,7 +67,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
     /**
      * dock 里重复点「浏览」的次数。
      *
-     * 详情是浏览页的二级页，用户要求「鼠标点击到一级菜单就把二级菜单收回去」——
+     * 详情是浏览页的二级页，「鼠标点击到一级菜单就把二级菜单收回去」——
      * 但那时 BROWSE 已经选中，`selected = it` 不产生任何状态变化，页面收不到信号。
      * 所以这里把「重复点同一个一级菜单项」单独计一次，页面据此关闭二级页。
      */
@@ -85,7 +85,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
     }
 
     /**
-     * 书架章节刷新（用户要求）。
+     * 书架章节刷新。
      *
      * 先把「看过的话数」读进内存（绿点要立刻显示，不能等网络），
      * 再按设置里的档位决定要不要在启动时自动刷一轮：
@@ -142,7 +142,7 @@ fun GamangaApp(repository: LibraryRepository, onClose: () -> Unit) {
                     // 且它的右键菜单/置顶逻辑是回滚参照。
                     NavItem.LIBRARY -> BookshelfScreen(
                         repository = repository,
-                        // （用户口径）：「在书架页点击漫画封面时，
+                        // 「在书架页点击漫画封面时，
                         // 在**该书架页内**展示二级详情页」——不再把用户拽去浏览页。
                         // 面板里的「阅读」直接进阅读器。
                         onRead = openReader,

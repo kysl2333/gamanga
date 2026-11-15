@@ -20,7 +20,7 @@ import kotlin.test.assertTrue
 /**
  * 书架章节刷新的策略判定。
  *
- * 用户口径：手动 / 每次开启应用 / 每一天 / 每七天，默认手动。
+ * 手动 / 每次开启应用 / 每一天 / 每七天，默认手动。
  * 通过内存数据库和fake adapter验证真实run链路、档位与启动节流，不访问站点。
  */
 class ChapterRefreshPolicyTest {

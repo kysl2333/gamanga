@@ -97,7 +97,7 @@ class RecommendState(
     /** 换源窗口展示的线路清单：内置兜底 + 上次从镜像目录拉到的（打开窗口时再刷新一次）。 */
     var mirrors by mutableStateOf(BangumiMirrors.loadCatalog(prefs))
         private set
-    /** 官方线路已确认不可达。用户要求：只有不通时才在界面上露出换源入口。 */
+    /** 官方线路已确认不可达。只有不通时才在界面上露出换源入口。 */
     var officialUnreachable by mutableStateOf(false)
         private set
     /** 官方不通时探到的可用镜像。**不直接生效**，等用户二次确认（实测）。 */

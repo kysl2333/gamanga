@@ -118,7 +118,7 @@ fun MihonImportDialog(
     }
     val scope = rememberCoroutineScope()
     var showOnlyUnresolved by remember { mutableStateOf(false) }
-    // 默认「只恢复书架」——用户明确说「大多数人一般都是恢复书架的」
+    // 默认「只恢复书架」——说「大多数人一般都是恢复书架的」
     var mode by remember { mutableStateOf(MihonImportMode.SHELF_ONLY) }
     // （用户）：「恢复备份还在搜索中时点击导入」会出问题。
     // 每行的搜索是个独立协程，导入开始时它还在往 `state.candidates` 里写；

@@ -55,10 +55,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * 可回撤操作提示条（用户要求）。
+ * 可回撤操作提示条。
  *
- * ## 用户口径
- *
+ * ## *
  * 「浏览页『浏览历史』旁的『清空全部』需提供回撤操作；书架与浏览页的删除动作同样支持回撤；
  * 回撤提示需符合整体 UI 审美并带动效」。
  *

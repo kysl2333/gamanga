@@ -713,7 +713,7 @@ class DownloadManagerTest {
         }
     }
 
-    // ---- 缓存清理安全（用户明确要求「不要把系统或其他不相关文件删掉」）----
+    // ---- 缓存清理安全----
 
     @Test
     fun `clear all cache removes only whitelisted manga dirs`() = runBlocking {

@@ -57,7 +57,7 @@ object BrowserProbe {
     private val laneLocks = Array(LANES) { Mutex() }
 
     /**
-     * **隐藏浏览器复用**（用户要求「减少搜索速度」）。
+     * **隐藏浏览器复用**。
      *
      * 每次新建 `JcefWebViewHost` 要 3~4 秒（CEF browser 创建 + 首屏），而一次搜索
      * 全程只有 7 秒左右——一半时间花在建浏览器上。这里把上一个 host 留着，

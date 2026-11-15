@@ -115,7 +115,7 @@ object CefRuntime {
                 // ColorType 是 CefSettings 的内部类，构造参数序为 (alpha, red, green, blue)
                 background_color = ColorType(255, 255, 255, 255)
                 // **cookie 持久化**：不设 cache_path 时 CEF 的 cookie store 只在内存，
-                // 每次重启应用内嵌浏览器都是未登录状态——用户反馈"每次都要重新登录"。
+                // 每次重启应用内嵌浏览器都是未登录状态——实测"每次都要重新登录"。
                 // 目录和本地库放一起（%LOCALAPPDATA%\Gamanga\），应用卸载/重置时一起清。
                 cache_path = java.io.File(
                     System.getenv("LOCALAPPDATA") ?: System.getProperty("user.home"),

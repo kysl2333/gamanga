@@ -28,7 +28,7 @@ import java.time.Duration
  * + 每个源独立开关。[proxyPolicy] 决定「这个源走不走代理」——默认全部跟随
  * 全局；设置页里可按源单独关（比如只用代理访问 Komiic，G社 直连更快）。
  * 启动时由 Main.kt 从 appPrefs 恢复配置。内嵌浏览器（CEF）的代理另由
- * CefRuntime 启动参数注入（用户要求「代理开时对应站点全走代理」）。
+ * CefRuntime 启动参数注入。
  */
 object Http {
 

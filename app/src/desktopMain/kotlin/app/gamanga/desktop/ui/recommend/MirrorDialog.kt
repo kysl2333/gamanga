@@ -49,7 +49,7 @@ import kotlinx.coroutines.delay
 /**
  * 「每次启动只提示一次」的危险提示闸门。
  *
- * 用户要求：点换源按钮后要警告，但**不要每点一次就警告一次**——同一个进程里第一次打开
+ * 点换源按钮后要警告，但**不要每点一次就警告一次**——同一个进程里第一次打开
  * 换源窗口时警告，之后直到下次启动都不再出现。用进程内静态标志，不写盘（写盘就变成
  * 「永远只警告一次」，用户换台机器/重装才再看到，等于没警告）。
  */
@@ -301,7 +301,7 @@ private fun MirrorRow(
     LaunchedEffect(Unit) { delay(if (reduce) 0 else index * 55L); shown = true }
     val slide by animateFloatAsState(if (shown) 0f else 8f, tween(if (reduce) 0 else 260))
     val fade by animateFloatAsState(if (shown) 1f else 0f, tween(if (reduce) 0 else 260))
-    // 选中态只用浅灰底 + 一个勾，不再上粉色描边（用户要求：不要花的颜色框）。
+    // 选中态只用浅灰底 + 一个勾，不再上粉色描边。
     val bg by animateColorAsState(if (selected) Color(0xFFF6F6F8) else if (hover) Color(0xFFFAFAFC) else Color.White, tween(if (reduce) 0 else 160))
     val border by animateColorAsState(Tokens.Color.BorderHairline, tween(if (reduce) 0 else 160))
     Row(

@@ -240,7 +240,7 @@ object ImageCache {
 
     fun isForegroundBusy(): Boolean = foregroundLoads.get() > 0
 
-    /** 本会话失败页不自动再探；仅用户明确点击单图重试时重新请求。 */
+    /** 本会话失败页不自动再探；仅点击单图重试时重新请求。 */
     internal fun canPrefetch(url: String, headers: Map<String, String>): Boolean =
         !failedAt.containsKey(keyOf(url, headers))
 

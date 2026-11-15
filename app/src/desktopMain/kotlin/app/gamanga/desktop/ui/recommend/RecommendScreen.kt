@@ -224,7 +224,7 @@ fun RecommendScreen(state: RecommendState, onPick: (String) -> Unit) {
                     title = { Copy("官方线路不可达", strong = true) },
                     text = { Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Copy("检测到「${candidate.name}」可用。切换后 Bangumi 接口请求与封面加载会经过该镜像转发，是否使用？", small = true)
-                        // 换源风险必须用红字加粗，和换源窗口里同一句话（用户要求两处一致）。
+                        // 换源风险必须用红字加粗，和换源窗口里同一句话。
                         Copy("非官方线路有风险：你的 API 请求与访问令牌会被镜像站看到", strong = true, color = Tokens.Color.Danger)
                         Copy("继续用官方线路：推荐页会保持不可用，可稍后重试。", small = true, color = RecommendTokens.Muted)
                     } },

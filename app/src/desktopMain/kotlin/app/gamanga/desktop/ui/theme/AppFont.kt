@@ -9,7 +9,7 @@ import app.gamanga.desktop.core.AppLog
 /**
  * 界面字体（实测er + MiSans**）。
  *
- * 用户口径：「2K-4K 先按你推荐的来适配，用 Inter + MiSans 来看整体效果」。
+ * 「2K-4K 先按你推荐的来适配，用 Inter + MiSans 来看整体效果」。
  *
  * | 字体 | 角色 | 授权 | 随包分发 |
  * |---|---|---|---|

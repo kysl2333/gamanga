@@ -129,7 +129,7 @@ fun main() = application {
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             // 完整版把随包内核**启动就搬到纯 ASCII 目录**。
-            // 用户口径「直接挪，下完整版就说明需要浏览器」——不等第一次点浏览器。
+            // 「直接挪，下完整版就说明需要浏览器」——不等第一次点浏览器。
             // 开发环境下 `app/jcef-bundle` 是符号链接，函数内部会跳过，不会动开发环境。
             runCatching { CefRuntime.migrateBundledRuntimeOnStartup() }
             runCatching { CefRuntime.warmUpIfDownloaded() }

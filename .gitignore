@@ -1,0 +1,29 @@
+# ---- 构建产物 ----
+build/
+.gradle/
+.kotlin/
+
+# ---- 自包含工具链与第三方二进制（体积大、可重新获取，不入库）----
+tools/jdk-*/
+tools/gradle-*/
+tools/suwayomi/
+tools/apks/
+tools/ext-repo/
+tools/*.zip
+app/jcef-bundle/
+
+# ---- 运行日志 ----
+logs/
+
+# ---- 用户本地私有资料（问题记录备份等，不属于源码）----
+备份/
+
+# ---- 发行包（体积大、可重新构建，不入库）----
+outputs/*.zip
+
+# ---- WorkBuddy 项目数据（agent 基础设施，非项目源码；想入库可自行去掉这行）----
+.workbuddy-ai/
+
+# ---- 上游遗留的大文件参考树（10MB JSON，无版本控制价值）----
+# 2026-10-28 已移到 docs/archive/reference/，裸文件名规则在任意层级都生效
+tree.json

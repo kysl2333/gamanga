@@ -337,7 +337,7 @@ fun BookshelfScreen(
                             picked = if (item.entry.id in picked) picked - item.entry.id
                             else picked + item.entry.id
                         } else {
-                            // 用户口径「进入该漫画详情页后（绿点）消失」——点开即视为看过
+                            // 「进入该漫画详情页后（绿点）消失」——点开即视为看过
                             ChapterRefresh.clear(repository, item.entry.id)
                             // **留在书架页**弹出二级详情页，不跳浏览页。
                             // 封面/作者从书架条目带上，面板第一帧就有内容（不必等网络）。
@@ -906,7 +906,7 @@ private fun SectionHeader(
  *
  * 尺寸跟分区标题的字高对齐（24dp 圆 + 15dp 图标），hover 出浅底——
  * 与「源分区标题里的登录小地球」同一套小图标语言，整页只有一种。
- * 刷新中：图标按 900ms 一圈匀速转；有更新：右上角一颗绿色小点（用户要求「绿色提示点」）。
+ * 刷新中：图标按 900ms 一圈匀速转；有更新：右上角一颗绿色小点。
  */
 @Composable
 private fun ChapterRefreshButton(refreshing: Boolean, updates: Int, onClick: () -> Unit) {

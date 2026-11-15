@@ -211,7 +211,7 @@ fun SettingsScreen(
     // 期间弹窗把整屏都吃掉——没有「取消」用户只能强杀进程（他报的「按钮点了没反应」）。
     var mihonJob by remember { mutableStateOf<Job?>(null) }
 
-    // 操作结果 3.6 秒后自动消失（用户要求浮空提示，不再常驻页面）
+    // 操作结果 3.6 秒后自动消失
     LaunchedEffect(status, webdavStatus) {
         if (status.isNotEmpty() || webdavStatus.isNotEmpty()) {
             delay(3600)
@@ -603,7 +603,7 @@ internal fun SettingsNavRow(
 ) {
     val interaction = remember { MutableInteractionSource() }
     val hovered by interaction.collectIsHoveredAsState()
-    // 选中态不加过渡动画：用户要求左侧「点哪立即到哪」。
+    // 选中态不加过渡动画：左侧「点哪立即到哪」。
     Row(
         Modifier.fillMaxWidth().height(36.dp)
             .clip(RoundedCornerShape(8.dp))
@@ -961,7 +961,7 @@ private fun CacheSettings(
         }
     }
 
-    // 浏览器内核管理 —— 用户要求"告知占多大、能二次确认移除、
+    // 浏览器内核管理 —— "告知占多大、能二次确认移除、
     // 提醒卸载前自行清理配置与内核"。
     SettingsGroup("浏览器内核") {
         SettingsCard {
